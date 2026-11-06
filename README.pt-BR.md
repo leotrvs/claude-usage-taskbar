@@ -11,7 +11,7 @@ Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precis
 ## Recursos
 
 - Ícones na barra de tarefas com o percentual de uso de **5 horas** e o **semanal**. Mostre os dois, ou só um
-- Dois estilos de ícone: **Velocímetro** e **Contorno**, que vai enchendo conforme o uso
+- Três estilos de ícone: **Velocímetro** e **Contorno**, que vão enchendo conforme o uso, e **Ponteiro**, um mostrador sem número
 - Cores por nível: verde, âmbar a partir de 70% e vermelho a partir de 90%
 - Painel escuro com horários de reinício, gráfico de 12 horas e previsão de ritmo
 - Alertas opcionais em 80% e 90% de um limite

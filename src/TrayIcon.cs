@@ -10,10 +10,12 @@ using System.Windows.Forms;
 static class TrayIcon
 {
     static readonly Color Tile = Color.FromArgb(34, 30, 28);
-    static readonly Color GaugeTrack = Color.FromArgb(78, 72, 68);
-    static readonly Color GaugeDanger = Color.FromArgb(150, 56, 50);
-    const float GaugeArcHeight = 0.38f;
-    static string numberFont;
+    static readonly Color Track = Color.FromArgb(92, 85, 80);
+    const float DialStart = 135;
+    const float DialSweep = 270;
+    const float GaugeHeight = 0.64f;
+    const float MinimumProgress = 0.09f; // Keeps a low value visible at 16 pixels.
+    const string NumberFont = "Segoe UI";
 
     // primary = 5-hour limit (white number); the weekly icon colors its number by level.
     public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size)
@@ -26,16 +28,19 @@ static class TrayIcon
 
             Color color = Theme.ForPercent(percent, stale);
             float progress = percent.HasValue ? Math.Max(0, Math.Min(100, percent.Value)) / 100f : 0;
-            float stroke = style == IconStyle.Gauge ? Math.Max(1.25f, size * 0.08f) : Math.Max(1f, size * 0.07f);
+            float stroke = Math.Max(2f, size * 0.12f);
 
             using (GraphicsPath tile = Theme.Rounded(new RectangleF(0, 0, size, size), size * 0.2f))
             using (Brush brush = new SolidBrush(Tile))
                 g.FillPath(brush, tile);
 
-            if (style == IconStyle.Gauge) DrawGauge(g, size, stroke, progress, color);
-            else DrawOutline(g, size, stroke, progress, color);
+            if (style == IconStyle.Outline) DrawOutline(g, size, stroke, progress, color);
+            else if (style == IconStyle.Gauge) DrawGauge(g, size, stroke, progress, color);
+            else DrawDial(g, size, stroke, progress, color);
 
-            DrawNumber(g, style, percent, primary && !stale ? Theme.Text : color, size, stroke);
+            Color foreground = primary && !stale ? Theme.Text : color;
+            if (style == IconStyle.Needle && percent.HasValue) DrawNeedle(g, size, progress, foreground);
+            else DrawNumber(g, style, percent, foreground, size, stroke);
         }
         return bitmap;
     }
@@ -49,28 +54,50 @@ static class TrayIcon
         return pen;
     }
 
-    // A flat arc along the top, so the number keeps the full width below it.
-    static void DrawGauge(Graphics g, int size, float stroke, float progress, Color color)
+    static float ArcInset(int size, float stroke)
     {
-        const float StartAngle = 180;
-        const float FullSweep = 180;
-        const float DangerStart = 0.9f;
-        float inset = stroke / 2 + 0.25f;
-        float width = size - inset * 2;
-        float height = size * GaugeArcHeight;
-        using (Pen track = NewRoundPen(GaugeTrack, stroke))
-            g.DrawArc(track, inset, inset, width, height, StartAngle, FullSweep);
-        using (Pen danger = NewRoundPen(GaugeDanger, stroke))
-            g.DrawArc(danger, inset, inset, width, height, StartAngle + FullSweep * DangerStart, FullSweep * (1 - DangerStart));
-        if (progress <= 0) return;
-        using (Pen value = NewRoundPen(color, stroke))
-            g.DrawArc(value, inset, inset, width, height, StartAngle, Math.Max(2, FullSweep * progress));
+        return stroke / 2 + size * 0.02f;
     }
 
-    // A line that starts at the top and runs clockwise around the edge; at 0% there is none.
+    // A half circle over the number, so the two never touch.
+    static void DrawGauge(Graphics g, int size, float stroke, float progress, Color color)
+    {
+        float inset = ArcInset(size, stroke);
+        DrawArc(g, new RectangleF(inset, inset, size - inset * 2, size * GaugeHeight), 180, 180, stroke, progress, color);
+    }
+
+    // The same 270-degree dial as the app icon, open at the bottom.
+    static void DrawDial(Graphics g, int size, float stroke, float progress, Color color)
+    {
+        float inset = ArcInset(size, stroke);
+        float diameter = size - inset * 2;
+        DrawArc(g, new RectangleF(inset, inset, diameter, diameter), DialStart, DialSweep, stroke, progress, color);
+    }
+
+    static void DrawArc(Graphics g, RectangleF box, float start, float sweep, float stroke, float progress, Color color)
+    {
+        using (Pen track = NewRoundPen(Track, stroke))
+            g.DrawArc(track, box.X, box.Y, box.Width, box.Height, start, sweep);
+        if (progress <= 0) return;
+        using (Pen value = NewRoundPen(color, stroke))
+            g.DrawArc(value, box.X, box.Y, box.Width, box.Height, start, sweep * Math.Max(MinimumProgress, progress));
+    }
+
+    static void DrawNeedle(Graphics g, int size, float progress, Color color)
+    {
+        double angle = (DialStart + DialSweep * progress) * Math.PI / 180;
+        float center = size / 2f;
+        float length = size * 0.3f;
+        float hub = size * 0.09f;
+        using (Pen needle = NewRoundPen(color, Math.Max(1.5f, size * 0.09f)))
+            g.DrawLine(needle, center, center, center + length * (float)Math.Cos(angle), center + length * (float)Math.Sin(angle));
+        using (Brush brush = new SolidBrush(color))
+            g.FillEllipse(brush, center - hub, center - hub, hub * 2, hub * 2);
+    }
+
+    // A line that starts at the top and runs clockwise around the edge, over a track.
     static void DrawOutline(Graphics g, int size, float stroke, float progress, Color color)
     {
-        if (progress <= 0) return;
         float left = stroke / 2;
         float right = size - stroke / 2;
         float center = size / 2f;
@@ -87,7 +114,11 @@ static class TrayIcon
             path.AddLine(left + radius, left, center, left);
             path.Flatten(null, 0.1f);
 
-            PointF[] points = TakeFraction(path.PathPoints, progress);
+            using (Pen track = NewRoundPen(Track, stroke))
+                g.DrawLines(track, path.PathPoints);
+            if (progress <= 0) return;
+
+            PointF[] points = TakeFraction(path.PathPoints, Math.Max(MinimumProgress, progress));
             if (points.Length < 2) return;
             using (Pen pen = NewRoundPen(color, stroke))
                 g.DrawLines(pen, points);
@@ -131,42 +162,48 @@ static class TrayIcon
     static void DrawNumber(Graphics g, IconStyle style, int? percent, Color color, int size, float stroke)
     {
         string text = percent.HasValue ? percent.Value.ToString(CultureInfo.InvariantCulture) : "?";
-        // The gauge's arc only uses the top, while the outline's line runs around every side.
-        float gap = Math.Max(0.5f, size * 0.03f);
-        float top = (style == IconStyle.Gauge ? size * GaugeArcHeight / 2 + stroke : stroke) + gap;
-        float bottom = size - (style == IconStyle.Gauge ? gap : stroke + gap);
-        float side = style == IconStyle.Gauge ? gap : stroke + gap;
-        RectangleF area = new RectangleF(side, top, size - side * 2, bottom - top);
+        RectangleF area = NumberArea(style, size, stroke);
 
-        using (GraphicsPath path = new GraphicsPath())
-        using (FontFamily family = new FontFamily(NumberFontFamily()))
+        using (FontFamily family = new FontFamily(NumberFont))
         using (StringFormat format = (StringFormat)StringFormat.GenericTypographic.Clone())
-        using (Matrix fit = new Matrix())
         using (Brush brush = new SolidBrush(color))
         {
-            path.AddString(text, family, (int)FontStyle.Regular, 100, PointF.Empty, format);
+            format.FormatFlags |= StringFormatFlags.NoClip;
+            // Whole pixel sizes keep the digits sharp; the measure is the drawn shape, not the font's box.
+            for (int pixels = size; pixels > 4; pixels--)
+            {
+                RectangleF ink = MeasureInk(text, family, pixels, format);
+                if (ink.Width > area.Width || ink.Height > area.Height) continue;
 
-            // Fits the drawn shape of the digits, not the font's box, so they can never reach the edge.
-            RectangleF ink = path.GetBounds();
-            float scale = Math.Min(area.Width / ink.Width, area.Height / ink.Height);
-            fit.Translate(area.X + (area.Width - ink.Width * scale) / 2, area.Y + (area.Height - ink.Height * scale) / 2);
-            fit.Scale(scale, scale);
-            fit.Translate(-ink.X, -ink.Y);
-            path.Transform(fit);
-            g.FillPath(brush, path);
+                float x = (float)Math.Round(area.X + (area.Width - ink.Width) / 2 - ink.X);
+                float y = (float)Math.Round(area.Y + (area.Height - ink.Height) / 2 - ink.Y);
+                using (Font font = new Font(family, pixels, FontStyle.Bold, GraphicsUnit.Pixel))
+                    g.DrawString(text, font, brush, x, y, format);
+                return;
+            }
         }
     }
 
-    // A condensed font fits taller digits in the same width. It ships with Windows 10 and 11.
-    static string NumberFontFamily()
+    // Below the gauge's arc, or inside the outline's line.
+    static RectangleF NumberArea(IconStyle style, int size, float stroke)
     {
-        if (numberFont != null) return numberFont;
-        using (InstalledFontCollection fonts = new InstalledFontCollection())
+        if (style == IconStyle.Gauge)
         {
-            bool available = Array.Exists(fonts.Families, delegate(FontFamily f) { return f.Name == "Bahnschrift SemiBold Condensed"; });
-            numberFont = available ? "Bahnschrift SemiBold Condensed" : "Segoe UI";
+            float side = size * 0.06f;
+            float top = ArcInset(size, stroke) + size * GaugeHeight / 2 + stroke * 0.35f;
+            return new RectangleF(side, top, size - side * 2, size * 0.98f - top);
         }
-        return numberFont;
+        float inset = stroke + size * 0.03f;
+        return new RectangleF(inset, inset, size - inset * 2, size - inset * 2);
+    }
+
+    static RectangleF MeasureInk(string text, FontFamily family, int pixels, StringFormat format)
+    {
+        using (GraphicsPath path = new GraphicsPath())
+        {
+            path.AddString(text, family, (int)FontStyle.Bold, pixels, PointF.Empty, format);
+            return path.GetBounds();
+        }
     }
 }
 

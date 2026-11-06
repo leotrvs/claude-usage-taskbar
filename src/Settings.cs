@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Win32;
 
-enum IconStyle { Gauge, Outline }
+enum IconStyle { Gauge, Outline, Needle }
 enum IconsShown { Both, Session, Weekly }
 
 static class Settings
@@ -11,7 +11,12 @@ static class Settings
 
     public static IconStyle IconStyle
     {
-        get { return "Outline".Equals(Read("IconStyle")) ? IconStyle.Outline : IconStyle.Gauge; }
+        get
+        {
+            string value = Read("IconStyle") as string;
+            if ("Outline".Equals(value)) return IconStyle.Outline;
+            return "Needle".Equals(value) ? IconStyle.Needle : IconStyle.Gauge;
+        }
         set { Write("IconStyle", value.ToString()); }
     }
 

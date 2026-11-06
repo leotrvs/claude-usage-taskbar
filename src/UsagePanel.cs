@@ -49,9 +49,9 @@ class PanelTarget
 class UsagePanel : Form
 {
     const int LogicalWidth = 300;
-    const int LogicalHeight = 420;
+    const int LogicalHeight = 434;
     const int ChipTop = 300;
-    const int ActionsTop = 350;
+    const int ActionsTop = 364;
     const int MascotHeight = 34;
     const double ChartHours = 12;
     const int ReopenGuardMilliseconds = 300;
@@ -105,6 +105,7 @@ class UsagePanel : Form
     {
         AddStyleChip(IconStyle.Gauge, "gauge", 0, callbacks);
         AddStyleChip(IconStyle.Outline, "outline", 1, callbacks);
+        AddStyleChip(IconStyle.Needle, "needle", 2, callbacks);
         mainTargets.Add(NewRow("", "settings", ActionsTop, delegate { ShowPage(settingsTargets); }));
         mainTargets.Add(NewRow("", "closeWidget", ActionsTop + 32, callbacks.CloseWidget));
     }
@@ -114,7 +115,7 @@ class UsagePanel : Form
         PanelTarget chip = new PanelTarget();
         chip.Style = style;
         chip.LabelKey = labelKey;
-        chip.Bounds = ChipBounds(column, 2, ChipTop, 36);
+        chip.Bounds = ChipBounds(column, 3, ChipTop, 50);
         chip.Run = delegate { callbacks.ChangeStyle(style); };
         mainTargets.Add(chip);
     }
@@ -350,7 +351,7 @@ class UsagePanel : Form
         Draw(g, Localization.T("history"), tinyFont, Theme.Muted, left, Px(214), right - left, TextFormatFlags.Left);
         DrawChart(g, new Rectangle(left, Px(232), right - left, Px(40)));
         Draw(g, Localization.T("taskbarIcon"), tinyFont, Theme.Muted, left, Px(280), right - left, TextFormatFlags.Left);
-        DrawDivider(g, Px(344));
+        DrawDivider(g, Px(358));
     }
 
     void DrawChart(Graphics g, Rectangle area)
@@ -462,14 +463,14 @@ class UsagePanel : Form
         }
 
         int iconSize = Px(22);
-        Rectangle icon = new Rectangle(chip.Bounds.X + Px(8), chip.Bounds.Y + (chip.Bounds.Height - iconSize) / 2, iconSize, iconSize);
+        Rectangle icon = new Rectangle(chip.Bounds.X + (chip.Bounds.Width - iconSize) / 2, chip.Bounds.Y + Px(6), iconSize, iconSize);
         int? sample = state.Session.Percent ?? 60;
         using (Bitmap preview = TrayIcon.Draw(chip.Style.Value, sample, true, state.Stale, iconSize))
             g.DrawImageUnscaled(preview, icon.Location);
 
-        Rectangle label = new Rectangle(icon.Right + Px(7), chip.Bounds.Y, chip.Bounds.Right - icon.Right - Px(9), chip.Bounds.Height);
-        TextRenderer.DrawText(g, chip.Label, smallFont, label, textColor,
-            TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding);
+        Rectangle label = new Rectangle(chip.Bounds.X, icon.Bottom + Px(2), chip.Bounds.Width, chip.Bounds.Bottom - icon.Bottom - Px(3));
+        TextRenderer.DrawText(g, chip.Label, tinyFont, label, textColor,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
     }
 
     void DrawHover(Graphics g, Rectangle bounds)

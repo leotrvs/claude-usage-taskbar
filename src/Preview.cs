@@ -67,7 +67,7 @@ static class Preview
         const int Size = 64;
         const int Gap = 12;
         int width = samples.Length * (Size + Gap) + Gap;
-        using (Bitmap sheet = new Bitmap(width, Size * 2 + Gap * 3))
+        using (Bitmap sheet = new Bitmap(width, Size * 3 + Gap * 4))
         using (Graphics g = Graphics.FromImage(sheet))
         {
             g.Clear(Color.FromArgb(20, 20, 20));
@@ -76,6 +76,7 @@ static class Preview
                 int x = Gap + i * (Size + Gap);
                 DrawIcon(g, IconStyle.Gauge, samples[i], x, Gap);
                 DrawIcon(g, IconStyle.Outline, samples[i], x, Size + Gap * 2);
+                DrawIcon(g, IconStyle.Needle, samples[i], x, Size * 2 + Gap * 3);
             }
             sheet.Save(path, ImageFormat.Png);
         }
