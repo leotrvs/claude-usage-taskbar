@@ -1,0 +1,131 @@
+using System.Collections.Generic;
+using System.Globalization;
+
+enum Language { Auto, English, Portuguese }
+
+static class Localization
+{
+    static readonly Dictionary<string, string> English = new Dictionary<string, string>
+    {
+        { "session", "5-hour session" },
+        { "weekly", "Weekly" },
+        { "taskbarIcon", "Taskbar icon" },
+        { "gauge", "Gauge" },
+        { "outline", "Outline" },
+        { "settings", "Settings" },
+        { "closeWidget", "Close widget" },
+        { "back", "Back" },
+        { "language", "Language" },
+        { "auto", "Automatic" },
+        { "startWithWindows", "Start with Windows" },
+        { "autoUpdate", "Automatic updates" },
+        { "claudeCodeConnected", "Connected to Claude Code" },
+        { "version", "Version {0}" },
+        { "updatedAt", "Updated at {0}" },
+        { "waiting", "Waiting for a Claude Code session" },
+        { "reading", "Reading usage..." },
+        { "noReset", "No reset time yet" },
+        { "resetting", "Resetting..." },
+        { "resetsAt", "Resets at {0}" },
+        { "resetsAtIn", "Resets at {0} · in {1}" },
+        { "resetsOn", "Resets {0}" },
+        { "resetsOnFormat", "ddd 'at' HH:mm" },
+        { "hoursMinutes", "{0}h {1:00}min" },
+        { "minutes", "{0} min" },
+        { "tooltip5h", "Claude 5h" },
+        { "tooltipWeek", "Claude week" },
+        { "tooltipBack", "back {0}" },
+        { "taskbarIcons", "Icons shown" },
+        { "both", "Both" },
+        { "sessionShort", "5 hours" },
+        { "weeklyShort", "Weekly" },
+        { "notifications", "Usage alerts" },
+        { "alertTitle", "{0}: {1}% used" },
+        { "alertBody", "Resets at {0}." },
+        { "history", "Last 12 hours" },
+        { "historyEmpty", "The chart fills in as you use Claude Code" },
+        { "paceLimit", "At this pace, reaches the limit at {0}" },
+        { "paceReset", "At this pace, about {0}% at reset" },
+        { "paceAhead", "{0} points above an even weekly pace" },
+        { "paceBehind", "{0} points below an even weekly pace" },
+        { "paceEven", "On an even weekly pace" },
+        { "installTitle", "Install " + App.Name },
+        { "installPrompt", "This will:\n\n• Install the app for your Windows user only\n• Add Desktop and Start menu shortcuts\n• Start it with Windows\n• Add a status line entry to your Claude Code settings, so it can receive your usage percentages\n\nIt never reads your Claude login or token. You can change or undo all of this later.\n\nInstall now?" },
+        { "connectFailed", "The app was installed, but your Claude Code settings could not be updated, so usage will not appear yet. Check that settings.json is valid JSON, then turn on \"Connected to Claude Code\" in Settings." },
+        { "uninstallTitle", "Uninstall " + App.Name },
+        { "uninstallPrompt", "Remove the app, its shortcuts and its settings? Your Claude Code status line will be restored." },
+    };
+
+    static readonly Dictionary<string, string> Portuguese = new Dictionary<string, string>
+    {
+        { "session", "Sessão de 5 horas" },
+        { "weekly", "Semanal" },
+        { "taskbarIcon", "Ícone na barra de tarefas" },
+        { "gauge", "Velocímetro" },
+        { "outline", "Contorno" },
+        { "settings", "Configurações" },
+        { "closeWidget", "Fechar widget" },
+        { "back", "Voltar" },
+        { "language", "Idioma" },
+        { "auto", "Automático" },
+        { "startWithWindows", "Iniciar com o Windows" },
+        { "autoUpdate", "Atualizações automáticas" },
+        { "claudeCodeConnected", "Conectado ao Claude Code" },
+        { "version", "Versão {0}" },
+        { "updatedAt", "Atualizado às {0}" },
+        { "waiting", "Aguardando uma sessão do Claude Code" },
+        { "reading", "Lendo o uso..." },
+        { "noReset", "Sem previsão de reinício" },
+        { "resetting", "Reiniciando..." },
+        { "resetsAt", "Reinicia às {0}" },
+        { "resetsAtIn", "Reinicia às {0} · em {1}" },
+        { "resetsOn", "Reinicia {0}" },
+        { "resetsOnFormat", "ddd 'às' HH:mm" },
+        { "hoursMinutes", "{0}h {1:00}min" },
+        { "minutes", "{0} min" },
+        { "tooltip5h", "Claude 5h" },
+        { "tooltipWeek", "Claude semana" },
+        { "tooltipBack", "volta {0}" },
+        { "taskbarIcons", "Ícones exibidos" },
+        { "both", "Ambos" },
+        { "sessionShort", "5 horas" },
+        { "weeklyShort", "Semanal" },
+        { "notifications", "Alertas de uso" },
+        { "alertTitle", "{0}: {1}% usados" },
+        { "alertBody", "Reinicia às {0}." },
+        { "history", "Últimas 12 horas" },
+        { "historyEmpty", "O gráfico aparece conforme você usa o Claude Code" },
+        { "paceLimit", "Nesse ritmo, atinge o limite às {0}" },
+        { "paceReset", "Nesse ritmo, cerca de {0}% no reinício" },
+        { "paceAhead", "{0} pontos acima do ritmo semanal uniforme" },
+        { "paceBehind", "{0} pontos abaixo do ritmo semanal uniforme" },
+        { "paceEven", "No ritmo semanal uniforme" },
+        { "installTitle", "Instalar " + App.Name },
+        { "installPrompt", "Isto vai:\n\n• Instalar o app só para o seu usuário do Windows\n• Criar atalhos na Área de Trabalho e no menu Iniciar\n• Iniciar junto com o Windows\n• Adicionar uma entrada de status line nas configurações do Claude Code, para receber seus percentuais de uso\n\nO app nunca lê seu login nem seu token do Claude. Tudo isso pode ser alterado ou desfeito depois.\n\nInstalar agora?" },
+        { "connectFailed", "O app foi instalado, mas não foi possível alterar as configurações do Claude Code, então o uso ainda não vai aparecer. Verifique se o settings.json é um JSON válido e ligue \"Conectado ao Claude Code\" em Configurações." },
+        { "uninstallTitle", "Desinstalar " + App.Name },
+        { "uninstallPrompt", "Remover o app, os atalhos e as configurações? A status line do Claude Code será restaurada." },
+    };
+
+    static Dictionary<string, string> active = English;
+
+    public static CultureInfo Culture { get; private set; }
+
+    public static void Apply(Language language)
+    {
+        bool portuguese = language == Language.Portuguese
+            || (language == Language.Auto && CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "pt");
+        active = portuguese ? Portuguese : English;
+        Culture = portuguese ? new CultureInfo("pt-BR") : new CultureInfo("en-US");
+    }
+
+    public static string T(string key)
+    {
+        return active[key];
+    }
+
+    public static string T(string key, params object[] values)
+    {
+        return string.Format(Culture, active[key], values);
+    }
+}
