@@ -338,7 +338,8 @@ class UsagePanel : Form
     void PaintMainPage(Graphics g, int left, int right)
     {
         Draw(g, App.Name, titleFont, Theme.Text, left, Px(14), right - left, TextFormatFlags.Left);
-        Draw(g, state.Status, tinyFont, Theme.Muted, left, Px(35), right - left, TextFormatFlags.Left);
+        int mascotSpace = mascot != null ? mascot.CurrentFrame.Width + Px(8) : 0;
+        Draw(g, state.Status, tinyFont, Theme.Muted, left, Px(35), right - left - mascotSpace, TextFormatFlags.Left);
         if (mascot != null && targets == mainTargets)
         {
             Bitmap frame = mascot.CurrentFrame;

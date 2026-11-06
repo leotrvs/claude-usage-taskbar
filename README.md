@@ -92,7 +92,7 @@ Go to **Windows Settings > Apps > Installed apps > Claude Usage Taskbar > Uninst
 
 | Problem | What to do |
 |---|---|
-| "Waiting for a Claude Code session" | Send a message in Claude Code. Limit data arrives after the first response. |
+| "Waiting for Claude Code" | Send a message in Claude Code. Limit data arrives after the first response. |
 | Still no percentages | Check that **Connected to Claude Code** is on, then restart Claude Code. Data is available on Pro, Max and Ultra plans. |
 | Icons are hidden | Follow step 5 of [Install](#install). |
 | Connection could not be turned on | `~/.claude/settings.json` may have invalid JSON. Fix it and try again. |

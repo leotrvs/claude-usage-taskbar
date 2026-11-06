@@ -92,7 +92,7 @@ Vá em **Configurações do Windows > Aplicativos > Aplicativos instalados > Cla
 
 | Problema | O que fazer |
 |---|---|
-| "Aguardando uma sessão do Claude Code" | Envie uma mensagem no Claude Code. Os dados de limite chegam depois da primeira resposta. |
+| "Aguardando o Claude Code" | Envie uma mensagem no Claude Code. Os dados de limite chegam depois da primeira resposta. |
 | Os percentuais continuam sem aparecer | Confira se **Conectado ao Claude Code** está ligado e reinicie o Claude Code. Os dados existem nos planos Pro, Max e Ultra. |
 | Os ícones estão escondidos | Siga o passo 5 da [Instalação](#instalação). |
 | Não foi possível ligar a conexão | O `~/.claude/settings.json` pode ter um JSON inválido. Corrija e tente de novo. |
