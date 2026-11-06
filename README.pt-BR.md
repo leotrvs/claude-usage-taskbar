@@ -25,7 +25,9 @@ Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precis
 ## Requisitos
 
 - Windows 10 ou 11
-- [Claude Code](https://code.claude.com/docs) conectado a um plano Pro, Max ou Ultra
+- [Claude Code](https://code.claude.com/docs) em um **terminal**, conectado a um plano Pro, Max ou Ultra
+
+> **O app desktop do Claude não alimenta este widget.** Nos testes, a aba Code não executou a status line, então os percentuais só aparecem enquanto você usa o Claude Code em um terminal.
 
 ## Instalação
 
@@ -34,7 +36,7 @@ Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precis
 3. Execute o arquivo. O Windows pode mostrar um aviso do SmartScreen, porque o app não tem um certificado pago de assinatura de código. Escolha **Mais informações** e depois **Executar assim mesmo**. Se preferir, antes [confira o arquivo](docs/SECURITY.pt-BR.md#confira-um-download) ou [compile você mesmo](#compilar-o-código).
 4. Escolha **Sim** para instalar. O app é instalado só para o seu usuário do Windows, e depois você pode apagar o arquivo baixado.
 5. Deixe os ícones visíveis: arraste-os do menu **^** para a barra de tarefas, ou vá em **Configurações > Personalização > Barra de Tarefas > Outros ícones da bandeja do sistema**.
-6. Envie uma mensagem no Claude Code. Os percentuais aparecem logo depois da resposta.
+6. Envie uma mensagem no Claude Code em um terminal. Os percentuais aparecem logo depois da resposta.
 
 O instalador faz a conexão com o Claude Code para você. Veja [como a conexão funciona](#como-a-conexão-funciona).
 
@@ -67,7 +69,7 @@ O Claude Code pode enviar dados da sessão para um comando de [status line](http
 
 Bom saber:
 
-- **Os percentuais só atualizam com o Claude Code rodando.** Eles mudam a cada resposta, então o uso feito em outros lugares, como o claude.ai, aparece na sua próxima resposta do Claude Code.
+- **Os percentuais só atualizam com o Claude Code rodando em um terminal.** Eles mudam a cada resposta, então o uso feito em outros lugares, como o claude.ai ou o app desktop, aparece na sua próxima resposta no terminal.
 - **Uma status line que você já tenha é mantida.** Ela continua rodando e mostrando o mesmo de antes. Ao desinstalar, ela é restaurada.
 - **Para desconectar,** desligue **Conectado ao Claude Code** em Configurações.
 
@@ -92,7 +94,7 @@ Vá em **Configurações do Windows > Aplicativos > Aplicativos instalados > Cla
 
 | Problema | O que fazer |
 |---|---|
-| "Aguardando o Claude Code" | Envie uma mensagem no Claude Code. Os dados de limite chegam depois da primeira resposta. |
+| "Aguardando o Claude Code" | Envie uma mensagem no Claude Code em um terminal. Os dados de limite chegam depois da primeira resposta. O app desktop não fornece esses dados. |
 | Os percentuais continuam sem aparecer | Confira se **Conectado ao Claude Code** está ligado e reinicie o Claude Code. Os dados existem nos planos Pro, Max e Ultra. |
 | Os ícones estão escondidos | Siga o passo 5 da [Instalação](#instalação). |
 | Não foi possível ligar a conexão | O `~/.claude/settings.json` pode ter um JSON inválido. Corrija e tente de novo. |

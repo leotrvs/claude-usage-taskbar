@@ -25,7 +25,9 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 ## Requirements
 
 - Windows 10 or 11
-- [Claude Code](https://code.claude.com/docs) signed in with a Pro, Max or Ultra plan
+- [Claude Code](https://code.claude.com/docs) in a **terminal**, signed in with a Pro, Max or Ultra plan
+
+> **The Claude desktop app does not feed this widget.** In testing, its Code tab did not run the status line, so percentages appear only while you use Claude Code in a terminal.
 
 ## Install
 
@@ -34,7 +36,7 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 3. Run it. Windows may show a SmartScreen warning because the app has no paid code-signing certificate. Choose **More info**, then **Run anyway**. If you prefer, [check the file](SECURITY.md#verify-a-download) or [build it yourself](#build-from-source) first.
 4. Choose **Yes** to install. The app is installed for your Windows user only, and you can delete the downloaded file afterwards.
 5. Keep the icons visible: drag them from the **^** menu to the taskbar, or go to **Settings > Personalization > Taskbar > Other system tray icons**.
-6. Send one message in Claude Code. The percentages appear right after the response.
+6. Send one message in Claude Code in a terminal. The percentages appear right after the response.
 
 The installer connects to Claude Code for you. See [how the connection works](#how-the-connection-works).
 
@@ -67,7 +69,7 @@ Claude Code can send session data to a [status line](https://code.claude.com/doc
 
 Good to know:
 
-- **Percentages update only while Claude Code is running.** They refresh after each response, so usage from other places, such as claude.ai, appears on your next Claude Code response.
+- **Percentages update only while Claude Code is running in a terminal.** They refresh after each response, so usage from other places, such as claude.ai or the desktop app, appears on your next terminal response.
 - **An existing status line is kept.** It keeps running and showing what it did before. Uninstalling restores it.
 - **To disconnect,** turn off **Connected to Claude Code** in Settings.
 
@@ -92,7 +94,7 @@ Go to **Windows Settings > Apps > Installed apps > Claude Usage Taskbar > Uninst
 
 | Problem | What to do |
 |---|---|
-| "Waiting for Claude Code" | Send a message in Claude Code. Limit data arrives after the first response. |
+| "Waiting for Claude Code" | Send a message in Claude Code in a terminal. Limit data arrives after the first response. The desktop app does not provide it. |
 | Still no percentages | Check that **Connected to Claude Code** is on, then restart Claude Code. Data is available on Pro, Max and Ultra plans. |
 | Icons are hidden | Follow step 5 of [Install](#install). |
 | Connection could not be turned on | `~/.claude/settings.json` may have invalid JSON. Fix it and try again. |
