@@ -12,6 +12,8 @@ static class TrayIcon
     static readonly Color Tile = Color.FromArgb(34, 30, 28);
     static readonly Color GaugeTrack = Color.FromArgb(78, 72, 68);
     static readonly Color GaugeDanger = Color.FromArgb(150, 56, 50);
+    const float GaugeArcHeight = 0.38f;
+    static string numberFont;
 
     // primary = 5-hour limit (white number); the weekly icon colors its number by level.
     public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size)
@@ -24,9 +26,9 @@ static class TrayIcon
 
             Color color = Theme.ForPercent(percent, stale);
             float progress = percent.HasValue ? Math.Max(0, Math.Min(100, percent.Value)) / 100f : 0;
-            float stroke = Math.Max(1.5f, size * 0.095f);
+            float stroke = style == IconStyle.Gauge ? Math.Max(1.25f, size * 0.08f) : Math.Max(1f, size * 0.07f);
 
-            using (GraphicsPath tile = Theme.Rounded(new RectangleF(0, 0, size - 1, size - 1), size * 0.24f))
+            using (GraphicsPath tile = Theme.Rounded(new RectangleF(0, 0, size, size), size * 0.2f))
             using (Brush brush = new SolidBrush(Tile))
                 g.FillPath(brush, tile);
 
@@ -47,20 +49,22 @@ static class TrayIcon
         return pen;
     }
 
+    // A flat arc along the top, so the number keeps the full width below it.
     static void DrawGauge(Graphics g, int size, float stroke, float progress, Color color)
     {
-        const float StartAngle = 135;
-        const float FullSweep = 270;
-        float inset = size * 0.04f + stroke / 2;
-        float diameter = size - 1 - inset * 2;
+        const float StartAngle = 180;
+        const float FullSweep = 180;
         const float DangerStart = 0.9f;
+        float inset = stroke / 2 + 0.25f;
+        float width = size - inset * 2;
+        float height = size * GaugeArcHeight;
         using (Pen track = NewRoundPen(GaugeTrack, stroke))
-            g.DrawArc(track, inset, inset, diameter, diameter, StartAngle, FullSweep);
+            g.DrawArc(track, inset, inset, width, height, StartAngle, FullSweep);
         using (Pen danger = NewRoundPen(GaugeDanger, stroke))
-            g.DrawArc(danger, inset, inset, diameter, diameter, StartAngle + FullSweep * DangerStart, FullSweep * (1 - DangerStart));
+            g.DrawArc(danger, inset, inset, width, height, StartAngle + FullSweep * DangerStart, FullSweep * (1 - DangerStart));
         if (progress <= 0) return;
         using (Pen value = NewRoundPen(color, stroke))
-            g.DrawArc(value, inset, inset, diameter, diameter, StartAngle, Math.Max(1, FullSweep * progress));
+            g.DrawArc(value, inset, inset, width, height, StartAngle, Math.Max(2, FullSweep * progress));
     }
 
     // A line that starts at the top and runs clockwise around the edge; at 0% there is none.
@@ -68,9 +72,9 @@ static class TrayIcon
     {
         if (progress <= 0) return;
         float left = stroke / 2;
-        float right = size - 1 - stroke / 2;
-        float center = (size - 1) / 2f;
-        float diameter = size * 0.44f;
+        float right = size - stroke / 2;
+        float center = size / 2f;
+        float diameter = size * 0.36f;
         float radius = diameter / 2;
 
         using (GraphicsPath path = new GraphicsPath())
@@ -127,37 +131,42 @@ static class TrayIcon
     static void DrawNumber(Graphics g, IconStyle style, int? percent, Color color, int size, float stroke)
     {
         string text = percent.HasValue ? percent.Value.ToString(CultureInfo.InvariantCulture) : "?";
+        // The gauge's arc only uses the top, while the outline's line runs around every side.
+        float gap = Math.Max(0.5f, size * 0.03f);
+        float top = (style == IconStyle.Gauge ? size * GaugeArcHeight / 2 + stroke : stroke) + gap;
+        float bottom = size - (style == IconStyle.Gauge ? gap : stroke + gap);
+        float side = style == IconStyle.Gauge ? gap : stroke + gap;
+        RectangleF area = new RectangleF(side, top, size - side * 2, bottom - top);
+
+        using (GraphicsPath path = new GraphicsPath())
+        using (FontFamily family = new FontFamily(NumberFontFamily()))
         using (StringFormat format = (StringFormat)StringFormat.GenericTypographic.Clone())
+        using (Matrix fit = new Matrix())
         using (Brush brush = new SolidBrush(color))
         {
-            format.Alignment = StringAlignment.Center;
-            format.LineAlignment = StringAlignment.Center;
-            format.FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.NoClip;
-            using (Font font = NewFittedFont(g, text, style, size, stroke, format))
-                g.DrawString(text, font, brush, new RectangleF(0, 0, size, size), format);
+            path.AddString(text, family, (int)FontStyle.Regular, 100, PointF.Empty, format);
+
+            // Fits the drawn shape of the digits, not the font's box, so they can never reach the edge.
+            RectangleF ink = path.GetBounds();
+            float scale = Math.Min(area.Width / ink.Width, area.Height / ink.Height);
+            fit.Translate(area.X + (area.Width - ink.Width * scale) / 2, area.Y + (area.Height - ink.Height * scale) / 2);
+            fit.Scale(scale, scale);
+            fit.Translate(-ink.X, -ink.Y);
+            path.Transform(fit);
+            g.FillPath(brush, path);
         }
     }
 
-    // Shrinks the number until it clears the ring or line around it, whatever the digits are.
-    static Font NewFittedFont(Graphics g, string text, IconStyle style, int size, float stroke, StringFormat format)
+    // A condensed font fits taller digits in the same width. It ships with Windows 10 and 11.
+    static string NumberFontFamily()
     {
-        const float DigitHeight = 0.74f;
-        float margin = Math.Max(0.75f, size * 0.04f);
-        float inner = style == IconStyle.Gauge
-            ? size - 1 - size * 0.08f - stroke * 2
-            : size - 1 - stroke * 2;
-
-        for (float pixels = size * 0.62f; pixels > size * 0.3f; pixels -= 0.25f)
+        if (numberFont != null) return numberFont;
+        using (InstalledFontCollection fonts = new InstalledFontCollection())
         {
-            Font font = new Font("Segoe UI", pixels, FontStyle.Bold, GraphicsUnit.Pixel);
-            float height = pixels * DigitHeight;
-            float allowed = style == IconStyle.Gauge
-                ? 2 * (float)Math.Sqrt(Math.Max(0, inner * inner / 4 - height * height / 4)) - margin
-                : inner - margin * 2;
-            if (g.MeasureString(text, font, PointF.Empty, format).Width <= allowed) return font;
-            font.Dispose();
+            bool available = Array.Exists(fonts.Families, delegate(FontFamily f) { return f.Name == "Bahnschrift SemiBold Condensed"; });
+            numberFont = available ? "Bahnschrift SemiBold Condensed" : "Segoe UI";
         }
-        return new Font("Segoe UI", size * 0.3f, FontStyle.Bold, GraphicsUnit.Pixel);
+        return numberFont;
     }
 }
 
