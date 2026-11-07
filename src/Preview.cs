@@ -59,6 +59,7 @@ static class Preview
         using (UsagePanel panel = new UsagePanel(new PanelCallbacks()))
         {
             panel.ChangeMascot(MascotStyle.Classic);
+            RenderMenu(Path.Combine(directory, "menu-" + suffix + ".png"));
             panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
             SaveTheme(panel, PanelTheme.Graphite, Path.Combine(directory, "panel-" + suffix + ".png"));
             SaveTheme(panel, PanelTheme.Black, Path.Combine(directory, "panel-black-" + suffix + ".png"));
@@ -78,6 +79,17 @@ static class Preview
             Save(panel, Path.Combine(directory, "update-settings-" + suffix + ".png"));
             panel.ShowMainPage();
             Save(panel, Path.Combine(directory, "update-" + suffix + ".png"));
+        }
+    }
+
+    static void RenderMenu(string path)
+    {
+        using (TrayMenu menu = new TrayMenu(new TrayMenuActions()))
+        using (Bitmap bitmap = new Bitmap(menu.Width, menu.Height))
+        {
+            menu.BackColor = Theme.Background;
+            menu.DrawToBitmap(bitmap, new Rectangle(Point.Empty, menu.Size));
+            bitmap.Save(path, ImageFormat.Png);
         }
     }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.9
+
+- A redesigned right-click menu, with rounded corners, icons and light animations
+
 ## 1.5.8
 
 - Auto is now the default theme

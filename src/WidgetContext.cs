@@ -76,8 +76,8 @@ class WidgetContext : ApplicationContext
         menuActions.OpenSettings = delegate { LaterOnPanel(OpenSettings); };
         menuActions.Quit = ExitThread;
         trayMenu = new TrayMenu(menuActions);
-        sessionSlot = new TraySlot(true, OnTrayMouseUp, trayMenu);
-        weeklySlot = new TraySlot(false, OnTrayMouseUp, trayMenu);
+        sessionSlot = new TraySlot(true, OnTrayMouseUp);
+        weeklySlot = new TraySlot(false, OnTrayMouseUp);
         Reload();
         NotifyIfUpdated();
 
@@ -104,6 +104,7 @@ class WidgetContext : ApplicationContext
     void OnTrayMouseUp(object sender, MouseEventArgs e)
     {
         if (e.Button == MouseButtons.Left) panel.Toggle();
+        else if (e.Button == MouseButtons.Right) trayMenu.ShowAt(Cursor.Position);
     }
 
     // Runs after the menu has closed, so it does not take the focus from the panel.
