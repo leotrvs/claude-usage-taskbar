@@ -38,6 +38,9 @@ class PixelMascot : IReactiveMascot
     const int WaveFrames = 14;
     const int PetFrames = 14;
     const int ActionDelayMs = 110;
+    const int SnowFlakes = 10;
+    const int SteamPuffs = 3;
+    const int SteamHeight = 9;
     const int OpenLidHeight = 7;
     const int ClosedLidHeight = 1;
     const int LaptopCycle = 70; // Frames of typing and of a closed lid, so the laptop does not hide the face all the time.
@@ -55,6 +58,8 @@ class PixelMascot : IReactiveMascot
     static readonly Color Question = Color.FromArgb(250, 204, 21);
     static readonly Color Heart = Color.FromArgb(244, 94, 124);
     static readonly Color Mug = Color.FromArgb(230, 230, 230);
+    static readonly Color Steam = Color.FromArgb(225, 225, 230);
+    static readonly Color Snow = Color.FromArgb(235, 240, 248);
     static readonly Color[] Bright =
     {
         Color.FromArgb(72, 150, 245), Color.FromArgb(250, 204, 21),
@@ -64,6 +69,7 @@ class PixelMascot : IReactiveMascot
     class Outfit
     {
         public int Left; // In base pixels from the character's left edge.
+        public int Block = 2; // Base pixels per letter. 2 matches the body; 1 allows finer detail.
         public string[] Art;
     }
 
@@ -79,28 +85,43 @@ class PixelMascot : IReactiveMascot
             "wwwwwwwwww"
         }
     };
-    static readonly Outfit HeadphoneSet = new Outfit
+    // Wired earbuds: the wires run from each ear and join on the chest.
+    static readonly Outfit Earbuds = new Outfit
     {
-        Left = 0,
+        Left = 3,
+        Block = 1,
         Art = new[]
         {
-            "............",
-            "...gggggg...",
-            "..g......g..",
-            "..b......b..",
-            "..b......b..",
-            "..b......b.."
+            "", "", "", "", "", "", "", "",
+            "ww..............ww",
+            "ww..............ww",
+            "ww..............ww",
+            ".w..............w.",
+            "..w............w..",
+            "...w..........w...",
+            "....w........w....",
+            ".....ww....ww.....",
+            ".......w..w.......",
+            "........ww........",
+            "........w.........",
+            "........w........."
         }
     };
+    // A puffed top leaning left over a narrow band, drawn at finer detail for the pleats.
     static readonly Outfit ChefHat = new Outfit
     {
-        Left = 0,
+        Left = 2,
+        Block = 1,
         Art = new[]
         {
-            "...wwwwww...",
-            "..wwwwwwww..",
-            "...wwwwww...",
-            "...gggggg..."
+            ".....wwwwwwwwww.....",
+            "..wwwwswwwswwwwwww..",
+            ".wwwwwswwwswwwwwwww.",
+            "wwwwwwswwwswwwwwwww.",
+            ".wwwwsswwwsswwwwww..",
+            "...dddddddddddddd...",
+            "...wwwwwwwwwwwwww...",
+            "...ssssssssssssss..."
         }
     };
     static readonly Outfit NightCap = new Outfit
@@ -237,10 +258,20 @@ class PixelMascot : IReactiveMascot
         using (Graphics g = Graphics.FromImage(bitmap))
         {
             Canvas canvas = new Canvas(g, pixel);
+            if (style == MascotStyle.Santa) DrawSnow(canvas, tick);
             if (action.HasValue) DrawAction(canvas, style, action.Value, actionTick);
             else DrawMood(canvas, style, mood, tick);
         }
         return bitmap;
+    }
+
+    static void DrawSnow(Canvas canvas, int tick)
+    {
+        for (int flake = 0; flake < SnowFlakes; flake++)
+        {
+            int sway = (tick + flake * 3) / 6 % 2;
+            canvas.Fill((flake * 7 + 2 + sway) % Columns, (tick + flake * 5) % Rows, 1, 1, Snow);
+        }
     }
 
     static void DrawMood(Canvas canvas, MascotStyle style, MascotMood mood, int tick)
@@ -378,7 +409,20 @@ class PixelMascot : IReactiveMascot
         int mugY = BodyTop + (sipping ? 2 : 11);
         canvas.Fill(mugX, mugY, 3, 4, Mug);
         canvas.Fill(mugX + 3, mugY + 1, 1, 2, Mug);
-        if (tick % 4 < 2) canvas.Fill(mugX + 1, mugY - 2, 1, 1, Snore);
+        DrawSteam(canvas, mugX, mugY, tick);
+    }
+
+    // Three puffs that rise, sway and fade.
+    static void DrawSteam(Canvas canvas, int mugX, int mugY, int tick)
+    {
+        for (int puff = 0; puff < SteamPuffs; puff++)
+        {
+            int rise = (tick + puff * SteamHeight / SteamPuffs) % SteamHeight;
+            int sway = rise % 4 < 2 ? 0 : 1;
+            int alpha = 230 - rise * 170 / SteamHeight;
+            canvas.Fill(mugX + sway, mugY - 1 - rise, 1, 1, Color.FromArgb(alpha, Steam));
+            canvas.Fill(mugX + 2 - sway, mugY - 1 - rise, 1, 1, Color.FromArgb(alpha, Steam));
+        }
     }
 
     static void DrawJuggle(Canvas canvas, MascotStyle style, int tick)
@@ -464,7 +508,7 @@ class PixelMascot : IReactiveMascot
         switch (style)
         {
             case MascotStyle.Santa: return SantaHat;
-            case MascotStyle.Headphones: return HeadphoneSet;
+            case MascotStyle.Headphones: return Earbuds;
             case MascotStyle.Chef: return ChefHat;
             default: return null;
         }
@@ -484,7 +528,7 @@ class PixelMascot : IReactiveMascot
             for (int column = 0; column < line.Length; column++)
             {
                 if (line[column] == '.') continue;
-                canvas.Fill(BodyLeft + outfit.Left + column * 2, top - 6 + row * 2, 2, 2, OutfitColor(line[column]));
+                canvas.Fill(BodyLeft + outfit.Left + column * outfit.Block, top - 6 + row * outfit.Block, outfit.Block, outfit.Block, OutfitColor(line[column]));
             }
         }
     }
@@ -495,6 +539,8 @@ class PixelMascot : IReactiveMascot
         {
             case 'r': return Color.FromArgb(214, 48, 49);
             case 'g': return Color.FromArgb(150, 150, 156);
+            case 's': return Color.FromArgb(198, 198, 206);
+            case 'd': return Color.FromArgb(84, 84, 92);
             case 'b': return Color.FromArgb(72, 150, 245);
             case 'i': return Color.FromArgb(82, 104, 190);
             default: return Color.FromArgb(240, 240, 240);

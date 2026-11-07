@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.2
+
+- A better Chef hat, with a puffed top and pleats
+- Steam rising from the mascot's coffee
+- Wired earbuds instead of the headset
+- Snow falling on the Christmas mascot
+
 ## 1.6.1
 
 - The limit forecast reacts faster to bursts of usage, especially close to the limit
