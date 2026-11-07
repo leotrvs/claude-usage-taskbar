@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.3
+
+- The resting mascot walks more often, every 30 seconds to 1 minute
+
 ## 1.7.2
 
 - The Racer now goes out in a Formula 1 car: a checkered flag waves, the car arrives, and the driver races down the panel header and back

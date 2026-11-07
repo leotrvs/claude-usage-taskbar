@@ -55,8 +55,8 @@ class PixelMascot : IReactiveMascot
     const int WalkLookTicks = 18;
     const int PatrolStride = 9;
     const int PatrolStopTicks = 12;
-    const int MinWalkWaitMs = 120000;
-    const int MaxWalkWaitMs = 240000;
+    const int MinWalkWaitMs = 30000;
+    const int MaxWalkWaitMs = 60000;
     const int MinPanicWaitMs = 25000;
     const int MaxPanicWaitMs = 55000;
     const int PanicSpeed = 2;
