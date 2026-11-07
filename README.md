@@ -77,7 +77,7 @@ Choose one under **Appearance**. From top to bottom:
 
 The chart shows your 5-hour usage over the last 12 hours. Hover over it to see the time, the percentage at that moment and how much it rose since the previous reading.
 
-The small **12h**, **24h** and **7d** switch above the chart changes the range. The 7-day view follows your weekly limit. Dotted lines mark where a limit started over. Below the chart, **Today** shows how much of a 5-hour session you have used since midnight.
+The small **12h**, **24h** and **7d** switch above the chart changes the range. The 7-day view follows your weekly limit. Dotted lines mark where a limit started over. Below the chart, **Today** shows the highest your 5-hour session reached since midnight.
 
 ![The 7-day chart, following the weekly limit](docs/images/chart-week-en.png)
 

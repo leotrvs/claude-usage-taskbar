@@ -1091,22 +1091,15 @@ class UsagePanel : Form
         Draw(g, text, tinyFont, Theme.Text, area.Left, Px(HistoryTop), area.Width, TextFormatFlags.Right);
     }
 
-    // How much of a 5-hour session was used since midnight, from the rises in the saved history.
+    // The highest the 5-hour session got since midnight, from the saved history.
     string TodayUsage()
     {
         DateTime midnight = DateTime.Today;
-        double total = 0;
-        UsageSample previous = null;
-        int count = 0;
+        double peak = -1;
         foreach (UsageSample sample in state.History)
-        {
-            if (sample.Time < midnight) continue;
-            count++;
-            if (previous != null && sample.Session > previous.Session) total += sample.Session - previous.Session;
-            previous = sample;
-        }
-        if (count < 2) return null;
-        return Localization.T("today", (total / 100).ToString("0.0", Localization.Culture));
+            if (sample.Time >= midnight && sample.Session > peak) peak = sample.Session;
+        if (peak < 0) return null;
+        return Localization.T("today", (int)Math.Round(peak));
     }
 
     void DrawRangeChip(Graphics g, PanelTarget chip, bool isHovered)

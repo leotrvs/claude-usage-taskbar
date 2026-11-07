@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.1
+
+- The "Today" line is now simply the highest your 5-hour session reached since midnight
+
 ## 1.9.0
 
 - Dotted lines on the chart mark where a limit started over

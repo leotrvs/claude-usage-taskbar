@@ -77,7 +77,7 @@ Escolha em **Aparência**. De cima para baixo:
 
 O gráfico mostra o uso de 5 horas nas últimas 12 horas. Passe o mouse sobre ele para ver o horário, o percentual naquele momento e quanto subiu desde a leitura anterior.
 
-O seletor **12h**, **24h** e **7d** acima do gráfico muda o período. A visão de 7 dias acompanha o limite semanal. Linhas pontilhadas marcam onde um limite recomeçou. Abaixo do gráfico, **Hoje** mostra quanto de uma sessão de 5 horas você usou desde a meia-noite.
+O seletor **12h**, **24h** e **7d** acima do gráfico muda o período. A visão de 7 dias acompanha o limite semanal. Linhas pontilhadas marcam onde um limite recomeçou. Abaixo do gráfico, **Hoje** mostra o maior percentual que a sessão de 5 horas atingiu desde a meia-noite.
 
 ![O gráfico de 7 dias, acompanhando o limite semanal](docs/images/chart-week-pt-BR.png)
 
