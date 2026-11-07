@@ -12,6 +12,8 @@ static class TrayIcon
     static readonly Color DarkForeground = Color.FromArgb(32, 32, 32);
     const float DialStart = 135;
     const float DialSweep = 270;
+    const float GaugeStart = 120; // A wider arc than the needle's, so it reads as the same size as the ring.
+    const float GaugeSweep = 300;
     const float RingStart = -90; // The top of the circle.
     const float RingSweep = 360;
     const float MinimumProgress = 0.09f; // Keeps a low value visible at 16 pixels.
@@ -29,9 +31,10 @@ static class TrayIcon
 
             Color color = Theme.ForPercent(percent, stale);
             float progress = percent.HasValue ? Math.Max(0, Math.Min(100, percent.Value)) / 100f : 0;
-            float stroke = style == IconStyle.Gauge ? Math.Max(1.75f, size * 0.11f) : Math.Max(2f, size * 0.12f);
+            float stroke = style == IconStyle.Gauge ? Math.Max(1.5f, size * 0.1f) : Math.Max(2f, size * 0.12f);
 
             if (style == IconStyle.Ring) DrawArc(g, size, stroke, RingStart, RingSweep, progress, color);
+            else if (style == IconStyle.Gauge) DrawArc(g, size, stroke, GaugeStart, GaugeSweep, progress, color);
             else DrawArc(g, size, stroke, DialStart, DialSweep, progress, color);
 
             Color foreground = primary && !stale ? (onLight ? DarkForeground : Theme.Text) : color;
@@ -77,8 +80,9 @@ static class TrayIcon
     {
         string text = percent.HasValue ? percent.Value.ToString(CultureInfo.InvariantCulture) : "?";
         g.PixelOffsetMode = PixelOffsetMode.Default; // The half-pixel shift would blur hinted digits.
-        // Inside the dial, a little low because its opening is at the bottom.
-        RectangleF area = new RectangleF(size * 0.19f, size * 0.32f, size * 0.62f, size * 0.46f);
+        // Inside the dial, leaving a clear gap to the arc on both sides.
+        float width = size * (text.Length > 2 ? 0.7f : 0.56f); // 100 needs the extra room to stay readable.
+        RectangleF area = new RectangleF((size - width) / 2, size * 0.3f, width, size * 0.42f);
 
         using (FontFamily family = new FontFamily(NumberFont))
         using (StringFormat format = (StringFormat)StringFormat.GenericTypographic.Clone())
@@ -92,14 +96,43 @@ static class TrayIcon
                 RectangleF widest = MeasureInk(new string('8', text.Length), family, pixels, format);
                 if (widest.Width > area.Width || widest.Height > area.Height) continue;
 
-                RectangleF ink = MeasureInk(text, family, pixels, format);
-
-                float x = (float)Math.Round(area.X + (area.Width - ink.Width) / 2 - ink.X);
-                float y = (float)Math.Round(area.Y + (area.Height - ink.Height) / 2 - ink.Y);
                 using (Font font = new Font(family, pixels, FontStyle.Bold, GraphicsUnit.Pixel))
+                {
+                    Rectangle ink = RenderedInk(text, font, format, size);
+                    float x = (float)Math.Round((size - ink.Width) / 2f - ink.X);
+                    float y = (float)Math.Round(area.Y + (area.Height - ink.Height) / 2 - ink.Y);
                     g.DrawString(text, font, brush, x, y, format);
+                }
                 return;
             }
+        }
+    }
+
+    // Hinting moves digits away from their measured outline, so centering uses the real pixels.
+    static Rectangle RenderedInk(string text, Font font, StringFormat format, int size)
+    {
+        const int Visible = 100;
+        int origin = size / 2;
+        using (Bitmap canvas = new Bitmap(size * 2, size * 2, PixelFormat.Format32bppArgb))
+        {
+            using (Graphics g = Graphics.FromImage(canvas))
+            {
+                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                g.DrawString(text, font, Brushes.White, origin, origin, format);
+            }
+            int left = canvas.Width, top = canvas.Height, right = -1, bottom = -1;
+            for (int y = 0; y < canvas.Height; y++)
+            {
+                for (int x = 0; x < canvas.Width; x++)
+                {
+                    if (canvas.GetPixel(x, y).A < Visible) continue;
+                    left = Math.Min(left, x);
+                    right = Math.Max(right, x);
+                    top = Math.Min(top, y);
+                    bottom = Math.Max(bottom, y);
+                }
+            }
+            return right < 0 ? Rectangle.Empty : Rectangle.FromLTRB(left - origin, top - origin, right + 1 - origin, bottom + 1 - origin);
         }
     }
 

@@ -128,8 +128,8 @@ class UsagePanel : Form
 
     void BuildMainPage(PanelCallbacks callbacks)
     {
-        AddStyleChip(IconStyle.Gauge, "gauge", 0, callbacks);
-        AddStyleChip(IconStyle.Ring, "ring", 1, callbacks);
+        AddStyleChip(IconStyle.Ring, "ring", 0, callbacks);
+        AddStyleChip(IconStyle.Gauge, "gauge", 1, callbacks);
         AddStyleChip(IconStyle.Needle, "needle", 2, callbacks);
         updateLink = new PanelTarget();
         updateLink.Bounds = new Rectangle(Px(18), Px(33), Px(224), Px(18));
@@ -169,8 +169,8 @@ class UsagePanel : Form
     void BuildAppearancePage(PanelCallbacks callbacks)
     {
         appearanceTargets.Add(NewRow("\uE72B", "back", 8, delegate { ShowPage(settingsTargets); }));
-        AddColorChip(ColorTemplate.Green, "colorGreen", 0, callbacks);
-        AddColorChip(ColorTemplate.Blue, "colorBlue", 1, callbacks);
+        AddColorChip(ColorTemplate.Blue, "colorBlue", 0, callbacks);
+        AddColorChip(ColorTemplate.Green, "colorGreen", 1, callbacks);
         AddColorChip(ColorTemplate.Purple, "colorPurple", 2, callbacks);
         AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 0, callbacks);
         AddPanelThemeChip(PanelTheme.Black, "panelBlack", 1, callbacks);

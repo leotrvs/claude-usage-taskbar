@@ -15,8 +15,8 @@ static class Settings
         get
         {
             string value = Read("IconStyle") as string;
-            if ("Ring".Equals(value) || "Outline".Equals(value)) return IconStyle.Ring; // Outline is the older name.
-            return "Needle".Equals(value) ? IconStyle.Needle : IconStyle.Gauge;
+            if ("Gauge".Equals(value)) return IconStyle.Gauge;
+            return "Needle".Equals(value) ? IconStyle.Needle : IconStyle.Ring;
         }
         set { Write("IconStyle", value.ToString()); }
     }
@@ -46,7 +46,7 @@ static class Settings
         get
         {
             ColorTemplate colors;
-            return Enum.TryParse(Read("Colors") as string, out colors) ? colors : ColorTemplate.Green;
+            return Enum.TryParse(Read("Colors") as string, out colors) ? colors : ColorTemplate.Blue;
         }
         set { Write("Colors", value.ToString()); }
     }

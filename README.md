@@ -11,8 +11,8 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 ## Features
 
 - Taskbar icons with your **5-hour** and **weekly** usage percentages. Show both, or only one
-- Three icon styles: **Gauge**, a dial with the number inside, **Ring**, a circle that fills clockwise from the top, and **Needle**, a dial with a pointer
-- Colors by level: green, blue or purple, changing at 70% and turning red at 90%
+- Three icon styles: **Ring**, a circle that fills clockwise from the top, **Gauge**, a dial with the number inside, and **Needle**, a dial with a pointer
+- Colors by level: blue by default, or green or purple, changing at 70% and turning red at 90%
 - Icons with no background, and a graphite or black panel
 - A dark panel with reset times, a pace forecast and a 12-hour chart that shows details on hover
 - Optional alerts at 80% and 90% of a limit

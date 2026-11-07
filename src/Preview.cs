@@ -10,7 +10,7 @@ static class Preview
     public static void Render(string directory)
     {
         Directory.CreateDirectory(directory);
-        Theme.Colors = ColorTemplate.Green;
+        Theme.Colors = ColorTemplate.Blue;
         Theme.Panel = PanelTheme.Graphite;
         RenderPanels(directory, Language.English, "en");
         RenderPanels(directory, Language.Portuguese, "pt-BR");
@@ -34,7 +34,7 @@ static class Preview
         using (UsagePanel panel = new UsagePanel(new PanelCallbacks()))
         {
             panel.LoadMascot();
-            panel.SetState(state, IconStyle.Gauge, language, IconsShown.Both);
+            panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
             Save(panel, Path.Combine(directory, "panel-" + suffix + ".png"));
             panel.ShowSettingsPage();
             Save(panel, Path.Combine(directory, "settings-" + suffix + ".png"));
@@ -44,11 +44,9 @@ static class Preview
             Save(panel, Path.Combine(directory, "update-settings-" + suffix + ".png"));
             panel.ShowMainPage();
             Save(panel, Path.Combine(directory, "update-" + suffix + ".png"));
-            Theme.Colors = ColorTemplate.Blue;
             Theme.Panel = PanelTheme.Black;
             panel.ApplyTheme();
             Save(panel, Path.Combine(directory, "black-" + suffix + ".png"));
-            Theme.Colors = ColorTemplate.Green;
             Theme.Panel = PanelTheme.Graphite;
         }
     }

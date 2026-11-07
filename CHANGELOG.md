@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2
+
+- Blue is now the default color template, and Ring the default icon style
+- Gauge has a wider arc and a smaller number that stays clear of it
+- The weekly pace is now shown as a percentage
+
 ## 1.4.1
 
 - Slightly stronger blue in the Blue color template
