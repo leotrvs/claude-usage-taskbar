@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.6
+
+- The panel title is now Claude Usage
+- A thicker line around the Gauge number in the taskbar
+- The Classic mascot appears at its laptop in the selector
+
 ## 1.5.5
 
 - A stronger line around the Gauge number in the taskbar

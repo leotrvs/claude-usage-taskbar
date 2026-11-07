@@ -75,6 +75,7 @@ class UsagePanel : Form
     const int ActionsTop = 274;
     const int ActionHeight = 46;
     const int MascotHeight = 42;
+    const string PanelTitle = "Claude Usage";
     const int SpinTickMs = 40;
     const int SelectedFill = 70; // Strong enough to stay orange over the panel background.
     const int MotionTickMs = 15;
@@ -241,7 +242,7 @@ class UsagePanel : Form
     {
         if (style != MascotStyle.Classic) return PixelMascot.Render(style, MascotMood.Idle, 1, MascotPixel);
         using (Mascot classic = Mascot.Load(Px(MascotHeight)))
-            return classic != null ? new Bitmap(classic.CurrentFrame) : null;
+            return classic != null ? new Bitmap(classic.LaptopFrame) : null;
     }
 
     int MascotPixel
@@ -773,7 +774,7 @@ class UsagePanel : Form
 
     void PaintMainPage(Graphics g, int left, int right)
     {
-        Draw(g, App.Name, titleFont, Theme.Text, left, Px(14), right - left, TextFormatFlags.Left);
+        Draw(g, PanelTitle, titleFont, Theme.Text, left, Px(14), right - left, TextFormatFlags.Left);
         int mascotSpace = mascot != null ? mascot.CurrentFrame.Width + Px(8) : 0;
         if (updateVersion == null) Draw(g, state.Status, tinyFont, Theme.Muted, left, Px(35), right - left - mascotSpace, TextFormatFlags.Left);
         if (mascot != null && targets == mainTargets)

@@ -14,6 +14,7 @@ class Mascot : IMascot
     const int DefaultDelayMs = 100;
     const int MinimumDelayMs = 40;
     const int FrameDelayProperty = 0x5100;
+    const int LaptopFrameIndex = 24;
     const int EdgePasses = 2; // The dark outline is up to two pixels wide.
     const int BodyRed = 150; // Darker than this is outline, not the character's orange.
     const int LaptopGray = 80;
@@ -25,6 +26,7 @@ class Mascot : IMascot
 
     public int CurrentDelayMs { get { return delays[index]; } }
     public Bitmap CurrentFrame { get { return frames[index]; } }
+    public Bitmap LaptopFrame { get { return frames[LaptopFrameIndex]; } } // Shows the character at work, for the selector.
 
     public void Advance()
     {
