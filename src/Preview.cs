@@ -16,28 +16,51 @@ static class Preview
         RenderPanels(directory, Language.Portuguese, "pt-BR");
         RenderIconStyles(Path.Combine(directory, "icon-styles.png"));
         RenderMascots(Path.Combine(directory, "mascots.png"));
+        RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
     }
 
     static void RenderMascots(string path)
     {
-        MascotMood[] moods = { MascotMood.Sleep, MascotMood.Idle, MascotMood.Work, MascotMood.Tired, MascotMood.Down };
-        MascotStyle[] styles = { MascotStyle.Pixel, MascotStyle.Santa };
+        MascotMood[] moods =
+        {
+            MascotMood.Sleep, MascotMood.Idle, MascotMood.Work, MascotMood.Tired, MascotMood.Down,
+            MascotMood.Night, MascotMood.Waiting, MascotMood.Panic, MascotMood.Coffee, MascotMood.Juggle
+        };
+        DrawMascotSheet(path, moods, 5, MascotStyle.Pixel);
+    }
+
+    static void RenderOutfits(string path)
+    {
+        MascotStyle[] styles = { MascotStyle.Santa, MascotStyle.Headphones, MascotStyle.Chef };
         const int Pixel = 4;
         const int Width = 128;
         const int Height = 88;
         const int Gap = 16;
-        using (Bitmap sheet = new Bitmap(moods.Length * (Width + Gap) + Gap, styles.Length * (Height + Gap) + Gap))
+        using (Bitmap sheet = new Bitmap(styles.Length * (Width + Gap) + Gap, Height + Gap * 2))
         using (Graphics g = Graphics.FromImage(sheet))
         {
             g.Clear(Color.FromArgb(10, 10, 10));
-            for (int row = 0; row < styles.Length; row++)
-            {
-                for (int column = 0; column < moods.Length; column++)
-                {
-                    using (Bitmap frame = PixelMascot.Render(styles[row], moods[column], 3, Pixel))
-                        g.DrawImageUnscaled(frame, Gap + column * (Width + Gap), Gap + row * (Height + Gap));
-                }
-            }
+            for (int i = 0; i < styles.Length; i++)
+                using (Bitmap frame = PixelMascot.Render(styles[i], MascotMood.Idle, 3, Pixel))
+                    g.DrawImageUnscaled(frame, Gap + i * (Width + Gap), Gap);
+            sheet.Save(path, ImageFormat.Png);
+        }
+    }
+
+    static void DrawMascotSheet(string path, MascotMood[] moods, int columns, MascotStyle style)
+    {
+        const int Pixel = 4;
+        const int Width = 128;
+        const int Height = 88;
+        const int Gap = 16;
+        int rows = (moods.Length + columns - 1) / columns;
+        using (Bitmap sheet = new Bitmap(columns * (Width + Gap) + Gap, rows * (Height + Gap) + Gap))
+        using (Graphics g = Graphics.FromImage(sheet))
+        {
+            g.Clear(Color.FromArgb(10, 10, 10));
+            for (int i = 0; i < moods.Length; i++)
+                using (Bitmap frame = PixelMascot.Render(style, moods[i], 3, Pixel))
+                    g.DrawImageUnscaled(frame, Gap + i % columns * (Width + Gap), Gap + i / columns * (Height + Gap));
             sheet.Save(path, ImageFormat.Png);
         }
     }

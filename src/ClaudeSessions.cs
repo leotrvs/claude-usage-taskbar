@@ -8,6 +8,7 @@ class SessionActivity
 {
     public int Running;
     public int Busy;
+    public int Waiting;
 }
 
 // Claude Code keeps one small file per running session. Only its status is read, never its folder or name.
@@ -42,7 +43,9 @@ static class ClaudeSessions
         if (!IsRunning(Convert.ToInt32(Json.Get(session, "pid"), CultureInfo.InvariantCulture))) return; // Files outlive their process.
 
         activity.Running++;
-        if ("busy".Equals(Json.Get(session, "status"))) activity.Busy++;
+        object status = Json.Get(session, "status");
+        if ("busy".Equals(status)) activity.Busy++;
+        if ("waiting".Equals(status)) activity.Waiting++;
     }
 
     static bool IsRunning(int processId)

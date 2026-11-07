@@ -99,7 +99,7 @@ Por padrão, o painel mostra o mascote **Clássico** trabalhando no notebook:
 
 O mascote reage ao seu uso. O Clássico usa esta animação enquanto trabalha e os desenhos em pixels nos outros estados. Da esquerda para a direita:
 
-![Os estados do mascote, com e sem o gorro de Natal](docs/images/mascots.png)
+![Os estados do mascote](docs/images/mascots.png)
 
 | Estado | Quando |
 |---|---|
@@ -108,12 +108,21 @@ O mascote reage ao seu uso. O Clássico usa esta animação enquanto trabalha e 
 | Trabalhando no notebook | Uma sessão do Claude Code está trabalhando, ou a porcentagem subiu nos últimos 10 minutos |
 | Cansado e suando | Está trabalhando e um limite está em 90% ou mais |
 | Caído | Um limite chegou a 100% |
+| Dormindo de touca | Igual a dormindo, de madrugada |
+| Perguntando com uma interrogação | Uma sessão precisa da sua permissão ou resposta |
+| Em pânico | A previsão indica que o limite acaba em menos de 30 minutos |
+| Tomando café | Está trabalhando há mais de 2 horas |
+| Fazendo malabarismo | Três ou mais sessões trabalhando ao mesmo tempo |
+
+Ele também comemora quando um limite renova, acena quando você passa o mouse e reage ao clique.
 
 Em **Aparência** você escolhe o visual:
 
-- **Clássico:** a animação original enquanto trabalha, e a linha de cima nos outros estados. É o padrão.
-- **Pixel:** os desenhos da linha de cima.
-- **Natal:** o mesmo mascote com gorro de Papai Noel, na linha de baixo.
+- **Clássico:** a animação original enquanto trabalha, e os desenhos em pixels nos outros estados. É o padrão.
+- **Pixel:** os desenhos em pixels o tempo todo.
+- **Natal**, **Fone** e **Chef:** o mesmo mascote com um outfit. O Chef diz `im cooking` enquanto trabalha.
+
+![Os outfits de Natal, Fone e Chef](docs/images/mascot-outfits.png)
 
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 

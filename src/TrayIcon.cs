@@ -50,6 +50,23 @@ static class TrayIcon
         ".###./#...#/#...#/.###./#...#/#...#/.###.",
         ".###./#...#/#...#/.####/....#/....#/.###."
     };
+    // At 125% scaling the circle has room for taller digits, also with an odd width and height.
+    static readonly string[] LargePixelDigits =
+    {
+        ".###./#...#/#...#/#...#/#...#/#...#/#...#/#...#/.###.",
+        "..#../.##../..#../..#../..#../..#../..#../..#../#####",
+        ".###./#...#/....#/....#/...#./..#../.#.../#..../#####",
+        "####./....#/....#/....#/.###./....#/....#/....#/####.",
+        "#...#/#...#/#...#/#...#/#####/....#/....#/....#/....#",
+        "#####/#..../#..../#..../####./....#/....#/....#/####.",
+        ".###./#..../#..../#..../####./#...#/#...#/#...#/.###.",
+        "#####/....#/....#/...#./...#./..#../..#../..#../..#..",
+        ".###./#...#/#...#/#...#/.###./#...#/#...#/#...#/.###.",
+        ".###./#...#/#...#/#...#/.####/....#/....#/....#/.###."
+    };
+    const string LargeNarrowOne = "#/#/#/#/#/#/#/#/#";
+    const string LargeNarrowZero = ".##./#..#/#..#/#..#/#..#/#..#/#..#/#..#/.##.";
+    const int LargeDigitsFrom = 19;
     const string PixelUnknown = ".###./#...#/....#/...#./..#../...../..#..";
     const string NarrowOne = "#/#/#/#/#/#/#"; // 100 has no room for full digits.
     const string NarrowZero = "###/#.#/#.#/#.#/#.#/#.#/###";
@@ -153,7 +170,7 @@ static class TrayIcon
 
     static void DrawPixelNumber(Graphics g, int? percent, Color color, int size)
     {
-        string[] glyphs = PixelGlyphs(percent);
+        string[] glyphs = size >= LargeDigitsFrom ? LargePixelGlyphs(percent) : PixelGlyphs(percent);
         int width = glyphs.Length - 1;
         foreach (string glyph in glyphs) width += glyph.IndexOf('/');
         int height = glyphs[0].Split('/').Length;
@@ -172,6 +189,15 @@ static class TrayIcon
                 x += rows[0].Length + 1;
             }
         }
+    }
+
+    static string[] LargePixelGlyphs(int? percent)
+    {
+        if (!percent.HasValue) return new[] { PixelUnknown };
+        int value = Math.Max(0, Math.Min(100, percent.Value));
+        if (value == 100) return new[] { LargeNarrowOne, LargeNarrowZero, LargeNarrowZero };
+        if (value < 10) return new[] { LargePixelDigits[value] };
+        return new[] { LargePixelDigits[value / 10], LargePixelDigits[value % 10] };
     }
 
     static string[] PixelGlyphs(int? percent)

@@ -100,7 +100,7 @@ De forma predeterminada, el panel muestra la mascota **Classic** trabajando en s
 
 La mascota reacciona a tu uso. Classic usa esta animación mientras trabaja y los dibujos pixelados en los demás estados. De izquierda a derecha:
 
-![Los estados de la mascota, con y sin el gorro navideño](docs/images/mascots.png)
+![Los estados de la mascota](docs/images/mascots.png)
 
 | Estado | Cuándo |
 |---|---|
@@ -109,12 +109,21 @@ La mascota reacciona a tu uso. Classic usa esta animación mientras trabaja y lo
 | Trabajando en su portátil | Una sesión de Claude Code está trabajando, o el porcentaje subió en los últimos 10 minutos |
 | Cansada y sudando | Está trabajando y un límite está al 90% o más |
 | Caída | Un límite llegó al 100% |
+| Durmiendo con gorro | Igual que durmiendo, de madrugada |
+| Preguntando con un signo de interrogación | Una sesión necesita tu permiso o tu respuesta |
+| En pánico | La previsión indica que el límite se agotará en menos de 30 minutos |
+| Tomando café | Lleva más de 2 horas trabajando |
+| Haciendo malabares | Tres o más sesiones trabajando a la vez |
+
+También celebra cuando un límite se renueva, saluda al pasar el ratón y reacciona al hacer clic.
 
 En **Appearance** puedes elegir el aspecto:
 
-- **Classic:** la animación original mientras trabaja, y la fila superior en los demás estados. Es la predeterminada.
-- **Pixel:** los dibujos de la fila superior.
-- **Christmas:** la misma mascota con gorro de Papá Noel, en la fila inferior.
+- **Classic:** la animación original mientras trabaja, y los dibujos pixelados en los demás estados. Es la predeterminada.
+- **Pixel:** los dibujos pixelados todo el tiempo.
+- **Christmas**, **Headphones** y **Chef:** la misma mascota con un atuendo. El Chef dice `im cooking` mientras trabaja.
+
+![Los atuendos Christmas, Headphones y Chef](docs/images/mascot-outfits.png)
 
 Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y el personaje pertenece a sus dueños. La licencia MIT no lo cubre.
 

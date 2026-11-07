@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0
+
+- New mascot reactions: waiting for you, panicking near the limit, drinking coffee on long work, juggling sessions and sleeping in a nightcap
+- The mascot celebrates when a limit renews, waves on hover and reacts to a click
+- New Headphones and Chef outfits
+- The pixel mascot closes its laptop from time to time, so it does not hide the face
+- Larger taskbar numbers at 125% display scaling
+
 ## 1.5.9
 
 - A redesigned right-click menu, with rounded corners, icons and light animations

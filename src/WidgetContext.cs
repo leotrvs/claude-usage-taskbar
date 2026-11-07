@@ -18,6 +18,7 @@ class WidgetContext : ApplicationContext
     const int OutOfDateMinutes = 6;
     const int RenewedFromPercent = 90;
     const int RenewedDrop = 50;
+    const int BusyBreakMinutes = 10; // A longer pause starts a new stretch of work.
     const int MinimumManualCheckMs = 900; // Long enough to see the icon turn on a fast connection.
 
     readonly UsagePanel panel;
@@ -37,6 +38,8 @@ class WidgetContext : ApplicationContext
     int lastProbeTick = Environment.TickCount - ShortestProbeGapMs;
     int? lastSessionPercent;
     int? lastWeeklyPercent;
+    DateTime? busySince;
+    DateTime lastBusy;
     readonly TrayMenu trayMenu;
 
     public WidgetContext(WaitHandle showEvent, bool showPanelNow)
@@ -119,11 +122,27 @@ class WidgetContext : ApplicationContext
         panel.ShowSettingsPage();
     }
 
-    // The panel is the only place this shows, so it is read only while open.
+    // Every few seconds while the panel is open, and once a minute with it closed to keep the work time right.
     void RefreshSessions()
     {
-        current.Sessions = ClaudeSessions.Read();
+        ReadSessions(current);
         panel.RefreshMascot();
+    }
+
+    void ReadSessions(PanelState state)
+    {
+        state.Sessions = ClaudeSessions.Read();
+        DateTime now = DateTime.Now;
+        if (state.Sessions.Busy > 0)
+        {
+            lastBusy = now;
+            if (!busySince.HasValue) busySince = now;
+        }
+        else if (busySince.HasValue && (now - lastBusy).TotalMinutes > BusyBreakMinutes)
+        {
+            busySince = null;
+        }
+        state.BusyMinutes = busySince.HasValue ? (now - busySince.Value).TotalMinutes : 0;
     }
 
     // The result lands in the usage file, which the file timer picks up.
@@ -182,9 +201,10 @@ class WidgetContext : ApplicationContext
             if (next.OutOfDate) next.Status += " · " + Localization.T("outOfDate");
             next.History = UsageStore.LoadHistory();
             next.SessionPace = PaceEstimator.DescribeSession(next.Session, next.History, DateTime.Now);
+            next.MinutesToLimit = PaceEstimator.MinutesToLimit(next.Session, next.History, DateTime.Now);
             next.WeeklyPace = PaceEstimator.DescribeWeekly(next.Weekly, DateTime.Now);
         }
-        next.Sessions = current.Sessions;
+        ReadSessions(next);
         current = next;
         Render();
         CheckRenewed("session", current.Session, ref lastSessionPercent, sessionSlot);
@@ -200,6 +220,7 @@ class WidgetContext : ApplicationContext
         int? before = last;
         last = window.Percent;
         if (!before.HasValue || before.Value < RenewedFromPercent || window.Percent.Value > before.Value - RenewedDrop) return;
+        panel.PlayMascot(MascotAction.Celebrate);
         if (!Settings.Notifications) return;
 
         TraySlot target = slot.IsShown ? slot : (sessionSlot.IsShown ? sessionSlot : weeklySlot);

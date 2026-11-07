@@ -17,29 +17,52 @@ static class PaceEstimator
     // heavy burst from predicting doom, and a pause from hiding a limit that is close.
     public static string DescribeSession(UsageWindow window, List<UsageSample> samples, DateTime now)
     {
-        if (!window.Percent.HasValue || !window.ResetsAt.HasValue) return null;
+        double minutesToLimit;
+        double remaining;
+        double rate;
+        if (!Forecast(window, samples, now, out minutesToLimit, out remaining, out rate)) return null;
+
+        if (minutesToLimit < remaining)
+            return Localization.T("paceLimit", now.AddMinutes(minutesToLimit).ToString("HH:mm", Localization.Culture));
+        return Localization.T("paceReset", (int)Math.Round(window.Percent.Value + rate * remaining));
+    }
+
+    // Set only when the limit would be reached before the window resets.
+    public static double? MinutesToLimit(UsageWindow window, List<UsageSample> samples, DateTime now)
+    {
+        double minutesToLimit;
+        double remaining;
+        double rate;
+        if (!Forecast(window, samples, now, out minutesToLimit, out remaining, out rate)) return null;
+        return minutesToLimit < remaining ? (double?)minutesToLimit : null;
+    }
+
+    static bool Forecast(UsageWindow window, List<UsageSample> samples, DateTime now, out double minutesToLimit, out double remaining, out double rate)
+    {
+        minutesToLimit = 0;
+        remaining = 0;
+        rate = 0;
+        if (!window.Percent.HasValue || !window.ResetsAt.HasValue) return false;
         double percent = window.Percent.Value;
         DateTime resetsAt = window.ResetsAt.Value;
         DateTime start = resetsAt.AddHours(-SessionHours);
         double elapsed = (now - start).TotalMinutes;
-        double remaining = (resetsAt - now).TotalMinutes;
-        if (percent < MinimumPercent || elapsed <= 0 || remaining <= 0) return null;
+        remaining = (resetsAt - now).TotalMinutes;
+        if (percent < MinimumPercent || elapsed <= 0 || remaining <= 0) return false;
 
         List<UsageSample> inWindow = samples.FindAll(delegate(UsageSample s) { return s.Time >= start; });
-        if (inWindow.Count < MinimumSamples) return null;
-        if ((inWindow[inWindow.Count - 1].Time - inWindow[0].Time).TotalMinutes < MinimumSpanMinutes) return null;
+        if (inWindow.Count < MinimumSamples) return false;
+        if ((inWindow[inWindow.Count - 1].Time - inWindow[0].Time).TotalMinutes < MinimumSpanMinutes) return false;
 
         double average = percent / elapsed;
         DateTime recentStart = now.AddMinutes(-RecentWindowMinutes);
         List<UsageSample> recent = inWindow.FindAll(delegate(UsageSample s) { return s.Time >= recentStart; });
         double trend = recent.Count >= MinimumSamples ? Math.Max(0, Slope(recent)) : average;
-        double rate = (average + trend) / 2;
-        if (rate <= 0) return null;
+        rate = (average + trend) / 2;
+        if (rate <= 0) return false;
 
-        double minutesToLimit = (100 - percent) / rate;
-        if (minutesToLimit < remaining)
-            return Localization.T("paceLimit", now.AddMinutes(minutesToLimit).ToString("HH:mm", Localization.Culture));
-        return Localization.T("paceReset", (int)Math.Round(percent + rate * remaining));
+        minutesToLimit = (100 - percent) / rate;
+        return true;
     }
 
     public static string DescribeWeekly(UsageWindow window, DateTime now)

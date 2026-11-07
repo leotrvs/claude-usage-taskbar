@@ -99,7 +99,7 @@ By default, the panel shows the **Classic** mascot working on its laptop:
 
 The mascot reacts to your usage. Classic uses this animation while working and the pixel drawings otherwise. From left to right:
 
-![The mascot's moods, with and without the Christmas hat](docs/images/mascots.png)
+![The mascot's moods](docs/images/mascots.png)
 
 | Mood | When |
 |---|---|
@@ -108,12 +108,21 @@ The mascot reacts to your usage. Classic uses this animation while working and t
 | Working on its laptop | A Claude Code session is working, or the session percentage rose in the last 10 minutes |
 | Tired and sweating | It is working and a limit is at 90% or more |
 | Fallen over | A limit reached 100% |
+| Sleeping in a nightcap | The same as sleeping, late at night |
+| Asking with a question mark | A session needs your permission or an answer |
+| Panicking | The forecast says the limit will run out in under 30 minutes |
+| Drinking coffee | It has been working for over 2 hours |
+| Juggling | Three or more sessions are working at once |
+
+It also celebrates when a limit renews, waves when you hover over it and reacts when you click it.
 
 Under **Appearance** you can choose the look:
 
-- **Classic:** the original animation while working, and the top row otherwise. This is the default.
-- **Pixel:** the drawings on the top row.
-- **Christmas:** the same mascot with a Santa hat, shown on the bottom row.
+- **Classic:** the original animation while working, and the pixel drawings otherwise. This is the default.
+- **Pixel:** the pixel drawings all the time.
+- **Christmas**, **Headphones** and **Chef:** the same mascot with an outfit. The Chef says `im cooking` while it works.
+
+![The Christmas, Headphones and Chef outfits](docs/images/mascot-outfits.png)
 
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 

@@ -12,12 +12,17 @@ class ClassicMascot : IReactiveMascot
         this.other = other;
     }
 
-    IMascot Active { get { return other.Mood == MascotMood.Work ? (IMascot)working : other; } }
+    IMascot Active { get { return other.Mood == MascotMood.Work && !other.IsPlaying ? (IMascot)working : other; } }
 
     public MascotMood Mood
     {
         get { return other.Mood; }
         set { other.Mood = value; }
+    }
+
+    public void Play(MascotAction action)
+    {
+        other.Play(action);
     }
 
     public Bitmap CurrentFrame { get { return Active.CurrentFrame; } }
@@ -26,6 +31,7 @@ class ClassicMascot : IReactiveMascot
     public void Advance()
     {
         Active.Advance();
+        if (Active != other && other.IsPlaying) other.Advance();
     }
 
     public void Dispose()

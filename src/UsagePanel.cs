@@ -19,6 +19,8 @@ class PanelState
     public string WeeklyPace;
     public List<UsageSample> History = new List<UsageSample>();
     public SessionActivity Sessions = new SessionActivity();
+    public double BusyMinutes;
+    public double? MinutesToLimit;
 }
 
 class PanelCallbacks
@@ -67,7 +69,7 @@ class UsagePanel : Form
     const int LogicalWidth = 300;
     const int MainHeight = 328;
     const int SettingsHeight = 394;
-    const int AppearanceHeight = 352;
+    const int AppearanceHeight = 432;
     const int SessionTop = 62;
     const int WeeklyTop = 132;
     const int WeeklyTopWithoutPace = 118; // Moves up into the line the session pace would use.
@@ -78,6 +80,7 @@ class UsagePanel : Form
     const int ActionHeight = 46;
     const int MascotHeight = 42;
     const string PanelTitle = "Claude Usage";
+    const string ChefBalloon = "im cooking"; // Slang, kept the same in every language.
     const int SpinTickMs = 40;
     const int SelectedFill = 70; // Strong enough to stay orange over the panel background.
     const int MotionTickMs = 15;
@@ -134,6 +137,8 @@ class UsagePanel : Form
     PanelTarget updateRow;
     UpdatePhase updatePhase;
     string updateVersion;
+    MascotAction? pendingMascotAction;
+    bool overMascot;
     DateTime updateCheckedAt;
 
     public UsagePanel(PanelCallbacks callbacks)
@@ -225,17 +230,19 @@ class UsagePanel : Form
         AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 1, callbacks);
         AddPanelThemeChip(PanelTheme.Black, "panelBlack", 2, callbacks);
         AddPanelThemeChip(PanelTheme.Light, "panelLight", 3, callbacks);
-        AddMascotChip(MascotStyle.Classic, "mascotClassic", 0, callbacks);
-        AddMascotChip(MascotStyle.Pixel, "mascotPixel", 1, callbacks);
-        AddMascotChip(MascotStyle.Santa, "mascotSanta", 2, callbacks);
+        AddMascotChip(MascotStyle.Classic, "mascotClassic", 0, 0, callbacks);
+        AddMascotChip(MascotStyle.Pixel, "mascotPixel", 1, 0, callbacks);
+        AddMascotChip(MascotStyle.Santa, "mascotSanta", 2, 0, callbacks);
+        AddMascotChip(MascotStyle.Headphones, "mascotHeadphones", 0, 1, callbacks);
+        AddMascotChip(MascotStyle.Chef, "mascotChef", 1, 1, callbacks);
     }
 
-    void AddMascotChip(MascotStyle value, string labelKey, int column, PanelCallbacks callbacks)
+    void AddMascotChip(MascotStyle value, string labelKey, int column, int row, PanelCallbacks callbacks)
     {
         PanelTarget chip = new PanelTarget();
         chip.LabelKey = labelKey;
         chip.Picture = MascotPicture(value);
-        chip.Bounds = ChipBounds(column, 3, 268, 72);
+        chip.Bounds = ChipBounds(column, 3, 268 + row * 80, 72);
         chip.Selected = delegate { return mascotStyle == value; };
         chip.Run = delegate { callbacks.ChangeMascot(value); };
         appearanceTargets.Add(chip);
@@ -345,6 +352,31 @@ class UsagePanel : Form
     public void RefreshMascot()
     {
         ApplyMascotMood();
+    }
+
+    // Waits for the panel to open, so a reaction that happened in the background is still seen.
+    public void PlayMascot(MascotAction action)
+    {
+        pendingMascotAction = action;
+        if (Visible) PlayPendingMascotAction();
+    }
+
+    void PlayPendingMascotAction()
+    {
+        IReactiveMascot reactive = mascot as IReactiveMascot;
+        if (reactive == null || !pendingMascotAction.HasValue) return;
+        reactive.Play(pendingMascotAction.Value);
+        pendingMascotAction = null;
+    }
+
+    Rectangle MascotArea
+    {
+        get
+        {
+            if (mascot == null) return Rectangle.Empty;
+            Bitmap frame = mascot.CurrentFrame;
+            return new Rectangle(ClientSize.Width - Px(18) - frame.Width, Px(14), frame.Width, frame.Height);
+        }
     }
 
     public void ChangeMascot(MascotStyle style)
@@ -667,6 +699,7 @@ class UsagePanel : Form
     void StartMascot()
     {
         if (mascot == null) return;
+        PlayPendingMascotAction();
         mascotTimer.Interval = mascot.CurrentDelayMs;
         mascotTimer.Start();
     }
@@ -714,6 +747,10 @@ class UsagePanel : Form
     protected override void OnMouseMove(MouseEventArgs e)
     {
         base.OnMouseMove(e);
+        bool onMascot = targets == mainTargets && MascotArea.Contains(e.Location);
+        if (onMascot && !overMascot) PlayMascot(MascotAction.Wave);
+        overMascot = onMascot;
+
         int chartX = targets == mainTargets && ChartArea.Contains(e.Location) ? e.X : -1;
         if (chartX != chartHoverX)
         {
@@ -739,6 +776,7 @@ class UsagePanel : Form
     protected override void OnMouseClick(MouseEventArgs e)
     {
         base.OnMouseClick(e);
+        if (overMascot) PlayMascot(MascotAction.Pet);
         if (hovered < 0) return;
         targets[hovered].Run();
         StartMotion();
@@ -802,12 +840,43 @@ class UsagePanel : Form
         {
             Bitmap frame = mascot.CurrentFrame;
             g.DrawImageUnscaled(frame, right - frame.Width, Px(14));
+            if (ChefIsWorking) DrawChefBalloon(g, right - frame.Width);
         }
         DrawLimit(g, Localization.T("session"), state.Session, state.SessionPace, true, Px(SessionTop), left, right);
         DrawLimit(g, Localization.T("weekly"), state.Weekly, state.WeeklyPace, false, Px(state.SessionPace != null ? WeeklyTop : WeeklyTopWithoutPace), left, right);
         Draw(g, Localization.T("history"), tinyFont, Theme.Muted, left, Px(HistoryTop), right - left, TextFormatFlags.Left);
         DrawChart(g, ChartArea);
         DrawDivider(g, Px(DividerTop));
+    }
+
+    bool ChefIsWorking
+    {
+        get
+        {
+            IReactiveMascot reactive = mascot as IReactiveMascot;
+            if (mascotStyle != MascotStyle.Chef || reactive == null) return false;
+            return reactive.Mood == MascotMood.Work || reactive.Mood == MascotMood.Tired || reactive.Mood == MascotMood.Coffee;
+        }
+    }
+
+    void DrawChefBalloon(Graphics g, int mascotLeft)
+    {
+        Size text = TextRenderer.MeasureText(ChefBalloon, tinyFont, Size.Empty, TextFormatFlags.NoPadding);
+        Rectangle bubble = new Rectangle(mascotLeft + Px(8) - text.Width - Px(12), Px(12), text.Width + Px(12), text.Height + Px(6));
+        Point[] tail =
+        {
+            new Point(bubble.Right - Px(10), bubble.Bottom - Px(1)),
+            new Point(bubble.Right - Px(3), bubble.Bottom - Px(1)),
+            new Point(bubble.Right - Px(1), bubble.Bottom + Px(5))
+        };
+        using (GraphicsPath path = Theme.Rounded(bubble, Px(6)))
+        using (Brush brush = new SolidBrush(Theme.Text))
+        {
+            g.FillPath(brush, path);
+            g.FillPolygon(brush, tail);
+        }
+        TextRenderer.DrawText(g, ChefBalloon, tinyFont, bubble, Theme.Background,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
     }
 
     Rectangle ChartArea
