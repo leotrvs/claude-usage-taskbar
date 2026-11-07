@@ -16,6 +16,8 @@ class WidgetContext : ApplicationContext
     const int ProbeIntervalMs = 2 * 60 * 1000;
     const int ShortestProbeGapMs = 30 * 1000; // Opening the panel repeatedly reads once.
     const int OutOfDateMinutes = 6;
+    const int RenewedFromPercent = 90;
+    const int RenewedDrop = 50;
     const int MinimumManualCheckMs = 900; // Long enough to see the icon turn on a fast connection.
 
     readonly UsagePanel panel;
@@ -33,6 +35,9 @@ class WidgetContext : ApplicationContext
     bool updateBusy;
     int probing;
     int lastProbeTick = Environment.TickCount - ShortestProbeGapMs;
+    int? lastSessionPercent;
+    int? lastWeeklyPercent;
+    readonly TrayMenu trayMenu;
 
     public WidgetContext(WaitHandle showEvent, bool showPanelNow)
     {
@@ -57,14 +62,22 @@ class WidgetContext : ApplicationContext
         panel.VisibleChanged += delegate
         {
             InstallWaitingUpdate();
-            if (panel.Visible) ReadUsage();
+            if (!panel.Visible) return;
+            ReadUsage(false);
+            RefreshSessions();
         };
         IntPtr ensureHandle = panel.Handle; // BeginInvoke needs it before the first Show.
         GC.KeepAlive(ensureHandle);
 
         SystemEvents.UserPreferenceChanged += OnSystemPreferenceChanged;
-        sessionSlot = new TraySlot(true, OnTrayMouseUp);
-        weeklySlot = new TraySlot(false, OnTrayMouseUp);
+        TrayMenuActions menuActions = new TrayMenuActions();
+        menuActions.OpenPanel = delegate { LaterOnPanel(panel.ShowPanel); };
+        menuActions.Refresh = delegate { ReadUsage(true); };
+        menuActions.OpenSettings = delegate { LaterOnPanel(OpenSettings); };
+        menuActions.Quit = ExitThread;
+        trayMenu = new TrayMenu(menuActions);
+        sessionSlot = new TraySlot(true, OnTrayMouseUp, trayMenu);
+        weeklySlot = new TraySlot(false, OnTrayMouseUp, trayMenu);
         Reload();
         NotifyIfUpdated();
 
@@ -90,19 +103,38 @@ class WidgetContext : ApplicationContext
 
     void OnTrayMouseUp(object sender, MouseEventArgs e)
     {
-        if (e.Button == MouseButtons.Right || e.Button == MouseButtons.Left) panel.Toggle();
+        if (e.Button == MouseButtons.Left) panel.Toggle();
+    }
+
+    // Runs after the menu has closed, so it does not take the focus from the panel.
+    void LaterOnPanel(Action action)
+    {
+        panel.BeginInvoke(action);
+    }
+
+    void OpenSettings()
+    {
+        panel.ShowPanel();
+        panel.ShowSettingsPage();
+    }
+
+    // The panel is the only place this shows, so it is read only while open.
+    void RefreshSessions()
+    {
+        current.Sessions = ClaudeSessions.Read();
+        panel.RefreshMascot();
     }
 
     // The result lands in the usage file, which the file timer picks up.
     void OnProbeTimer()
     {
         probeTimer.Interval = ProbeIntervalMs;
-        ReadUsage();
+        ReadUsage(false);
     }
 
-    void ReadUsage()
+    void ReadUsage(bool now)
     {
-        if (Environment.TickCount - lastProbeTick < ShortestProbeGapMs) return;
+        if (!now && Environment.TickCount - lastProbeTick < ShortestProbeGapMs) return;
         if (!ClaudeCodeConnection.IsConnected) return;
         if (Interlocked.CompareExchange(ref probing, 1, 0) != 0) return;
         lastProbeTick = Environment.TickCount;
@@ -125,6 +157,7 @@ class WidgetContext : ApplicationContext
     {
         DateTime written = UsageStore.LastWriteUtc;
         if (written != lastFileWrite || ++ticksSinceRender >= MinuteInTicks) Reload();
+        if (panel.Visible) RefreshSessions();
     }
 
     void Reload()
@@ -150,10 +183,26 @@ class WidgetContext : ApplicationContext
             next.SessionPace = PaceEstimator.DescribeSession(next.Session, next.History, DateTime.Now);
             next.WeeklyPace = PaceEstimator.DescribeWeekly(next.Weekly, DateTime.Now);
         }
+        next.Sessions = current.Sessions;
         current = next;
         Render();
+        CheckRenewed("session", current.Session, ref lastSessionPercent, sessionSlot);
+        CheckRenewed("weekly", current.Weekly, ref lastWeeklyPercent, weeklySlot);
         CheckAlert("Session", "session", current.Session, sessionSlot);
         CheckAlert("Weekly", "weekly", current.Weekly, weeklySlot);
+    }
+
+    // A big drop from near the limit means its period has ended.
+    void CheckRenewed(string labelKey, UsageWindow window, ref int? last, TraySlot slot)
+    {
+        if (!window.Percent.HasValue) return;
+        int? before = last;
+        last = window.Percent;
+        if (!before.HasValue || before.Value < RenewedFromPercent || window.Percent.Value > before.Value - RenewedDrop) return;
+        if (!Settings.Notifications) return;
+
+        TraySlot target = slot.IsShown ? slot : (sessionSlot.IsShown ? sessionSlot : weeklySlot);
+        target.NotifyInfo(Localization.T("renewedTitle", Localization.T(labelKey)), Localization.T("renewedBody"));
     }
 
     // Alerts once per limit period at each level, on an icon that is visible.
@@ -345,6 +394,7 @@ class WidgetContext : ApplicationContext
         updateTimer.Dispose();
         probeTimer.Dispose();
         showWait.Unregister(null);
+        trayMenu.Dispose();
         sessionSlot.Dispose();
         weeklySlot.Dispose();
         panel.Dispose();

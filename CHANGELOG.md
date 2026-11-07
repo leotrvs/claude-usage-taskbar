@@ -3,6 +3,10 @@
 ## 1.5.8
 
 - Auto is now the default theme
+- A notification tells you when a limit near 100% renews
+- Right-clicking an icon opens a menu with Open panel, Refresh now, Settings and Quit
+- The Classic mascot now reacts to your usage
+- The mascot follows your open Claude Code sessions
 - Opening the panel reads your usage right away
 - The update time turns yellow and says out of date when readings stop working
 - The panel says when Claude Code cannot be found

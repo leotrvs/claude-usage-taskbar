@@ -18,6 +18,7 @@ class PanelState
     public string SessionPace;
     public string WeeklyPace;
     public List<UsageSample> History = new List<UsageSample>();
+    public SessionActivity Sessions = new SessionActivity();
 }
 
 class PanelCallbacks
@@ -337,8 +338,13 @@ class UsagePanel : Form
 
     void ApplyMascotMood()
     {
-        PixelMascot pixelMascot = mascot as PixelMascot;
-        if (pixelMascot != null) pixelMascot.Mood = PixelMascot.MoodFor(state, DateTime.Now);
+        IReactiveMascot reactive = mascot as IReactiveMascot;
+        if (reactive != null) reactive.Mood = PixelMascot.MoodFor(state, DateTime.Now);
+    }
+
+    public void RefreshMascot()
+    {
+        ApplyMascotMood();
     }
 
     public void ChangeMascot(MascotStyle style)
@@ -668,9 +674,16 @@ class UsagePanel : Form
     public void LoadMascot()
     {
         if (mascot != null) return;
-        if (mascotStyle == MascotStyle.Classic) mascot = Mascot.Load(Px(MascotHeight));
-        else mascot = new PixelMascot(mascotStyle, MascotPixel);
+        mascot = NewMascot();
         ApplyMascotMood();
+    }
+
+    IMascot NewMascot()
+    {
+        if (mascotStyle != MascotStyle.Classic) return new PixelMascot(mascotStyle, MascotPixel);
+        PixelMascot other = new PixelMascot(MascotStyle.Pixel, MascotPixel);
+        Mascot working = Mascot.Load(Px(MascotHeight));
+        return working != null ? (IMascot)new ClassicMascot(working, other) : other;
     }
 
     void AdvanceMascot()

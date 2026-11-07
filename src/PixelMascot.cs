@@ -12,8 +12,13 @@ interface IMascot : IDisposable
     void Advance();
 }
 
+interface IReactiveMascot : IMascot
+{
+    MascotMood Mood { get; set; }
+}
+
 // The panel character drawn from code, so it can react to usage and wear an outfit.
-class PixelMascot : IMascot
+class PixelMascot : IReactiveMascot
 {
     const int Columns = 32;
     const int Rows = 22;
@@ -98,21 +103,23 @@ class PixelMascot : IMascot
         frame = next;
     }
 
-    // The status line reports percentages only, so work is read from the session percentage rising.
+    // Open sessions say what is happening on this PC. A rising percentage also catches use elsewhere, like claude.ai.
     public static MascotMood MoodFor(PanelState state, DateTime now)
     {
         if (state.Stale) return MascotMood.Sleep;
         int highest = Math.Max(state.Session.Percent ?? 0, state.Weekly.Percent ?? 0);
         if (highest >= FullPercent) return MascotMood.Down;
 
-        DateTime? lastRise = null;
-        for (int i = state.History.Count - 1; i > 0 && !lastRise.HasValue; i--)
-            if (state.History[i].Session > state.History[i - 1].Session) lastRise = state.History[i].Time;
-        if (!lastRise.HasValue) return MascotMood.Sleep;
+        double minutes = double.MaxValue;
+        for (int i = state.History.Count - 1; i > 0; i--)
+        {
+            if (state.History[i].Session <= state.History[i - 1].Session) continue;
+            minutes = (now - state.History[i].Time).TotalMinutes;
+            break;
+        }
 
-        double minutes = (now - lastRise.Value).TotalMinutes;
-        if (minutes <= WorkingMinutes) return highest >= TiredPercent ? MascotMood.Tired : MascotMood.Work;
-        return minutes <= RestingMinutes ? MascotMood.Idle : MascotMood.Sleep;
+        if (state.Sessions.Busy > 0 || minutes <= WorkingMinutes) return highest >= TiredPercent ? MascotMood.Tired : MascotMood.Work;
+        return state.Sessions.Running > 0 || minutes <= RestingMinutes ? MascotMood.Idle : MascotMood.Sleep;
     }
 
     public static Bitmap Render(MascotStyle style, MascotMood mood, int tick, int pixel)

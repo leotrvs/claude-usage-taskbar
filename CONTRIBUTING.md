@@ -29,6 +29,8 @@ The hooks stop commits and pushes that contain secrets or personal data. To add 
 |---|---|
 | `src\StatusLineBridge.cs` | Receives Claude Code data and keeps only the limits |
 | `src\UsageProbe.cs` | Reads the limits from Claude Code's `/usage` command |
+| `src\ClaudeSessions.cs` | Counts running and busy Claude Code sessions for the mascot |
+| `src\TrayMenu.cs` | The right-click menu of the taskbar icons |
 | `src\ClaudeCodeConnection.cs` | Changes the `statusLine` entry |
 | `src\UsagePanel.cs` | The panel |
 | `src\TrayIcon.cs` | Taskbar icons |

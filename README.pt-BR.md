@@ -48,7 +48,7 @@ Não é preciso deixar um terminal aberto.
 
 1. **Leia os ícones.** O limite de 5 horas tem número branco, e o semanal tem número colorido. A cor muda em 70% e fica vermelha em 90%.
 2. **Passe o mouse** sobre um ícone para ver o percentual e o horário de reinício.
-3. **Clique** em um ícone para abrir o painel. Clique fora dele ou aperte **Esc** para fechar.
+3. **Clique** em um ícone para abrir o painel. Clique fora dele ou aperte **Esc** para fechar. **Clique com o botão direito** em um ícone para ver o menu com **Abrir painel**, **Atualizar agora**, **Configurações** e **Encerrar**.
 4. **Escolha o estilo do ícone** em **Aparência**.
 5. **Abra Configurações** no painel para o resto, e **Aparência** para cores e mascote.
 
@@ -92,22 +92,22 @@ Por padrão, o painel mostra o mascote **Clássico** trabalhando no notebook:
 
 <img src="assets/mascots/default.gif" alt="O mascote Clássico trabalhando no notebook" width="200">
 
-Escolha **Pixel** ou **Natal** e ele reage ao seu uso. Da esquerda para a direita:
+O mascote reage ao seu uso. O Clássico usa esta animação enquanto trabalha e os desenhos em pixels nos outros estados. Da esquerda para a direita:
 
 ![Os estados do mascote, com e sem o gorro de Natal](docs/images/mascots.png)
 
 | Estado | Quando |
 |---|---|
-| Dormindo | Sem uso há mais de 45 minutos, ou ainda sem dados |
-| Descansando | O último uso foi entre 10 e 45 minutos atrás |
-| Trabalhando no notebook | A porcentagem da sessão subiu nos últimos 10 minutos |
+| Dormindo | Sem sessão aberta e sem uso recente, ou ainda sem dados |
+| Descansando | Há uma sessão aberta e parada, ou o último uso foi há menos de 45 minutos |
+| Trabalhando no notebook | Uma sessão do Claude Code está trabalhando, ou a porcentagem subiu nos últimos 10 minutos |
 | Cansado e suando | Está trabalhando e um limite está em 90% ou mais |
 | Caído | Um limite chegou a 100% |
 
 Em **Aparência** você escolhe o visual:
 
-- **Clássico:** a animação original, que não reage ao uso. É o padrão.
-- **Pixel:** o mascote que reage ao uso, na linha de cima.
+- **Clássico:** a animação original enquanto trabalha, e a linha de cima nos outros estados. É o padrão.
+- **Pixel:** os desenhos da linha de cima.
 - **Natal:** o mesmo mascote com gorro de Papai Noel, na linha de baixo.
 
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
@@ -127,7 +127,7 @@ Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o persona
 | Ícones exibidos | Os dois limites, só 5 horas ou só semanal |
 | Iniciar com o Windows | Abre o app quando você entra no Windows |
 | Atualizações automáticas | Instala sozinho as atualizações assinadas |
-| Notificações | Alertas em 80% e 90% de um limite, e aviso quando uma atualização é instalada |
+| Notificações | Alertas em 80% e 90% de um limite, e avisos quando um limite renova ou uma atualização é instalada |
 | Conectado ao Claude Code | Liga ou desliga a conexão |
 | Verificar atualizações | Procura uma atualização agora. O ícone gira enquanto verifica e vira um símbolo de baixar quando há uma pronta |
 

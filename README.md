@@ -48,7 +48,7 @@ You do not need to keep a terminal open.
 
 1. **Read the icons.** The 5-hour limit has a white number and the weekly limit has a colored number. The color changes at 70% and turns red at 90%.
 2. **Hover** over an icon to see the percentage and reset time.
-3. **Click** an icon to open the panel. Click outside it or press **Esc** to close it.
+3. **Click** an icon to open the panel. Click outside it or press **Esc** to close it. **Right-click** an icon for a menu with **Open panel**, **Refresh now**, **Settings** and **Quit**.
 4. **Choose an icon style** under **Appearance**.
 5. **Open Settings** in the panel for everything else, and **Appearance** for colors and the mascot.
 
@@ -92,22 +92,22 @@ By default, the panel shows the **Classic** mascot working on its laptop:
 
 <img src="assets/mascots/default.gif" alt="The Classic mascot working on its laptop" width="200">
 
-Choose **Pixel** or **Christmas** and it reacts to your usage. From left to right:
+The mascot reacts to your usage. Classic uses this animation while working and the pixel drawings otherwise. From left to right:
 
 ![The mascot's moods, with and without the Christmas hat](docs/images/mascots.png)
 
 | Mood | When |
 |---|---|
-| Sleeping | No usage for more than 45 minutes, or no data yet |
-| Resting | Your last usage was 10 to 45 minutes ago |
-| Working on its laptop | The session percentage rose in the last 10 minutes |
+| Sleeping | No session open and no recent usage, or no data yet |
+| Resting | A session is open but idle, or your last usage was under 45 minutes ago |
+| Working on its laptop | A Claude Code session is working, or the session percentage rose in the last 10 minutes |
 | Tired and sweating | It is working and a limit is at 90% or more |
 | Fallen over | A limit reached 100% |
 
 Under **Appearance** you can choose the look:
 
-- **Classic:** the original animation, which does not react to usage. This is the default.
-- **Pixel:** the reactive mascot, shown on the top row.
+- **Classic:** the original animation while working, and the top row otherwise. This is the default.
+- **Pixel:** the drawings on the top row.
 - **Christmas:** the same mascot with a Santa hat, shown on the bottom row.
 
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
@@ -127,7 +127,7 @@ This is a fan project, not affiliated with or endorsed by Anthropic, and the cha
 | Icons shown | Both limits, only 5 hours or only weekly |
 | Start with Windows | Opens the app when you sign in to Windows |
 | Automatic updates | Installs signed updates by itself |
-| Notifications | Alerts at 80% and 90% of a limit, and a notice when an update is installed |
+| Notifications | Alerts at 80% and 90% of a limit, and notices when a limit renews or an update is installed |
 | Connected to Claude Code | Turns the connection on or off |
 | Check for updates | Looks for an update now. The icon turns while it checks and becomes a download icon when one is ready |
 

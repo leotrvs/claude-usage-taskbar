@@ -10,16 +10,20 @@ static class ClaudeCodeConnection
     const string CommandKey = "command";
     const string Flag = "--statusline";
 
-    static string SettingsPath
+    public static string ConfigDirectory
     {
         get
         {
             string configured = Environment.GetEnvironmentVariable("CLAUDE_CONFIG_DIR");
-            string directory = !string.IsNullOrEmpty(configured)
+            return !string.IsNullOrEmpty(configured)
                 ? configured
                 : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude");
-            return Path.Combine(directory, "settings.json");
         }
+    }
+
+    static string SettingsPath
+    {
+        get { return Path.Combine(ConfigDirectory, "settings.json"); }
     }
 
     static string PreviousPath

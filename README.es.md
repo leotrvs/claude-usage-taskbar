@@ -49,7 +49,7 @@ No hace falta dejar una terminal abierta.
 
 1. **Lee los iconos.** El límite de 5 horas tiene el número blanco y el semanal tiene el número de color. El color cambia al 70% y pasa a rojo al 90%.
 2. **Pasa el ratón** sobre un icono para ver el porcentaje y la hora de reinicio.
-3. **Haz clic** en un icono para abrir el panel. Haz clic fuera o pulsa **Esc** para cerrarlo.
+3. **Haz clic** en un icono para abrir el panel. Haz clic fuera o pulsa **Esc** para cerrarlo. **Haz clic derecho** en un icono para ver un menú con **Open panel**, **Refresh now**, **Settings** y **Quit**.
 4. **Elige un estilo de icono** en **Appearance**.
 5. **Abre Settings** en el panel para todo lo demás, y **Appearance** para los colores y la mascota.
 
@@ -93,22 +93,22 @@ De forma predeterminada, el panel muestra la mascota **Classic** trabajando en s
 
 <img src="assets/mascots/default.gif" alt="La mascota Classic trabajando en su portátil" width="200">
 
-Elige **Pixel** o **Christmas** y reaccionará a tu uso. De izquierda a derecha:
+La mascota reacciona a tu uso. Classic usa esta animación mientras trabaja y los dibujos pixelados en los demás estados. De izquierda a derecha:
 
 ![Los estados de la mascota, con y sin el gorro navideño](docs/images/mascots.png)
 
 | Estado | Cuándo |
 |---|---|
-| Durmiendo | Sin uso durante más de 45 minutos, o aún sin datos |
-| Descansando | Tu último uso fue hace entre 10 y 45 minutos |
-| Trabajando en su portátil | El porcentaje de la sesión subió en los últimos 10 minutos |
+| Durmiendo | Sin sesiones abiertas ni uso reciente, o aún sin datos |
+| Descansando | Hay una sesión abierta e inactiva, o tu último uso fue hace menos de 45 minutos |
+| Trabajando en su portátil | Una sesión de Claude Code está trabajando, o el porcentaje subió en los últimos 10 minutos |
 | Cansada y sudando | Está trabajando y un límite está al 90% o más |
 | Caída | Un límite llegó al 100% |
 
 En **Appearance** puedes elegir el aspecto:
 
-- **Classic:** la animación original, que no reacciona al uso. Es la predeterminada.
-- **Pixel:** la mascota que reacciona al uso, en la fila superior.
+- **Classic:** la animación original mientras trabaja, y la fila superior en los demás estados. Es la predeterminada.
+- **Pixel:** los dibujos de la fila superior.
 - **Christmas:** la misma mascota con gorro de Papá Noel, en la fila inferior.
 
 Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y el personaje pertenece a sus dueños. La licencia MIT no lo cubre.
@@ -128,7 +128,7 @@ Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y 
 | Icons shown | Ambos límites, solo 5 horas o solo semanal |
 | Start with Windows | Abre la aplicación al iniciar sesión en Windows |
 | Automatic updates | Instala por sí sola las actualizaciones firmadas |
-| Notifications | Alertas al 80% y al 90% de un límite, y un aviso cuando se instala una actualización |
+| Notifications | Alertas al 80% y al 90% de un límite, y avisos cuando un límite se renueva o se instala una actualización |
 | Connected to Claude Code | Activa o desactiva la conexión |
 | Check for updates | Busca una actualización ahora. El icono gira mientras comprueba y se convierte en un icono de descarga cuando hay una lista |
 

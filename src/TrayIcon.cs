@@ -228,10 +228,11 @@ class TraySlot : IDisposable
     string renderedKey;
     IntPtr iconHandle = IntPtr.Zero;
 
-    public TraySlot(bool primary, MouseEventHandler onMouseUp)
+    public TraySlot(bool primary, MouseEventHandler onMouseUp, ContextMenuStrip menu)
     {
         this.primary = primary;
         notifyIcon.MouseUp += onMouseUp;
+        notifyIcon.ContextMenuStrip = menu;
     }
 
     public void Update(IconStyle style, int? percent, bool stale, string tooltip, bool visible)
