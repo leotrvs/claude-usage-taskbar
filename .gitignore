@@ -15,8 +15,6 @@ update.json.sig
 *.pfx
 *.snk
 
-# Personal mascot images are never distributed
-mascot.gif
 
 # Local Claude and editor files
 .claude/

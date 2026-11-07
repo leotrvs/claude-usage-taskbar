@@ -55,9 +55,9 @@ On icons, the 5-hour limit has a white number and the weekly limit has a colored
 - **5-hour limit:** the forecast blends your average for the whole window with your recent trend, so one burst does not dominate it. It appears after at least 5% usage and 15 minutes of data.
 - **Weekly limit:** it compares your usage with an even pace across the week. It shows a difference, not a prediction.
 
-### Custom mascot
+### Mascot
 
-To show an animated image in the panel, save a GIF as `%LOCALAPPDATA%\ClaudeUsageTaskbar\mascot.gif` and reopen the panel. Gray and black pixels are treated as background and removed. No mascot is included with the app.
+The panel shows an animated mascot working on its laptop. This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 
 ## How the connection works
 
@@ -82,6 +82,10 @@ Good to know:
 - Its only network access is checking GitHub for signed updates, which you can turn off.
 
 Details are in [SECURITY.md](SECURITY.md).
+
+## Credits
+
+The panel uses [Inter](https://github.com/rsms/inter), licensed under the SIL Open Font License. See [assets/fonts/NOTICE.md](assets/fonts/NOTICE.md).
 
 ## Updates
 

@@ -20,6 +20,9 @@ $arguments = @(
     '/r:System.Windows.Forms.dll', '/r:System.Drawing.dll', '/r:System.Web.Extensions.dll',
     '/r:Microsoft.CSharp.dll', '/r:System.Core.dll'
 )
+$arguments += "/resource:$(Join-Path $root 'assets\mascots\default.gif'),mascot.default.gif"
+$arguments += "/resource:$(Join-Path $root 'assets\fonts\UsageInter-Regular.ttf'),font.regular.ttf"
+$arguments += "/resource:$(Join-Path $root 'assets\fonts\UsageInter-SemiBold.ttf'),font.semibold.ttf"
 if ($UpdateTest) { $arguments += '/define:UPDATE_TEST' }
 $arguments += (Get-ChildItem (Join-Path $root 'src') -Filter '*.cs').FullName
 

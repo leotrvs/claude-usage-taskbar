@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 static class App
 {
     public const string Name = "Claude Usage Taskbar";
-    public const string Version = "1.0.0";
+    public const string Version = "1.3.0";
     public const string Id = "ClaudeUsageTaskbar";
     public const string ExeName = Id + ".exe";
 
@@ -52,6 +52,7 @@ static class Native
     [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr handle);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr handle);
     [DllImport("user32.dll")] public static extern bool AllowSetForegroundWindow(int processId);
+    [DllImport("gdi32.dll")] public static extern IntPtr AddFontMemResourceEx(IntPtr font, uint size, IntPtr reserved, out uint fontsInstalled);
     [DllImport("dwmapi.dll")] public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] public static extern bool DeleteFile(string path);
 }

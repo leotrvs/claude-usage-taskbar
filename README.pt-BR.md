@@ -55,9 +55,9 @@ Nos ícones, o limite de 5 horas tem número branco, e o semanal tem número col
 - **Limite de 5 horas:** a previsão combina a média de toda a janela com a tendência recente, para que um pico isolado não domine o resultado. Ela aparece a partir de 5% de uso e 15 minutos de dados.
 - **Limite semanal:** compara seu uso com um ritmo uniforme ao longo da semana. Mostra uma diferença, não uma previsão.
 
-### Mascote personalizado
+### Mascote
 
-Para mostrar uma imagem animada no painel, salve um GIF como `%LOCALAPPDATA%\ClaudeUsageTaskbar\mascot.gif` e reabra o painel. Pixels cinza e pretos são tratados como fundo e removidos. O app não inclui nenhum mascote.
+O painel mostra um mascote animado mexendo no notebook. Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 
 ## Como a conexão funciona
 
@@ -82,6 +82,10 @@ Bom saber:
 - O único acesso à rede é a verificação de atualizações assinadas no GitHub, que você pode desligar.
 
 Os detalhes estão em [docs/SECURITY.pt-BR.md](docs/SECURITY.pt-BR.md).
+
+## Créditos
+
+O painel usa a fonte [Inter](https://github.com/rsms/inter), sob a licença SIL Open Font License. Veja [assets/fonts/NOTICE.md](assets/fonts/NOTICE.md).
 
 ## Atualizações
 

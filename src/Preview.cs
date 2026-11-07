@@ -33,6 +33,7 @@ static class Preview
 
         using (UsagePanel panel = new UsagePanel(new PanelCallbacks()))
         {
+            panel.LoadMascot();
             panel.SetState(state, IconStyle.Gauge, language, IconsShown.Both);
             Save(panel, Path.Combine(directory, "panel-" + suffix + ".png"));
             panel.ShowSettingsPage();

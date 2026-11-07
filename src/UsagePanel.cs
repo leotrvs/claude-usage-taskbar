@@ -59,9 +59,14 @@ class UsagePanel : Form
     const int LogicalHeight = 434;
     const int ChipTop = 300;
     const int ActionsTop = 364;
-    const int MascotHeight = 34;
+    const int MascotHeight = 42;
     const double ChartHours = 12;
     const int ReopenGuardMilliseconds = 300;
+    const int OpenAnimationMs = 160;
+    const int CloseAnimationMs = 110;
+    const int AnimationTickMs = 15;
+    const int OpenSlide = 10;
+    const int CloseSlide = 6;
     const int WS_EX_TOOLWINDOW = 0x80;
     const int CS_DROPSHADOW = 0x20000;
     const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
@@ -73,6 +78,7 @@ class UsagePanel : Form
     readonly List<PanelTarget> appearanceTargets = new List<PanelTarget>();
     readonly float scale;
     readonly System.Windows.Forms.Timer mascotTimer = new System.Windows.Forms.Timer();
+    readonly System.Windows.Forms.Timer animationTimer = new System.Windows.Forms.Timer();
     Mascot mascot;
     readonly Font titleFont, labelFont, smallFont, tinyFont, percentFont, glyphFont;
     List<PanelTarget> targets;
@@ -82,6 +88,9 @@ class UsagePanel : Form
     IconsShown iconsShown;
     int hovered = -1;
     int hiddenAt;
+    int animationStart;
+    int restingTop;
+    bool closing;
     PanelTarget updateLink;
     PanelTarget updateRow;
     UpdatePhase updatePhase;
@@ -112,6 +121,8 @@ class UsagePanel : Form
         BuildAppearancePage(callbacks);
         targets = mainTargets;
         mascotTimer.Tick += delegate { AdvanceMascot(); };
+        animationTimer.Interval = AnimationTickMs;
+        animationTimer.Tick += delegate { AdvanceAnimation(); };
     }
 
     void BuildMainPage(PanelCallbacks callbacks)
@@ -232,19 +243,9 @@ class UsagePanel : Form
         return new Rectangle(Px(18) + column * (width + gap), Px(top), width, Px(height));
     }
 
-    // Inter when installed, otherwise the Windows UI font.
     Font NewUiFont(int logicalSize, bool strong)
     {
-        string family = HasFont("Inter") ? "Inter" : "Segoe UI";
-        string semibold = family + " SemiBold";
-        if (strong && HasFont(semibold)) return new Font(semibold, Px(logicalSize), GraphicsUnit.Pixel);
-        return new Font(family, Px(logicalSize), strong ? FontStyle.Bold : FontStyle.Regular, GraphicsUnit.Pixel);
-    }
-
-    static bool HasFont(string name)
-    {
-        using (InstalledFontCollection fonts = new InstalledFontCollection())
-            return Array.Exists(fonts.Families, delegate(FontFamily f) { return f.Name == name; });
+        return EmbeddedFonts.New(Px(logicalSize), strong);
     }
 
     public void SetState(PanelState value, IconStyle style, Language selectedLanguage, IconsShown shown)
@@ -305,7 +306,11 @@ class UsagePanel : Form
 
     public void Toggle()
     {
-        if (Visible) { Hide(); return; }
+        if (Visible && !closing)
+        {
+            ClosePanel();
+            return;
+        }
         if (Environment.TickCount - hiddenAt < ReopenGuardMilliseconds) return; // The click that just closed it.
         ShowPanel();
     }
@@ -314,10 +319,58 @@ class UsagePanel : Form
     {
         targets = mainTargets;
         Rectangle area = Screen.FromPoint(Cursor.Position).WorkingArea;
-        Location = new Point(area.Right - Width - Px(12), area.Bottom - Height - Px(12));
+        restingTop = area.Bottom - Height - Px(12);
+        closing = false;
+        bool animate = SystemInformation.UIEffectsEnabled;
+        Location = new Point(area.Right - Width - Px(12), restingTop + (animate ? Px(OpenSlide) : 0));
+        Opacity = animate ? 0 : 1;
         Show();
         Native.SetForegroundWindow(Handle);
         Activate();
+        if (animate) StartAnimation();
+    }
+
+    public void ClosePanel()
+    {
+        if (!Visible || closing) return;
+        hiddenAt = Environment.TickCount;
+        if (!SystemInformation.UIEffectsEnabled)
+        {
+            Hide();
+            return;
+        }
+        closing = true;
+        StartAnimation();
+    }
+
+    void StartAnimation()
+    {
+        animationStart = Environment.TickCount;
+        animationTimer.Start();
+    }
+
+    void AdvanceAnimation()
+    {
+        int duration = closing ? CloseAnimationMs : OpenAnimationMs;
+        float progress = Math.Min(1f, (Environment.TickCount - animationStart) / (float)duration);
+        float eased = 1 - (1 - progress) * (1 - progress) * (1 - progress);
+        if (closing)
+        {
+            Opacity = 1 - progress;
+            Top = restingTop + (int)(Px(CloseSlide) * progress);
+        }
+        else
+        {
+            Opacity = eased;
+            Top = restingTop + (int)(Px(OpenSlide) * (1 - eased));
+        }
+        if (progress < 1) return;
+
+        animationTimer.Stop();
+        if (!closing) return;
+        Hide();
+        closing = false;
+        Opacity = 1;
     }
 
     protected override bool ShowWithoutActivation { get { return false; } }
@@ -349,12 +402,17 @@ class UsagePanel : Form
             mascotTimer.Stop();
             return;
         }
-        if (mascot == null) mascot = Mascot.Load(Px(MascotHeight));
+        LoadMascot();
         if (mascot != null)
         {
             mascotTimer.Interval = mascot.CurrentDelayMs;
             mascotTimer.Start();
         }
+    }
+
+    public void LoadMascot()
+    {
+        if (mascot == null) mascot = Mascot.Load(Px(MascotHeight));
     }
 
     void AdvanceMascot()
@@ -367,14 +425,13 @@ class UsagePanel : Form
     protected override void OnDeactivate(EventArgs e)
     {
         base.OnDeactivate(e);
-        hiddenAt = Environment.TickCount;
-        Hide();
+        ClosePanel();
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (e.KeyCode == Keys.Escape) Hide();
+        if (e.KeyCode == Keys.Escape) ClosePanel();
     }
 
     protected override void OnMouseMove(MouseEventArgs e)
