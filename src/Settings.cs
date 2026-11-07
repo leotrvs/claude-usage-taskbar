@@ -81,6 +81,15 @@ static class Settings
         }
     }
 
+    public static bool AppsUseLightTheme
+    {
+        get
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(PersonalizeKeyPath))
+                return key != null && 1.Equals(key.GetValue("AppsUseLightTheme"));
+        }
+    }
+
     public static bool Notifications
     {
         get { return !"False".Equals(Read("Notifications")); }

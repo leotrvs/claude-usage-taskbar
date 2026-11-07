@@ -3,16 +3,35 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 enum ColorTemplate { Green, Blue, Purple }
-enum PanelTheme { Graphite, Black, Light }
+enum PanelTheme { Graphite, Black, Light, Auto }
 
 static class Theme
 {
     public static ColorTemplate Colors = Settings.Colors;
     public static PanelTheme Panel = Settings.PanelTheme;
 
+    static bool systemIsLight = Settings.AppsUseLightTheme;
+
+    // Read once and refreshed when Windows reports a change, because colors are asked for on every paint.
+    public static void RefreshSystemTheme()
+    {
+        systemIsLight = Settings.AppsUseLightTheme;
+    }
+
+    static PanelTheme Shown
+    {
+        get
+        {
+            if (Panel != PanelTheme.Auto) return Panel;
+            return systemIsLight ? PanelTheme.Light : PanelTheme.Black;
+        }
+    }
+
+    public static bool IsLight { get { return Shown == PanelTheme.Light; } }
+
     static Color Pick(Color graphite, Color black, Color light)
     {
-        return Panel == PanelTheme.Light ? light : Panel == PanelTheme.Black ? black : graphite;
+        return Shown == PanelTheme.Light ? light : Shown == PanelTheme.Black ? black : graphite;
     }
 
     public static Color Background { get { return Pick(Color.FromArgb(32, 32, 32), Color.FromArgb(10, 10, 10), Color.FromArgb(250, 249, 245)); } }
@@ -40,18 +59,18 @@ static class Theme
     public static Color ForPanel(int? percent, bool stale)
     {
         Color color = ForPercent(percent, stale);
-        if (Panel != PanelTheme.Light) return color;
+        if (!IsLight) return color;
         if (color == Yellow || color == Amber) return Color.FromArgb(202, 138, 4);
         if (color == NormalColor(ColorTemplate.Green)) return Color.FromArgb(22, 163, 74);
-        if (color == NormalColor(ColorTemplate.Purple)) return Color.FromArgb(124, 92, 230);
+        if (color == NormalColor(ColorTemplate.Purple)) return Color.FromArgb(116, 72, 226);
         return color;
     }
 
     public static Color NormalColor(ColorTemplate template)
     {
         if (template == ColorTemplate.Blue) return Color.FromArgb(72, 150, 245);
-        if (template == ColorTemplate.Purple) return Color.FromArgb(167, 139, 250);
-        return Color.FromArgb(74, 222, 128);
+        if (template == ColorTemplate.Purple) return Color.FromArgb(139, 92, 246);
+        return Color.FromArgb(52, 208, 106);
     }
 
     public static GraphicsPath Rounded(RectangleF area, float radius)

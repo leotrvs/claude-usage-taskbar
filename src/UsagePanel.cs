@@ -219,9 +219,10 @@ class UsagePanel : Form
         AddColorChip(ColorTemplate.Blue, "colorBlue", 0, callbacks);
         AddColorChip(ColorTemplate.Green, "colorGreen", 1, callbacks);
         AddColorChip(ColorTemplate.Purple, "colorPurple", 2, callbacks);
-        AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 0, callbacks);
-        AddPanelThemeChip(PanelTheme.Black, "panelBlack", 1, callbacks);
-        AddPanelThemeChip(PanelTheme.Light, "panelLight", 2, callbacks);
+        AddPanelThemeChip(PanelTheme.Auto, "panelAuto", 0, callbacks);
+        AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 1, callbacks);
+        AddPanelThemeChip(PanelTheme.Black, "panelBlack", 2, callbacks);
+        AddPanelThemeChip(PanelTheme.Light, "panelLight", 3, callbacks);
         AddMascotChip(MascotStyle.Classic, "mascotClassic", 0, callbacks);
         AddMascotChip(MascotStyle.Pixel, "mascotPixel", 1, callbacks);
         AddMascotChip(MascotStyle.Santa, "mascotSanta", 2, callbacks);
@@ -265,7 +266,7 @@ class UsagePanel : Form
     {
         PanelTarget chip = new PanelTarget();
         chip.LabelKey = labelKey;
-        chip.Bounds = ChipBounds(column, 3, 208, 32);
+        chip.Bounds = ChipBounds(column, 4, 208, 32);
         chip.Selected = delegate { return Theme.Panel == value; };
         chip.Run = delegate { callbacks.ChangePanelTheme(value); };
         appearanceTargets.Add(chip);
@@ -980,7 +981,7 @@ class UsagePanel : Form
         int iconSize = Px(22);
         Rectangle icon = new Rectangle(chip.Bounds.X + (chip.Bounds.Width - iconSize) / 2, chip.Bounds.Y + Px(6), iconSize, iconSize);
         int? sample = state.Session.Percent ?? 60;
-        using (Bitmap preview = TrayIcon.Draw(chip.Style.Value, sample, true, state.Stale, iconSize, Theme.Panel == PanelTheme.Light))
+        using (Bitmap preview = TrayIcon.Draw(chip.Style.Value, sample, true, state.Stale, iconSize, Theme.IsLight))
             g.DrawImageUnscaled(preview, icon.Location);
 
         Rectangle label = new Rectangle(chip.Bounds.X, icon.Bottom + Px(2), chip.Bounds.Width, chip.Bounds.Bottom - icon.Bottom - Px(3));

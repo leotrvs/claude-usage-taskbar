@@ -18,7 +18,7 @@ Consulta los límites de uso de Claude Code en la barra de tareas de Windows, si
 
 - Iconos en la barra de tareas con tu uso de **5 horas** y **semanal**. Muestra ambos o solo uno
 - Tres estilos de icono: **Ring**, **Gauge** y **Needle**
-- Tres plantillas de color y tres temas de panel
+- Tres plantillas de color y cuatro temas, incluido uno que sigue a Windows
 - Un panel con horas de reinicio, previsión de ritmo y un gráfico de 12 horas
 - Una mascota animada, con versiones pixeladas que reaccionan a tu uso
 - Alertas opcionales al 80% y al 90% de un límite
@@ -85,7 +85,7 @@ El gráfico muestra tu uso de 5 horas durante las últimas 12 horas. Pasa el rat
 En **Appearance**:
 
 - **Colors:** azul de forma predeterminada, o verde o morado. Se aplican a los iconos y las barras.
-- **Panel:** grafito, negro o claro.
+- **Theme:** auto, grafito, negro o claro. Auto sigue el modo de Windows: claro cuando está claro y negro cuando está oscuro.
 
 ### Mascota
 

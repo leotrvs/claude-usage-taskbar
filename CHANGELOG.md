@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.7
+
+- New Auto theme, which follows the Windows light or dark mode
+- Stronger green and purple color templates
+- The Panel option is now called Theme
+
 ## 1.5.6
 
 - The panel title is now Claude Usage

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 class WidgetContext : ApplicationContext
 {
@@ -54,6 +55,7 @@ class WidgetContext : ApplicationContext
         IntPtr ensureHandle = panel.Handle; // BeginInvoke needs it before the first Show.
         GC.KeepAlive(ensureHandle);
 
+        SystemEvents.UserPreferenceChanged += OnSystemPreferenceChanged;
         sessionSlot = new TraySlot(true, OnTrayMouseUp);
         weeklySlot = new TraySlot(false, OnTrayMouseUp);
         Reload();
@@ -187,6 +189,15 @@ class WidgetContext : ApplicationContext
         panel.ApplyTheme();
     }
 
+    // Windows reports a change of light or dark mode here, which affects the Auto theme and the icons.
+    void OnSystemPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+    {
+        if (e.Category != UserPreferenceCategory.General) return;
+        Theme.RefreshSystemTheme();
+        panel.ApplyTheme();
+        Render();
+    }
+
     void ChangeMascot(MascotStyle style)
     {
         Settings.MascotStyle = style;
@@ -305,6 +316,7 @@ class WidgetContext : ApplicationContext
 
     protected override void ExitThreadCore()
     {
+        SystemEvents.UserPreferenceChanged -= OnSystemPreferenceChanged;
         fileTimer.Dispose();
         updateTimer.Dispose();
         probeTimer.Dispose();
