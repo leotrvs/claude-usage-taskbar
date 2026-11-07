@@ -116,9 +116,9 @@ O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e o
 | Perguntando com uma interrogação | Uma sessão precisa da sua permissão ou resposta |
 | Em pânico | A previsão indica que o limite acaba em menos de 30 minutos |
 | Tomando café | Está trabalhando há mais de 2 horas |
-| Fazendo malabarismo | Três ou mais sessões trabalhando ao mesmo tempo |
+| Malabarismo e musculação | Duas ou mais sessões trabalhando ao mesmo tempo. Quanto mais sessões, mais frequente |
 
-Ele também reage ao que acontece. Quando um limite renova, finca uma bandeira quadriculada que balança ao vento, com confete caindo ao redor. Quando uma atualização termina, ele salta e se achata numa chuva de confete. Acena ou pula quando você passa o mouse, dá um pulinho de vez em quando enquanto descansa e reage ao clique. Com três ou mais sessões trabalhando, às vezes ele levanta pesos, e em 100% às vezes fica achatado e tonto.
+Ele também reage ao que acontece. Quando um limite renova, finca uma bandeira quadriculada que balança ao vento, com confete caindo ao redor. Quando uma atualização termina, ele salta e se achata numa chuva de confete. Acena ou pula quando você passa o mouse, dá um pulinho de vez em quando enquanto descansa e reage ao clique. Enquanto trabalha, ele também pensa, anota, lê e se espreguiça de vez em quando. Com duas ou mais sessões trabalhando, ele faz malabarismo e levanta pesos, mais vezes quanto mais sessões houver, e em 100% às vezes fica achatado e tonto.
 
 ![Os movimentos novos: pulo, saltar, bandeira, pesos e achatado](docs/images/mascot-moves.png)
 

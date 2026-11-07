@@ -117,9 +117,9 @@ La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los
 | Preguntando con un signo de interrogación | Una sesión necesita tu permiso o tu respuesta |
 | En pánico | La previsión indica que el límite se agotará en menos de 30 minutos |
 | Tomando café | Lleva más de 2 horas trabajando |
-| Haciendo malabares | Tres o más sesiones trabajando a la vez |
+| Malabares y pesas | Dos o más sesiones trabajando a la vez. Cuantas más sesiones, más a menudo |
 
-También reacciona a lo que ocurre. Cuando un límite se renueva, clava una bandera de cuadros que ondea con el viento, con confeti cayendo alrededor. Cuando termina una actualización, salta y se aplasta en una lluvia de confeti. Saluda o da un salto al pasar el ratón, da un saltito de vez en cuando mientras descansa y reacciona al hacer clic. Con tres o más sesiones trabajando, a veces levanta pesas, y al 100% a veces queda aplastada y mareada.
+También reacciona a lo que ocurre. Cuando un límite se renueva, clava una bandera de cuadros que ondea con el viento, con confeti cayendo alrededor. Cuando termina una actualización, salta y se aplasta en una lluvia de confeti. Saluda o da un salto al pasar el ratón, da un saltito de vez en cuando mientras descansa y reacciona al hacer clic. Mientras trabaja, también piensa, toma notas, lee y se estira de vez en cuando. Con dos o más sesiones trabajando, hace malabares y levanta pesas, más a menudo cuantas más sesiones haya, y al 100% a veces queda aplastada y mareada.
 
 ![Los movimientos nuevos: salto, brinco, bandera, pesas y aplastada](docs/images/mascot-moves.png)
 

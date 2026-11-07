@@ -812,7 +812,7 @@ class UsagePanel : Form
         UpdateWalkRoom();
         mascot.Advance();
         mascotTimer.Interval = mascot.CurrentDelayMs;
-        Invalidate(new Rectangle(Math.Max(0, ClientSize.Width - Px(230)), 0, Px(230), Px(60)));
+        Invalidate(new Rectangle(Math.Max(0, ClientSize.Width - Px(230)), 0, Px(230), Px(80)));
     }
 
     int WalkShift

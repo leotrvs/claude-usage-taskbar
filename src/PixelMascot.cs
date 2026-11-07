@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
 enum MascotStyle { Pixel, Santa, Classic, Headphones, Chef, Scientist, Detective, Winter, Racer, Halloween, Carnival }
@@ -29,6 +30,10 @@ class PixelMascot : IReactiveMascot
 {
     const int Columns = 32;
     const int Rows = 24;
+    const int Supersample = 4; // Drawn this many times larger and scaled down, so the size can match the laptop mascot exactly.
+    const double DisplayScale = 0.875; // The same height as the original laptop animation.
+    const int WorkSlotMs = 14000; // How long each way of working lasts.
+    const int OverloadPeriod = 30; // Seconds in one cycle of juggling and lifting when several sessions run.
     const int FrameMs = 50; // The animation redraws this often, so motion is smooth.
     const int SleepFrameMs = 420;
     const int LegLength = 6;
@@ -41,7 +46,7 @@ class PixelMascot : IReactiveMascot
     const int FullPercent = 100;
     const int PanicMinutes = 30;
     const int CoffeeMinutes = 120;
-    const int JuggleSessions = 3;
+    const int JuggleSessions = 2;
     const int LastNightHour = 5;
     const int CelebrateFrames = 26;
     const int WaveFrames = 14;
@@ -573,13 +578,24 @@ class PixelMascot : IReactiveMascot
             break;
         }
 
-        if (state.Sessions.Busy >= JuggleSessions) return alternate ? MascotMood.Juggle : MascotMood.Lift;
+        MascotMood? overloaded = Overloaded(state.Sessions.Busy, now);
+        if (overloaded.HasValue) return overloaded.Value;
         if (state.Sessions.Busy > 0 || minutes <= WorkingMinutes)
         {
             if (highest >= TiredPercent) return MascotMood.Tired;
             return state.BusyMinutes >= CoffeeMinutes ? MascotMood.Coffee : MascotMood.Work;
         }
         return state.Sessions.Running > 0 || minutes <= RestingMinutes ? MascotMood.Idle : RestingMood(now);
+    }
+
+    // From two sessions on, juggling and lifting take turns in windows that grow with the number of sessions.
+    static MascotMood? Overloaded(int busy, DateTime now)
+    {
+        if (busy < JuggleSessions) return null;
+        double share = Math.Min(0.85, 0.15 + 0.15 * (busy - 1));
+        double seconds = now.TimeOfDay.TotalSeconds;
+        if (seconds % OverloadPeriod >= share * OverloadPeriod) return null;
+        return (long)(seconds / OverloadPeriod) % 2 == 0 ? MascotMood.Juggle : MascotMood.Lift;
     }
 
     static MascotMood RestingMood(DateTime now)
@@ -606,10 +622,11 @@ class PixelMascot : IReactiveMascot
 
     static Bitmap Render(MascotStyle style, MascotMood mood, int tick, int pixel, MascotAction? action, int actionTick, WalkPose walk, double ms)
     {
-        Bitmap bitmap = new Bitmap(Columns * pixel, Rows * pixel, PixelFormat.Format32bppArgb);
-        using (Graphics g = Graphics.FromImage(bitmap))
+        int unit = pixel * Supersample;
+        Bitmap big = new Bitmap(Columns * unit, Rows * unit, PixelFormat.Format32bppPArgb);
+        using (Graphics g = Graphics.FromImage(big))
         {
-            Canvas canvas = new Canvas(g, pixel);
+            Canvas canvas = new Canvas(g, unit);
             canvas.Style = style;
             canvas.Tick = tick;
             canvas.Ms = ms;
@@ -622,6 +639,14 @@ class PixelMascot : IReactiveMascot
             if (action.HasValue) DrawAction(canvas, style, action.Value, actionTick);
             else DrawMood(canvas, style, mood, tick, walk);
         }
+        Bitmap bitmap = new Bitmap((int)Math.Round(Columns * pixel * DisplayScale), (int)Math.Round(Rows * pixel * DisplayScale), PixelFormat.Format32bppPArgb);
+        using (Graphics g = Graphics.FromImage(bitmap))
+        {
+            g.InterpolationMode = InterpolationMode.HighQualityBilinear;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.DrawImage(big, new Rectangle(0, 0, bitmap.Width, bitmap.Height), 0, 0, big.Width, big.Height, GraphicsUnit.Pixel);
+        }
+        big.Dispose();
         return bitmap;
     }
 
@@ -940,10 +965,106 @@ class PixelMascot : IReactiveMascot
 
     static void DrawWork(Canvas canvas, MascotStyle style, int tick, bool tired)
     {
+        int slot = tired ? 0 : WorkSlot(canvas.Ms);
+        if (slot != 0)
+        {
+            DrawWorkBreak(canvas, style, slot, canvas.Ms % WorkSlotMs);
+            return;
+        }
         DrawTyping(canvas, tick, tired);
         DrawLaptop(canvas, LidHeight(tick));
         DrawOutfit(canvas, style, BodyTop);
         if (tired) canvas.Fill(BodyLeft + 23, BodyTop + tick % 8, 2, 3, Sweat);
+    }
+
+    // The laptop most of the time, with a few other things to do in between so the work never looks the same.
+    static int WorkSlot(double ms)
+    {
+        int[] order = { 0, 1, 0, 2, 0, 3, 0, 4 };
+        return order[(int)(ms / WorkSlotMs) % order.Length];
+    }
+
+    // 1 thinking, 2 taking notes, 3 reading, 4 stretching.
+    static void DrawWorkBreak(Canvas canvas, MascotStyle style, int slot, double ms)
+    {
+        int top = BodyTop;
+        int left = BodyLeft;
+        Color paper = Color.FromArgb(240, 240, 234);
+        Color ink = Color.FromArgb(110, 130, 190);
+        switch (slot)
+        {
+            case 1:
+                DrawFigure(canvas, top, 0, -3);
+                DrawOpenEyes(canvas, top, 1, 0, 4);
+                DrawOutfit(canvas, style, top);
+                double phase = ms % 3200;
+                if (phase < 1700)
+                {
+                    for (int dot = 0; dot < 3; dot++)
+                        if (phase > dot * 450)
+                            canvas.Fill(26 + dot * 2, top - 1 - dot * 2, 2, 2, Color.FromArgb(205, 205, 212));
+                }
+                else
+                {
+                    canvas.Fill(27, 1, 3, 1, Question);
+                    canvas.Fill(26, 2, 5, 3, Question);
+                    canvas.Fill(27, 5, 3, 1, Question);
+                    canvas.Fill(27, 6, 3, 1, Color.FromArgb(150, 150, 156));
+                    if ((int)(phase / 120) % 2 == 0)
+                    {
+                        canvas.Fill(24, 3, 1, 1, Question);
+                        canvas.Fill(31, 3, 1, 1, Question);
+                    }
+                }
+                break;
+            case 2:
+                DrawFigure(canvas, top, -1, -1 + (int)(ms / 160 % 2));
+                DrawOpenEyes(canvas, top, (int)(ms / 700 % 3) - 1, 1, 3);
+                canvas.Fill(left + 5, top + 8, 14, 8, paper);
+                for (int line = 0; line < 3; line++)
+                    canvas.Fill(left + 7, top + 10 + line * 2, 10 - (line == 2 ? 4 : 0), 1, ink);
+                canvas.Fill(left + 19 + (int)(ms / 160 % 2), top + 8, 1, 3, Gold);
+                canvas.Fill(left + 19 + (int)(ms / 160 % 2), top + 11, 1, 1, Boot);
+                DrawOutfit(canvas, style, top);
+                break;
+            case 3:
+                DrawFigure(canvas, top, 0, 0);
+                DrawOpenEyes(canvas, top, (int)(ms / 420 % 3) - 1, 1, 3);
+                canvas.Fill(left + 3, top + 16, 18, 1, Brown);
+                canvas.Fill(left + 4, top + 8, 8, 8, paper);
+                canvas.Fill(left + 13, top + 8, 7, 8, Color.FromArgb(226, 226, 218));
+                canvas.Fill(left + 12, top + 8, 1, 8, Brown);
+                for (int line = 0; line < 3; line++)
+                {
+                    canvas.Fill(left + 5, top + 10 + line * 2, 6, 1, ink);
+                    canvas.Fill(left + 14, top + 10 + line * 2, 5, 1, ink);
+                }
+                double turn = ms % 2600;
+                if (turn < 450)
+                {
+                    int x = left + 19 - (int)(turn / 450 * 8);
+                    canvas.Fill(x, top + 8, 3, 8, Color.FromArgb(250, 250, 244));
+                }
+                DrawOutfit(canvas, style, top);
+                break;
+            default:
+                double stretch = ms % 3600;
+                bool up = stretch < 2200;
+                int arm = up ? -4 : 0;
+                DrawFigure(canvas, top, arm, arm);
+                if (up) DrawClosedEyes(canvas, top);
+                else DrawOpenEyes(canvas, top, 0, 1, 3);
+                DrawOutfit(canvas, style, top);
+                if (up)
+                {
+                    Color puff = Color.FromArgb(200, 235, 235, 240);
+                    canvas.Fill(1, top + 1, 3, 1, puff);
+                    canvas.Fill(0, top + 4, 3, 1, puff);
+                    canvas.Fill(28, top + 1, 3, 1, puff);
+                    canvas.Fill(29, top + 4, 3, 1, puff);
+                }
+                break;
+        }
     }
 
     static int LidHeight(int tick)

@@ -116,9 +116,9 @@ The mascot reacts to your usage. Laptop uses this animation while working and th
 | Asking with a question mark | A session needs your permission or an answer |
 | Panicking | The forecast says the limit will run out in under 30 minutes |
 | Drinking coffee | It has been working for over 2 hours |
-| Juggling | Three or more sessions are working at once |
+| Juggling and lifting weights | Two or more sessions are working at once. The more sessions, the more often |
 
-It also reacts to what happens. When a limit renews it plants a checkered flag that waves in the wind, with confetti falling around it. When an update finishes it pops up and squashes flat in a burst of confetti. It waves or hops when you hover over it, gives a little hop now and then while resting, and reacts when you click it. With three or more sessions working it sometimes lifts weights, and at 100% it sometimes lies flat and dizzy.
+It also reacts to what happens. When a limit renews it plants a checkered flag that waves in the wind, with confetti falling around it. When an update finishes it pops up and squashes flat in a burst of confetti. It waves or hops when you hover over it, gives a little hop now and then while resting, and reacts when you click it. While working it also thinks, takes notes, reads and stretches now and then. With two or more sessions working it juggles and lifts weights, more often the more sessions there are, and at 100% it sometimes lies flat and dizzy.
 
 ![The new moves: hop, popping up, flag, weights and lying flat](docs/images/mascot-moves.png)
 

@@ -19,6 +19,7 @@ static class Preview
         RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
         RenderReactions(Path.Combine(directory, "mascot-reactions.png"));
         RenderMoves(Path.Combine(directory, "mascot-moves.png"));
+        RenderWorking(Path.Combine(directory, "mascot-working.png"));
         RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective, false, new[] { 0, 14, 26, 40, 54, 68 }, false);
         RenderWalk(Path.Combine(directory, "mascot-panic-walk.png"), MascotStyle.Pixel, true, new[] { 0, 3, 6, 9, 12, 15, 18 }, false);
         RenderWalk(Path.Combine(directory, "mascot-racer-drive.png"), MascotStyle.Racer, false, new[] { 4, 13, 17, 21, 25, 32, 40, 48 }, false);
@@ -73,6 +74,34 @@ static class Preview
         RenderWalk(Path.Combine(directory, "mascot-act-winter.png"), MascotStyle.Winter, false, fast, true);
         RenderWalk(Path.Combine(directory, "mascot-act-halloween.png"), MascotStyle.Halloween, false, fast, true);
         RenderWalk(Path.Combine(directory, "mascot-act-carnival.png"), MascotStyle.Carnival, false, slow, true);
+    }
+
+    // The ways of working: the laptop, then thinking, taking notes, reading and stretching.
+    static void RenderWorking(string path)
+    {
+        const int Pixel = 4;
+        const int Width = 112;
+        const int Height = 84;
+        const int Gap = 12;
+        int slot = 14000;
+        int[][] rows =
+        {
+            new[] { 500, 1500, 2500, 3500 },
+            new[] { slot + 500, slot + 1500, slot + 2300, slot + 2900 },
+            new[] { slot * 3 + 400, slot * 3 + 900, slot * 3 + 1500, slot * 3 + 2200 },
+            new[] { slot * 5 + 300, slot * 5 + 1000, slot * 5 + 2000, slot * 5 + 2550 },
+            new[] { slot * 7 + 500, slot * 7 + 1500, slot * 7 + 2500, slot * 7 + 3000 }
+        };
+        using (Bitmap sheet = new Bitmap(4 * (Width + Gap) + Gap, rows.Length * (Height + Gap) + Gap))
+        using (Graphics g = Graphics.FromImage(sheet))
+        {
+            g.Clear(Color.FromArgb(10, 10, 10));
+            for (int row = 0; row < rows.Length; row++)
+                for (int i = 0; i < 4; i++)
+                    using (Bitmap frame = PixelMascot.RenderAt(MascotStyle.Pixel, MascotMood.Work, Pixel, null, rows[row][i]))
+                        g.DrawImageUnscaled(frame, Gap + i * (Width + Gap), Gap + row * (Height + Gap));
+            sheet.Save(path, ImageFormat.Png);
+        }
     }
 
     // The new animations frame by frame: a hop, popping up and flattening, the flag, the workout and lying flat.

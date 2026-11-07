@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.11.0
+
+- The mascots drawn by the app now match the size of the laptop one
+- Fixed leftover leg pixels that stayed in the header after the laptop mascot reacted to the mouse
+- While working, the mascot also thinks, takes notes, reads and stretches instead of only using its laptop
+- Juggling and lifting weights now start from two sessions, and appear more often the more sessions are running
+
 ## 1.10.0
 
 - A look closer to the original character: small square eyes, longer legs with knees that bend as it walks, and smoother motion
