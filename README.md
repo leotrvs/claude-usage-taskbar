@@ -93,11 +93,11 @@ Under **Appearance**:
 
 ### Mascot
 
-By default, the panel shows the **Classic** mascot working on its laptop:
+By default, the panel shows the **Laptop** mascot working on its laptop:
 
-<img src="assets/mascots/default.gif" alt="The Classic mascot working on its laptop" width="200">
+<img src="assets/mascots/default.gif" alt="The Laptop mascot working on its laptop" width="200">
 
-The mascot reacts to your usage. Classic uses this animation while working and the pixel drawings otherwise. From left to right:
+The mascot reacts to your usage. Laptop uses this animation while working and the pixel drawings otherwise. From left to right:
 
 ![The mascot's moods](docs/images/mascots.png)
 
@@ -118,8 +118,8 @@ It also celebrates when a limit renews, waves when you hover over it and reacts 
 
 Under **Appearance** you can choose the look:
 
-- **Classic:** the original animation while working, and the pixel drawings otherwise. This is the default.
-- **Pixel:** the pixel drawings all the time.
+- **Laptop:** the original animation while working, and the pixel drawings otherwise. This is the default.
+- **Classic:** the pixel drawings all the time.
 - **Christmas**, **Headphones** and **Chef:** the same mascot with an outfit. The Chef says `im cooking` while it works.
 
 ![The Christmas, Headphones and Chef outfits](docs/images/mascot-outfits.png)

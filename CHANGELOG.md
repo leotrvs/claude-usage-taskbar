@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.3
+
+- The mascot picker labels changed: the laptop mascot is now Laptop (Notebook in Portuguese) and the pixel mascot is now Classic (Clássico)
+- Notifications close after 5 seconds, or after 12 seconds if the cursor stays over them
+
 ## 1.6.2
 
 - A better Chef hat, with a puffed top and pleats

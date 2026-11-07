@@ -94,11 +94,11 @@ En **Appearance**:
 
 ### Mascota
 
-De forma predeterminada, el panel muestra la mascota **Classic** trabajando en su portátil:
+De forma predeterminada, el panel muestra la mascota **Laptop** trabajando en su portátil:
 
-<img src="assets/mascots/default.gif" alt="La mascota Classic trabajando en su portátil" width="200">
+<img src="assets/mascots/default.gif" alt="La mascota Laptop trabajando en su portátil" width="200">
 
-La mascota reacciona a tu uso. Classic usa esta animación mientras trabaja y los dibujos pixelados en los demás estados. De izquierda a derecha:
+La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los dibujos pixelados en los demás estados. De izquierda a derecha:
 
 ![Los estados de la mascota](docs/images/mascots.png)
 
@@ -119,8 +119,8 @@ También celebra cuando un límite se renueva, saluda al pasar el ratón y reacc
 
 En **Appearance** puedes elegir el aspecto:
 
-- **Classic:** la animación original mientras trabaja, y los dibujos pixelados en los demás estados. Es la predeterminada.
-- **Pixel:** los dibujos pixelados todo el tiempo.
+- **Laptop:** la animación original mientras trabaja, y los dibujos pixelados en los demás estados. Es la predeterminada.
+- **Classic:** los dibujos pixelados todo el tiempo.
 - **Christmas**, **Headphones** y **Chef:** la misma mascota con un atuendo. El Chef dice `im cooking` mientras trabaja.
 
 ![Los atuendos Christmas, Headphones y Chef](docs/images/mascot-outfits.png)

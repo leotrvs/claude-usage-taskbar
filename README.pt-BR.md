@@ -93,11 +93,11 @@ Em **Aparência**:
 
 ### Mascote
 
-Por padrão, o painel mostra o mascote **Clássico** trabalhando no notebook:
+Por padrão, o painel mostra o mascote **Notebook** trabalhando no notebook:
 
-<img src="assets/mascots/default.gif" alt="O mascote Clássico trabalhando no notebook" width="200">
+<img src="assets/mascots/default.gif" alt="O mascote Notebook trabalhando no notebook" width="200">
 
-O mascote reage ao seu uso. O Clássico usa esta animação enquanto trabalha e os desenhos em pixels nos outros estados. Da esquerda para a direita:
+O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e os desenhos em pixels nos outros estados. Da esquerda para a direita:
 
 ![Os estados do mascote](docs/images/mascots.png)
 
@@ -118,8 +118,8 @@ Ele também comemora quando um limite renova, acena quando você passa o mouse e
 
 Em **Aparência** você escolhe o visual:
 
-- **Clássico:** a animação original enquanto trabalha, e os desenhos em pixels nos outros estados. É o padrão.
-- **Pixel:** os desenhos em pixels o tempo todo.
+- **Notebook:** a animação original enquanto trabalha, e os desenhos em pixels nos outros estados. É o padrão.
+- **Clássico:** os desenhos em pixels o tempo todo.
 - **Natal**, **Fone** e **Chef:** o mesmo mascote com um outfit. O Chef diz `im cooking` enquanto trabalha.
 
 ![Os outfits de Natal, Fone e Chef](docs/images/mascot-outfits.png)
