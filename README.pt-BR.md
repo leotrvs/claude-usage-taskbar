@@ -4,7 +4,11 @@
 
 Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precisar abrir nada.
 
-![O painel de uso](docs/images/panel-pt-BR.png)
+<p>
+<img src="docs/images/panel-pt-BR.png" alt="O painel de uso no tema grafite" width="270">
+<img src="docs/images/panel-black-pt-BR.png" alt="O painel de uso no tema preto" width="270">
+<img src="docs/images/panel-light-pt-BR.png" alt="O painel de uso no tema claro" width="270">
+</p>
 
 > Projeto não oficial da comunidade. Não tem vínculo, aprovação nem suporte da Anthropic. "Claude" é uma marca da Anthropic.
 

@@ -9,6 +9,7 @@ using System.Windows.Forms;
 static class TrayIcon
 {
     static readonly Color Track = Color.FromArgb(120, 128, 128, 128); // Reads on dark and light taskbars.
+    static readonly Color StrongTrack = Color.FromArgb(170, 128, 128, 128);
     static readonly Color DarkForeground = Color.FromArgb(32, 32, 32);
     const float DialStart = 135;
     const float DialSweep = 270;
@@ -53,7 +54,7 @@ static class TrayIcon
     const string PixelUnknown = ".###./#...#/....#/...#./..#../...../..#..";
     const string NarrowOne = "#/#/#/#/#/#/#"; // 100 has no room for full digits.
     const string NarrowZero = "###/#.#/#.#/#.#/#.#/#.#/###";
-    const float PixelGaugeStroke = 1.25f; // A thin line leaves the digits room inside the small dial.
+    const float PixelGaugeStroke = 1.5f; // A thin line leaves the digits room inside the small dial.
 
     // primary = 5-hour limit (white number); the weekly icon colors its number by level.
     public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size, bool onLight)
@@ -71,9 +72,9 @@ static class TrayIcon
             float gaugeStroke = box < size ? PixelGaugeStroke : Math.Max(1.75f, box * 0.1f);
             float stroke = style == IconStyle.Gauge ? gaugeStroke : Math.Max(2f, box * 0.12f);
 
-            if (style == IconStyle.Ring) DrawArc(g, box, stroke, RingStart, RingSweep, progress, color);
-            else if (style == IconStyle.Gauge) DrawArc(g, box, stroke, GaugeStart, GaugeSweep, progress, color);
-            else DrawArc(g, box, stroke, DialStart, DialSweep, progress, color);
+            if (style == IconStyle.Ring) DrawArc(g, box, stroke, RingStart, RingSweep, progress, color, false);
+            else if (style == IconStyle.Gauge) DrawArc(g, box, stroke, GaugeStart, GaugeSweep, progress, color, box < size);
+            else DrawArc(g, box, stroke, DialStart, DialSweep, progress, color, false);
 
             Color foreground = primary && !stale ? (onLight ? DarkForeground : Theme.TrayText) : color;
             if (style == IconStyle.Needle && percent.HasValue) DrawNeedle(g, box, progress, foreground);
@@ -91,15 +92,20 @@ static class TrayIcon
         return pen;
     }
 
-    static void DrawArc(Graphics g, int size, float stroke, float start, float sweep, float progress, Color color)
+    // A line this thin falls between two pixels and fades, so a strong one is drawn twice to fill them in.
+    static void DrawArc(Graphics g, int size, float stroke, float start, float sweep, float progress, Color color, bool strong)
     {
         float inset = stroke / 2;
         float diameter = size - inset * 2;
-        using (Pen track = NewRoundPen(Track, stroke))
+        using (Pen track = NewRoundPen(strong ? StrongTrack : Track, stroke))
             g.DrawArc(track, inset, inset, diameter, diameter, start, sweep);
         if (progress <= 0) return;
         using (Pen value = NewRoundPen(color, stroke))
-            g.DrawArc(value, inset, inset, diameter, diameter, start, sweep * Math.Max(MinimumProgress, progress));
+        {
+            float amount = sweep * Math.Max(MinimumProgress, progress);
+            g.DrawArc(value, inset, inset, diameter, diameter, start, amount);
+            if (strong) g.DrawArc(value, inset, inset, diameter, diameter, start, amount);
+        }
     }
 
     static void DrawNeedle(Graphics g, int size, float progress, Color color)

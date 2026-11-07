@@ -61,6 +61,8 @@ static class Preview
             panel.ChangeMascot(MascotStyle.Classic);
             panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
             Save(panel, Path.Combine(directory, "panel-" + suffix + ".png"));
+            SaveTheme(panel, PanelTheme.Black, Path.Combine(directory, "panel-black-" + suffix + ".png"));
+            SaveTheme(panel, PanelTheme.Light, Path.Combine(directory, "panel-light-" + suffix + ".png"));
             panel.ShowChartDetails();
             SaveChart(panel, Path.Combine(directory, "chart-" + suffix + ".png"));
             panel.ShowMainPage();
@@ -81,6 +83,15 @@ static class Preview
             Save(panel, Path.Combine(directory, "black-" + suffix + ".png"));
             Theme.Panel = PanelTheme.Graphite;
         }
+    }
+
+    static void SaveTheme(UsagePanel panel, PanelTheme theme, string path)
+    {
+        Theme.Panel = theme;
+        panel.ApplyTheme();
+        Save(panel, path);
+        Theme.Panel = PanelTheme.Graphite;
+        panel.ApplyTheme();
     }
 
     static void RenderThemes(UsagePanel panel, string path)

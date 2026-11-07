@@ -4,7 +4,11 @@
 
 See your Claude Code usage limits in the Windows taskbar, without opening anything.
 
-![The usage panel](docs/images/panel-en.png)
+<p>
+<img src="docs/images/panel-en.png" alt="The usage panel with the graphite theme" width="270">
+<img src="docs/images/panel-black-en.png" alt="The usage panel with the black theme" width="270">
+<img src="docs/images/panel-light-en.png" alt="The usage panel with the light theme" width="270">
+</p>
 
 > Unofficial community project. It is not affiliated with, endorsed by, or supported by Anthropic. "Claude" is a trademark of Anthropic.
 

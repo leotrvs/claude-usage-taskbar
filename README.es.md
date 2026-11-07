@@ -6,7 +6,11 @@ Consulta los límites de uso de Claude Code en la barra de tareas de Windows, si
 
 > La aplicación está disponible en inglés y portugués. Las capturas de esta página están en inglés.
 
-![El panel de uso](docs/images/panel-en.png)
+<p>
+<img src="docs/images/panel-en.png" alt="El panel de uso con el tema grafito" width="270">
+<img src="docs/images/panel-black-en.png" alt="El panel de uso con el tema negro" width="270">
+<img src="docs/images/panel-light-en.png" alt="El panel de uso con el tema claro" width="270">
+</p>
 
 > Proyecto comunitario no oficial. No tiene relación con Anthropic, ni cuenta con su aprobación o soporte. "Claude" es una marca de Anthropic.
 

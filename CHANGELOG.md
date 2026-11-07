@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.5
+
+- A stronger line around the Gauge number in the taskbar
+- The README shows the graphite, black and light panels side by side
+
 ## 1.5.4
 
 - New light panel theme
