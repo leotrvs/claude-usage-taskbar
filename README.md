@@ -77,6 +77,8 @@ Choose one under **Appearance**. From top to bottom:
 
 The chart shows your 5-hour usage over the last 12 hours. Hover over it to see the time, the percentage at that moment and how much it rose since the previous reading.
 
+The small **12h**, **24h** and **7d** switch above the chart changes the range. The 7-day view follows your weekly limit. Below the chart, **Today** shows how much of a 5-hour session you have used since midnight.
+
 ### Pace forecast
 
 - **5-hour limit:** the forecast blends your average for the whole window with your recent trend. Far from the limit, one burst does not dominate it; close to the limit, the last few minutes count the most. It appears after at least 5% usage and 15 minutes of data.
@@ -123,6 +125,12 @@ Under **Appearance** you can choose the look:
 - **Christmas**, **Headphones**, **Chef**, **Scientist**, **Detective**, **Winter** and **Racer:** the same mascot with an outfit. The Chef says `im cooking` while it works, and the Detective sometimes searches with a magnifying glass.
 
 ![The outfits](docs/images/mascot-outfits.png)
+
+Some outfits react: the Scientist stirs a flask while working and its goggles flash red in a panic, the Detective's magnifying glass shines when a session waits for you, the Winter scarf flutters and the Racer waves the checkered flag when a limit renews. Click the mascot five times in a row and it melts with love.
+
+![The outfit reactions and the love animation](docs/images/mascot-reactions.png)
+
+With **Holiday outfits** on, a mascot with no outfit dresses up on its own for Christmas, Halloween and Carnival. When it walks, it sometimes stops to glance at the usage bars when a limit is close, or goes looking for where your cursor was.
 
 When it is resting, the mascot now and then takes a short walk across the empty part of the panel header, and turns back before it reaches the text:
 

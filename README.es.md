@@ -78,6 +78,8 @@ Elige uno en **Appearance**. De arriba abajo:
 
 El gráfico muestra tu uso de 5 horas durante las últimas 12 horas. Pasa el ratón por encima para ver la hora, el porcentaje en ese momento y cuánto subió desde la lectura anterior.
 
+El selector **12h**, **24h** y **7d** sobre el gráfico cambia el periodo. La vista de 7 días sigue tu límite semanal. Debajo del gráfico, **Today** muestra cuánto de una sesión de 5 horas has usado desde medianoche.
+
 ### Previsión de ritmo
 
 - **Límite de 5 horas:** la previsión combina tu media de toda la ventana con la tendencia reciente. Lejos del límite, un pico aislado no la domina; cerca del límite, los últimos minutos pesan más. Aparece a partir del 5% de uso y 15 minutos de datos.
@@ -124,6 +126,12 @@ En **Appearance** puedes elegir el aspecto:
 - **Christmas**, **Headphones**, **Chef**, **Scientist**, **Detective**, **Winter** y **Racer:** la misma mascota con un atuendo. El Chef dice `im cooking` mientras trabaja, y el Detective a veces busca con una lupa.
 
 ![Los atuendos](docs/images/mascot-outfits.png)
+
+Algunos atuendos reaccionan: el Scientist remueve un frasco mientras trabaja y sus gafas parpadean en rojo en pánico, la lupa del Detective brilla cuando una sesión te espera, la bufanda del Winter ondea y el Racer agita la bandera de cuadros cuando se renueva un límite. Haz clic cinco veces seguidas en la mascota y se derrite de amor.
+
+![Las reacciones de los atuendos y la animación de amor](docs/images/mascot-reactions.png)
+
+Con **Holiday outfits** activado, una mascota sin atuendo se disfraza sola en Navidad, Halloween y Carnaval. Al pasear, a veces se detiene a mirar las barras de uso si un límite está cerca, o va a buscar dónde estaba tu cursor.
 
 Cuando descansa, la mascota da de vez en cuando un paseo corto por la parte vacía de la cabecera del panel y vuelve antes de llegar al texto:
 

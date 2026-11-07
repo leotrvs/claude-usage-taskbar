@@ -3,6 +3,7 @@ using Microsoft.Win32;
 
 enum IconStyle { Gauge, Ring, Needle }
 enum IconsShown { Both, Session, Weekly }
+enum ChartRange { Hours12, Hours24, Days7 }
 
 static class Settings
 {
@@ -69,6 +70,23 @@ static class Settings
             return Enum.TryParse(Read("MascotStyle") as string, out style) ? style : MascotStyle.Classic;
         }
         set { Write("MascotStyle", value.ToString()); }
+    }
+
+    public static ChartRange ChartRange
+    {
+        get
+        {
+            ChartRange range;
+            return Enum.TryParse(Read("ChartRange") as string, out range) ? range : ChartRange.Hours12;
+        }
+        set { Write("ChartRange", value.ToString()); }
+    }
+
+    // Lets the mascot dress for Christmas, Halloween and Carnival when no outfit is chosen.
+    public static bool SeasonalOutfits
+    {
+        get { return !"False".Equals(Read("SeasonalOutfits")); }
+        set { Write("SeasonalOutfits", value.ToString()); }
     }
 
     // The icons have no background, so they follow the color of the taskbar behind them.

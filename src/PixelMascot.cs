@@ -2,9 +2,9 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-enum MascotStyle { Pixel, Santa, Classic, Headphones, Chef, Scientist, Detective, Winter, Racer }
+enum MascotStyle { Pixel, Santa, Classic, Headphones, Chef, Scientist, Detective, Winter, Racer, Halloween, Carnival }
 enum MascotMood { Sleep, Idle, Work, Tired, Down, Waiting, Panic, Coffee, Juggle, Night }
-enum MascotAction { Celebrate, Wave, Pet }
+enum MascotAction { Celebrate, Wave, Pet, Love }
 
 interface IMascot : IDisposable
 {
@@ -18,6 +18,8 @@ interface IReactiveMascot : IMascot
     MascotMood Mood { get; set; }
     int WalkOffset { get; } // Columns the character has moved left of its resting spot.
     int WalkRoom { set; } // Columns it may move left without covering the panel's text.
+    int UsagePercent { set; } // The highest limit, so it can glance at the bars when close to it.
+    int? WalkGoal { set; } // Where the cursor last was in the header, in columns left of the resting spot.
     void Play(MascotAction action);
 }
 
@@ -39,6 +41,9 @@ class PixelMascot : IReactiveMascot
     const int CelebrateFrames = 26;
     const int WaveFrames = 14;
     const int PetFrames = 14;
+    const int LoveFrames = 44;
+    const int GlanceFromPercent = 80;
+    const int SweatPercent = 90;
     const int ActionDelayMs = 110;
     const int SnowFlakes = 10;
     const int SteamPuffs = 3;
@@ -55,8 +60,8 @@ class PixelMascot : IReactiveMascot
     const int WalkLookTicks = 18;
     const int PatrolStride = 9;
     const int PatrolStopTicks = 12;
-    const int MinWalkWaitMs = 30000;
-    const int MaxWalkWaitMs = 60000;
+    const int MinWalkWaitMs = 15000;
+    const int MaxWalkWaitMs = 30000;
     const int MinPanicWaitMs = 25000;
     const int MaxPanicWaitMs = 55000;
     const int PanicSpeed = 2;
@@ -168,6 +173,8 @@ class PixelMascot : IReactiveMascot
         public int Step;
         public int Look;
         public bool Searching;
+        public bool Down; // Looking down at the usage bars.
+        public bool Sweat;
         public bool Racing; // The Racer drives instead of walking.
         public bool Flag;
         public bool Car;
@@ -188,6 +195,8 @@ class PixelMascot : IReactiveMascot
     bool walkPatrol;
     bool walkPanic;
     bool walkRace;
+    bool walkGlance;
+    bool walkCursor;
     int walkLegs;
     int nextWalk;
     Bitmap frame;
@@ -206,6 +215,8 @@ class PixelMascot : IReactiveMascot
 
     public int WalkOffset { get; private set; }
     public int WalkRoom { get; set; }
+    public int UsagePercent { get; set; }
+    public int? WalkGoal { get; set; }
 
     public Bitmap CurrentFrame { get { return frame; } }
     public bool IsPlaying { get { return action.HasValue; } }
@@ -245,6 +256,7 @@ class PixelMascot : IReactiveMascot
 
     public void Play(MascotAction value)
     {
+        if (action.HasValue && action.Value == MascotAction.Love && value != MascotAction.Love) return; // Let it finish melting.
         action = value;
         actionTick = 0;
         Redraw();
@@ -327,9 +339,27 @@ class PixelMascot : IReactiveMascot
         walkTarget = peek ? room / 2 : room;
         walkStops = 0;
         walkTick = 0;
+        walkGlance = false;
+        walkCursor = false;
+        if (!walkPanic && !walkPatrol)
+        {
+            if (WalkGoal.HasValue && Chance.Next(2) == 0)
+            {
+                walkTarget = Math.Max(MinWalkRoom / 2, Math.Min(WalkGoal.Value, room));
+                walkCursor = true;
+            }
+            else if (UsagePercent >= GlanceFromPercent && Chance.Next(2) == 0)
+            {
+                walkTarget = Math.Max(MinWalkRoom / 2, room / 2);
+                walkGlance = true;
+            }
+            WalkGoal = null;
+        }
         walkRace = style == MascotStyle.Racer && !walkPanic;
         if (walkRace)
         {
+            walkGlance = false;
+            walkCursor = false;
             walkTarget = room;
             walkStep = WalkStep.Flag;
             walkWait = FlagTicks;
@@ -363,6 +393,10 @@ class PixelMascot : IReactiveMascot
         else if (walkStep == WalkStep.Look) pose.Look = walkTick % WalkLookTicks < WalkLookTicks / 2 ? 1 : -1;
         else if (walkStep == WalkStep.Search) pose.Look = walkTick / 3 % 2 == 0 ? -1 : 0;
         else pose.Look = -1;
+        pose.Down = walkStep == WalkStep.Look && walkGlance;
+        pose.Sweat = pose.Down && UsagePercent >= SweatPercent;
+        if (pose.Down) pose.Look = 0;
+        else if (walkStep == WalkStep.Look && walkCursor) pose.Look = walkTick % 8 < 4 ? -1 : 1;
         if (walkRace)
         {
             pose.Racing = true;
@@ -379,7 +413,8 @@ class PixelMascot : IReactiveMascot
 
     static int FramesOf(MascotAction value)
     {
-        return value == MascotAction.Celebrate ? CelebrateFrames : value == MascotAction.Wave ? WaveFrames : PetFrames;
+        return value == MascotAction.Celebrate ? CelebrateFrames : value == MascotAction.Wave ? WaveFrames
+            : value == MascotAction.Love ? LoveFrames : PetFrames;
     }
 
     void Redraw()
@@ -437,8 +472,12 @@ class PixelMascot : IReactiveMascot
         {
             Canvas canvas = new Canvas(g, pixel);
             canvas.Style = style;
-            canvas.Glint = walk != null && walk.Searching;
+            canvas.Tick = tick;
+            canvas.Mood = action.HasValue ? (MascotMood?)null : mood;
+            canvas.Glint = (walk != null && walk.Searching) || (!action.HasValue && mood == MascotMood.Waiting && tick % 4 < 2);
             if (style == MascotStyle.Santa || style == MascotStyle.Winter) DrawSnow(canvas, tick);
+            if (style == MascotStyle.Halloween) DrawBats(canvas, tick);
+            if (style == MascotStyle.Carnival) DrawConfetti(canvas, tick);
             if (action.HasValue) DrawAction(canvas, style, action.Value, actionTick);
             else DrawMood(canvas, style, mood, tick, walk);
         }
@@ -477,6 +516,7 @@ class PixelMascot : IReactiveMascot
         {
             case MascotAction.Celebrate: DrawCelebrate(canvas, style, tick); break;
             case MascotAction.Wave: DrawWave(canvas, style, tick); break;
+            case MascotAction.Love: DrawLove(canvas, style, tick); break;
             default: DrawPet(canvas, style, tick); break;
         }
     }
@@ -494,8 +534,9 @@ class PixelMascot : IReactiveMascot
             int lift = walk.Searching ? -2 : 0;
             DrawFigure(canvas, BodyTop, walk.Moving ? (stride == 0 ? -1 : 0) : 0, walk.Moving ? (stride == 0 ? 0 : -1) : lift, stride);
             if (tick % 24 == 0) DrawClosedEyes(canvas, BodyTop);
-            else DrawOpenEyes(canvas, BodyTop, walk.Look, 0, 4);
+            else DrawOpenEyes(canvas, BodyTop, walk.Look, walk.Down ? 2 : 0, walk.Down ? 3 : 4);
             DrawOutfit(canvas, style, BodyTop);
+            if (walk.Sweat) canvas.Fill(BodyLeft + 23, BodyTop + walk.Step % 8, 2, 3, Sweat);
             return;
         }
         int crouch = tick % 64 == 40 ? 2 : 0;
@@ -657,7 +698,7 @@ class PixelMascot : IReactiveMascot
         DrawFigure(canvas, BodyTop + crouch, 0, -2);
         DrawOpenEyes(canvas, BodyTop + crouch, 0, 0, 4);
         DrawOutfit(canvas, style, BodyTop + crouch);
-        canvas.Art(QuestionMark, 1, 27, 1 + (tick % 4 < 2 ? 0 : 1), Question);
+        canvas.Art(QuestionMark, 1, style == MascotStyle.Detective ? 1 : 27, 1 + (tick % 4 < 2 ? 0 : 1), Question);
     }
 
     static void DrawPanic(Canvas canvas, MascotStyle style, int tick, WalkPose walk)
@@ -721,8 +762,45 @@ class PixelMascot : IReactiveMascot
         }
     }
 
+    // Click the mascot again and again and it melts: hearts everywhere, a happy bounce and blushing cheeks.
+    static void DrawLove(Canvas canvas, MascotStyle style, int tick)
+    {
+        int top = BodyTop + (tick % 4 < 2 ? 0 : 2);
+        DrawFigure(canvas, top, -3, -3);
+        DrawHappyEyes(canvas, top);
+        canvas.Fill(BodyLeft + 5, top + 6, 3, 1, Heart);
+        canvas.Fill(BodyLeft + 16, top + 6, 3, 1, Heart);
+        DrawOutfit(canvas, style, top);
+        for (int heart = 0; heart < 5; heart++)
+        {
+            int rise = (tick * 2 + heart * 7) % 22;
+            canvas.Art(HeartShape, 1, 2 + heart * 6 + (rise / 3 % 2), Rows - 3 - rise, Heart);
+        }
+    }
+
+    static void DrawBats(Canvas canvas, int tick)
+    {
+        Color bat = Color.FromArgb(150, 110, 200);
+        for (int i = 0; i < 2; i++)
+        {
+            int x = (tick + i * 19) % 46 - 8;
+            int y = 2 + i * 5 + (tick / 3 + i) % 2;
+            canvas.Art(((tick / 2 + i) % 2 == 0) ? new[] { "#.#.#", ".###." } : new[] { ".###.", "#.#.#" }, 1, x, y, bat);
+        }
+    }
+
+    static void DrawConfetti(Canvas canvas, int tick)
+    {
+        for (int piece = 0; piece < 14; piece++)
+        {
+            int sway = (tick + piece * 3) / 5 % 2;
+            canvas.Fill((piece * 7 + 1 + sway) % Columns, (tick + piece * 4) % Rows, 1, 2, Bright[piece % Bright.Length]);
+        }
+    }
+
     static void DrawCelebrate(Canvas canvas, MascotStyle style, int tick)
     {
+        if (style == MascotStyle.Racer) DrawFlag(canvas, tick);
         int top = BodyTop + (tick % 6 < 3 ? 0 : 2);
         DrawFigure(canvas, top, -3, -3);
         DrawHappyEyes(canvas, top);
@@ -801,7 +879,8 @@ class PixelMascot : IReactiveMascot
     static bool Dressed(MascotStyle style)
     {
         return OutfitOf(style) != null || style == MascotStyle.Scientist || style == MascotStyle.Detective
-            || style == MascotStyle.Winter || style == MascotStyle.Racer;
+            || style == MascotStyle.Winter || style == MascotStyle.Racer || style == MascotStyle.Halloween
+            || style == MascotStyle.Carnival;
     }
 
     static void DrawOutfit(Canvas canvas, MascotStyle style, int top)
@@ -823,6 +902,10 @@ class PixelMascot : IReactiveMascot
     static readonly Color Scarf = Color.FromArgb(214, 48, 49);
     static readonly Color Suit = Color.FromArgb(39, 64, 139);
     static readonly Color Boot = Color.FromArgb(34, 34, 34);
+    static readonly Color Violet = Color.FromArgb(72, 40, 110);
+    static readonly Color Pumpkin = Color.FromArgb(245, 130, 32);
+    static readonly Color Pink = Color.FromArgb(240, 90, 160);
+    static readonly Color Teal = Color.FromArgb(40, 200, 190);
 
     // Clothes on the body sit under the laptop and the mug, so they are drawn right after the figure.
     static void DrawClothes(Canvas canvas, int top, int leftArm, int rightArm, int legShift)
@@ -853,8 +936,22 @@ class PixelMascot : IReactiveMascot
                 canvas.Fill(left + 4, top + 8, 16, 2, Scarf);
                 canvas.Fill(left + 8, top + 8, 2, 2, Coat);
                 canvas.Fill(left + 14, top + 8, 2, 2, Coat);
-                canvas.Fill(left + 15, top + 10, 3, 5, Scarf);
-                canvas.Fill(left + 15, top + 12, 3, 1, Coat);
+                int flutter = canvas.Tick / 3 % 2;
+                canvas.Fill(left + 15 + flutter, top + 10, 3, 5, Scarf);
+                canvas.Fill(left + 15 + flutter, top + 12, 3, 1, Coat);
+                break;
+            case MascotStyle.Halloween:
+                canvas.Fill(left, top + 6 + leftArm, 4, 3, Violet);
+                canvas.Fill(left + 20, top + 6 + rightArm, 4, 3, Violet);
+                canvas.Fill(left + 4, top + 7, 16, 5, Violet);
+                canvas.Fill(left + 4, top + 7, 16, 1, Pumpkin);
+                canvas.Fill(left + 4, top + 11, 16, 1, Pumpkin);
+                canvas.Fill(left + 10, top + 9, 4, 1, Gold);
+                break;
+            case MascotStyle.Carnival:
+                canvas.Fill(left + 4, top + 8, 16, 2, Pink);
+                canvas.Fill(left + 4, top + 8, 4, 2, Gold);
+                canvas.Fill(left + 16, top + 8, 4, 2, Teal);
                 break;
             case MascotStyle.Racer:
                 foreach (int leg in new[] { 4, 8, 14, 18 })
@@ -889,6 +986,12 @@ class PixelMascot : IReactiveMascot
                 Goggle(canvas, left + 5, top);
                 Goggle(canvas, left + 15, top);
                 canvas.Fill(left + 10, top + 3, 5, 1, Frame);
+                if (canvas.Mood == MascotMood.Panic && canvas.Tick % 2 == 0)
+                {
+                    canvas.Fill(left + 6, top + 2, 3, 4, Color.FromArgb(170, 255, 60, 60));
+                    canvas.Fill(left + 16, top + 2, 3, 4, Color.FromArgb(170, 255, 60, 60));
+                }
+                if (canvas.Mood == MascotMood.Work || canvas.Mood == MascotMood.Tired || canvas.Mood == MascotMood.Juggle) DrawFlask(canvas, canvas.Tick);
                 break;
             case MascotStyle.Detective:
                 canvas.Fill(left + 2, top - 1, 20, 2, Brown);
@@ -906,7 +1009,32 @@ class PixelMascot : IReactiveMascot
                 foreach (int rib in new[] { 6, 10, 14, 18 })
                     canvas.Fill(left + rib, top - 1, 1, 2, Color.FromArgb(195, 205, 230));
                 break;
+            case MascotStyle.Halloween:
+                canvas.Fill(left + 2, top - 1, 20, 2, Violet);
+                for (int row = 0; row < 5; row++)
+                {
+                    int width = 12 - row * 2;
+                    canvas.Fill(left + 12 - width / 2, top - 2 - row, width, 1, Violet);
+                }
+                canvas.Fill(left + 6, top - 2, 12, 1, Pumpkin);
+                canvas.Fill(left + 11, top - 2, 2, 1, Gold);
+                break;
+            case MascotStyle.Carnival:
+                canvas.Fill(left + 4, top, 16, 1, Gold);
+                canvas.Fill(left + 2, top - 3, 2, 3, Pink);
+                canvas.Fill(left + 1, top - 5, 2, 2, Pink);
+                canvas.Fill(left + 6, top - 5, 2, 5, Color.FromArgb(250, 204, 21));
+                canvas.Fill(left + 10, top - 4, 2, 4, Teal);
+                canvas.Fill(left + 11, top - 6, 2, 2, Teal);
+                canvas.Fill(left + 4, top + 1, 16, 1, Gold);
+                canvas.Fill(left + 4, top + 6, 16, 1, Violet);
+                canvas.Fill(left + 4, top + 2, 2, 4, Violet);
+                canvas.Fill(left + 10, top + 2, 4, 4, Violet);
+                canvas.Fill(left + 18, top + 2, 2, 4, Violet);
+                break;
             case MascotStyle.Racer:
+                if (canvas.Mood == MascotMood.Panic && canvas.Tick % 2 == 0)
+                    canvas.Fill(left + 5, top + 1, 14, 5, Color.FromArgb(70, 255, 40, 40));
                 canvas.Fill(left + 6, top - 4, 12, 1, Scarf);
                 canvas.Fill(left + 5, top - 3, 14, 1, Scarf);
                 canvas.Fill(left + 4, top - 2, 16, 3, Scarf);
@@ -917,6 +1045,19 @@ class PixelMascot : IReactiveMascot
                 canvas.Fill(left + 5, top + 1, 3, 1, Color.FromArgb(89, 255, 255, 255));
                 break;
         }
+    }
+
+    // A bubbling flask the Scientist holds while working.
+    static void DrawFlask(Canvas canvas, int tick)
+    {
+        Color glass = Color.FromArgb(190, 200, 230, 245);
+        Color liquid = Color.FromArgb(70, 210, 120);
+        canvas.Fill(27, 13, 2, 3, glass);
+        canvas.Fill(26, 16, 4, 1, glass);
+        canvas.Fill(25, 17, 6, 4, glass);
+        canvas.Fill(26, 18, 4, 3, liquid);
+        for (int bubble = 0; bubble < 2; bubble++)
+            canvas.Fill(27 + (tick / 3 + bubble) % 2, 12 - (tick + bubble * 3) % 5, 1, 1, liquid);
     }
 
     static void Goggle(Canvas canvas, int x, int top)
@@ -978,6 +1119,8 @@ class PixelMascot : IReactiveMascot
         public int RightArm;
         public bool Glint;
         public bool Mirror;
+        public int Tick;
+        public MascotMood? Mood;
 
         public Canvas(Graphics graphics, int pixel)
         {

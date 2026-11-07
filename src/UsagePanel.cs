@@ -49,6 +49,7 @@ class PanelTarget
     public IconStyle? Style;
     public Language? Language;
     public IconsShown? Shown;
+    public ChartRange? Range;
     public Func<bool> Toggle;
     public Func<bool> Selected; // For chips that are not tied to one of the fields above.
     public Color? Swatch;
@@ -67,16 +68,16 @@ class PanelTarget
 class UsagePanel : Form
 {
     const int LogicalWidth = 300;
-    const int MainHeight = 328;
+    const int MainHeight = 346;
     const int SettingsHeight = 394;
-    const int AppearanceHeight = 512;
+    const int AppearanceHeight = 552;
     const int SessionTop = 62;
     const int WeeklyTop = 132;
     const int WeeklyTopWithoutPace = 118; // Moves up into the line the session pace would use.
     const int HistoryTop = 200;
     const int ChartTop = 216;
-    const int DividerTop = 266;
-    const int ActionsTop = 274;
+    const int DividerTop = 284;
+    const int ActionsTop = 292;
     const int ActionHeight = 46;
     const int MascotHeight = 42;
     const string PanelTitle = "Claude Usage";
@@ -91,7 +92,10 @@ class UsagePanel : Form
     const int LongestFrameMs = 50; // A late timer tick continues the motion instead of jumping.
     const string RefreshGlyph = "\uE72C";
     const string DownloadGlyph = "\uE896";
-    const double ChartHours = 12;
+    const int LoveClicks = 5; // This many clicks within the window make the mascot melt.
+    const int LoveWindowMs = 4000;
+    const int RangeChipWidth = 34;
+    const int RangeChipHeight = 18;
     const int ReopenGuardMilliseconds = 300;
     const int OpenAnimationMs = 160;
     const int CloseAnimationMs = 110;
@@ -123,6 +127,7 @@ class UsagePanel : Form
     int hovered = -1;
     int hiddenAt;
     int chartHoverX = -1;
+    ChartRange chartRange = Settings.ChartRange;
     int animationStart;
     int restingTop;
     bool closing;
@@ -139,6 +144,8 @@ class UsagePanel : Form
     string updateVersion;
     MascotAction? pendingMascotAction;
     bool overMascot;
+    readonly Queue<int> mascotClicks = new Queue<int>();
+    MascotStyle shownStyle;
     DateTime updateCheckedAt;
 
     public UsagePanel(PanelCallbacks callbacks)
@@ -188,6 +195,42 @@ class UsagePanel : Form
             action.Tile = true;
             action.Bounds = ChipBounds(column, 3, ActionsTop, ActionHeight);
         }
+        AddRangeTarget(ChartRange.Hours12, "12h", 0);
+        AddRangeTarget(ChartRange.Hours24, "24h", 1);
+        AddRangeTarget(ChartRange.Days7, "7d", 2);
+    }
+
+    // Small switch on the history row, hidden while the chart shows its hover details.
+    void AddRangeTarget(ChartRange value, string label, int index)
+    {
+        PanelTarget chip = new PanelTarget();
+        chip.Range = value;
+        chip.LiteralLabel = label;
+        int right = ClientSize.Width - Px(18);
+        chip.Bounds = new Rectangle(right - (3 - index) * Px(RangeChipWidth), Px(HistoryTop) - Px(2), Px(RangeChipWidth), Px(RangeChipHeight));
+        chip.Run = delegate
+        {
+            chartRange = value;
+            Settings.ChartRange = value;
+            Invalidate();
+        };
+        mainTargets.Add(chip);
+    }
+
+    double ChartHours
+    {
+        get { return chartRange == ChartRange.Days7 ? 168 : chartRange == ChartRange.Hours24 ? 24 : 12; }
+    }
+
+    string HistoryLabel
+    {
+        get { return Localization.T(chartRange == ChartRange.Days7 ? "history7" : chartRange == ChartRange.Hours24 ? "history24" : "history"); }
+    }
+
+    // The week chart follows the weekly limit; the shorter ones follow the 5-hour session.
+    double? ChartValue(UsageSample sample)
+    {
+        return chartRange == ChartRange.Days7 ? sample.Weekly : (double?)sample.Session;
     }
 
     void AddStyleChip(IconStyle style, string labelKey, int column, PanelCallbacks callbacks)
@@ -239,6 +282,11 @@ class UsagePanel : Form
         AddMascotChip(MascotStyle.Detective, "mascotDetective", 0, 2, callbacks);
         AddMascotChip(MascotStyle.Winter, "mascotWinter", 1, 2, callbacks);
         AddMascotChip(MascotStyle.Racer, "mascotRacer", 2, 2, callbacks);
+        appearanceTargets.Add(NewToggle("seasonalOutfits", 508, delegate { return Settings.SeasonalOutfits; }, delegate
+        {
+            Settings.SeasonalOutfits = !Settings.SeasonalOutfits;
+            ChangeMascot(mascotStyle);
+        }));
     }
 
     void AddMascotChip(MascotStyle value, string labelKey, int column, int row, PanelCallbacks callbacks)
@@ -420,6 +468,13 @@ class UsagePanel : Form
     }
 
     // Shows the hover details without a mouse, for the documentation images.
+    // Picks the chart range without saving it, for the documentation images.
+    public void ShowChartRange(ChartRange range)
+    {
+        chartRange = range;
+        Invalidate();
+    }
+
     public void ShowChartDetails()
     {
         chartHoverX = ChartArea.Left + ChartArea.Width * 3 / 4;
@@ -696,6 +751,11 @@ class UsagePanel : Form
             motionTimer.Stop();
             return;
         }
+        if (mascot != null && shownStyle != Seasons.Effective(mascotStyle))
+        {
+            mascot.Dispose(); // A special date began or ended since the panel was last open.
+            mascot = null;
+        }
         LoadMascot();
         StartMascot();
     }
@@ -717,7 +777,8 @@ class UsagePanel : Form
 
     IMascot NewMascot()
     {
-        if (mascotStyle != MascotStyle.Classic) return new PixelMascot(mascotStyle, MascotPixel);
+        shownStyle = Seasons.Effective(mascotStyle);
+        if (shownStyle != MascotStyle.Classic) return new PixelMascot(shownStyle, MascotPixel);
         PixelMascot other = new PixelMascot(MascotStyle.Pixel, MascotPixel);
         Mascot working = Mascot.Load(Px(MascotHeight));
         return working != null ? (IMascot)new ClassicMascot(working, other) : other;
@@ -764,6 +825,7 @@ class UsagePanel : Form
     {
         IReactiveMascot reactive = mascot as IReactiveMascot;
         if (reactive == null) return;
+        reactive.UsagePercent = Math.Max(state.Session.Percent ?? 0, state.Weekly.Percent ?? 0);
         if (updateVersion != null)
         {
             reactive.WalkRoom = 0;
@@ -793,6 +855,7 @@ class UsagePanel : Form
         bool onMascot = targets == mainTargets && MascotArea.Contains(e.Location);
         if (onMascot && !overMascot) PlayMascot(MascotAction.Wave);
         overMascot = onMascot;
+        RememberCursorInHeader(e);
 
         int chartX = targets == mainTargets && ChartArea.Contains(e.Location) ? e.X : -1;
         if (chartX != chartHoverX)
@@ -808,6 +871,26 @@ class UsagePanel : Form
         StartMotion();
     }
 
+    // Where the cursor was in the empty part of the header, so the mascot may walk over to look for it.
+    void RememberCursorInHeader(MouseEventArgs e)
+    {
+        IReactiveMascot walker = mascot as IReactiveMascot;
+        if (walker == null || targets != mainTargets || e.Y >= Px(58)) return;
+        int restLeft = ClientSize.Width - Px(18) - mascot.CurrentFrame.Width;
+        if (e.X < restLeft - Px(6))
+            walker.WalkGoal = Math.Max(1, (restLeft + mascot.CurrentFrame.Width / 2 - e.X) / MascotPixel);
+    }
+
+    bool PettedLongEnough()
+    {
+        int now = Environment.TickCount;
+        mascotClicks.Enqueue(now);
+        while (mascotClicks.Count > 0 && now - mascotClicks.Peek() > LoveWindowMs) mascotClicks.Dequeue();
+        if (mascotClicks.Count < LoveClicks) return false;
+        mascotClicks.Clear();
+        return true;
+    }
+
     protected override void OnMouseLeave(EventArgs e)
     {
         base.OnMouseLeave(e);
@@ -819,7 +902,7 @@ class UsagePanel : Form
     protected override void OnMouseClick(MouseEventArgs e)
     {
         base.OnMouseClick(e);
-        if (overMascot) PlayMascot(MascotAction.Pet);
+        if (overMascot) PlayMascot(PettedLongEnough() ? MascotAction.Love : MascotAction.Pet);
         if (hovered < 0) return;
         targets[hovered].Run();
         StartMotion();
@@ -868,6 +951,7 @@ class UsagePanel : Form
             PanelTarget target = targets[i];
             bool isHovered = i == hovered;
             if (target == updateLink) DrawUpdateLink(g, isHovered);
+            else if (target.Range.HasValue) { if (chartHoverX < 0) DrawRangeChip(g, target, isHovered); }
             else if (target.Selected != null || target.Style.HasValue || target.Language.HasValue || target.Shown.HasValue) DrawChip(g, target, isHovered);
             else if (target.Toggle != null) DrawToggle(g, target, isHovered);
             else DrawRow(g, target, isHovered);
@@ -887,8 +971,10 @@ class UsagePanel : Form
         }
         DrawLimit(g, Localization.T("session"), state.Session, state.SessionPace, true, Px(SessionTop), left, right);
         DrawLimit(g, Localization.T("weekly"), state.Weekly, state.WeeklyPace, false, Px(state.SessionPace != null ? WeeklyTop : WeeklyTopWithoutPace), left, right);
-        Draw(g, Localization.T("history"), tinyFont, Theme.Muted, left, Px(HistoryTop), right - left, TextFormatFlags.Left);
+        Draw(g, HistoryLabel, tinyFont, Theme.Muted, left, Px(HistoryTop), right - left - Px(RangeChipWidth) * 3, TextFormatFlags.Left);
         DrawChart(g, ChartArea);
+        string today = TodayUsage();
+        if (today != null) Draw(g, today, tinyFont, Theme.Muted, left, Px(ChartTop + 44), right - left, TextFormatFlags.Left);
         DrawDivider(g, Px(DividerTop));
     }
 
@@ -938,9 +1024,9 @@ class UsagePanel : Form
         List<UsageSample> shown = new List<UsageSample>();
         foreach (UsageSample sample in state.History)
         {
-            if (sample.Time < start) continue;
+            if (sample.Time < start || !ChartValue(sample).HasValue) continue;
             float x = area.Left + (float)((sample.Time - start).TotalHours / ChartHours) * area.Width;
-            float y = area.Bottom - (float)(Math.Min(100, sample.Session) / 100) * area.Height;
+            float y = area.Bottom - (float)(Math.Min(100, ChartValue(sample).Value) / 100) * area.Height;
             points.Add(new PointF(x, y));
             shown.Add(sample);
         }
@@ -979,14 +1065,45 @@ class UsagePanel : Form
         using (Brush dot = new SolidBrush(Theme.Text))
             g.FillEllipse(dot, point.X - radius, point.Y - radius, radius * 2, radius * 2);
 
-        int percent = (int)Math.Round(samples[nearest].Session);
-        string text = samples[nearest].Time.ToString("HH:mm", Localization.Culture) + " · " + percent + "%";
+        int percent = (int)Math.Round(ChartValue(samples[nearest]).Value);
+        string format = chartRange == ChartRange.Hours12 ? "HH:mm" : "ddd HH:mm";
+        string text = samples[nearest].Time.ToString(format, Localization.Culture) + " · " + percent + "%";
         if (nearest > 0)
         {
-            int change = percent - (int)Math.Round(samples[nearest - 1].Session);
+            int change = percent - (int)Math.Round(ChartValue(samples[nearest - 1]).Value);
             if (change > 0) text += " · +" + change + "%";
         }
         Draw(g, text, tinyFont, Theme.Text, area.Left, Px(HistoryTop), area.Width, TextFormatFlags.Right);
+    }
+
+    // How much of a 5-hour session was used since midnight, from the rises in the saved history.
+    string TodayUsage()
+    {
+        DateTime midnight = DateTime.Today;
+        double total = 0;
+        UsageSample previous = null;
+        int count = 0;
+        foreach (UsageSample sample in state.History)
+        {
+            if (sample.Time < midnight) continue;
+            count++;
+            if (previous != null && sample.Session > previous.Session) total += sample.Session - previous.Session;
+            previous = sample;
+        }
+        if (count < 2) return null;
+        return Localization.T("today", (total / 100).ToString("0.0", Localization.Culture));
+    }
+
+    void DrawRangeChip(Graphics g, PanelTarget chip, bool isHovered)
+    {
+        bool selected = chip.Range.Value == chartRange;
+        Color color = selected || isHovered ? Theme.Text : Theme.Muted;
+        TextRenderer.DrawText(g, chip.Label, tinyFont, chip.Bounds, color,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        if (!selected) return;
+        int width = Px(14);
+        using (Pen underline = new Pen(Theme.Accent, Px(2)))
+            g.DrawLine(underline, chip.Bounds.X + (chip.Bounds.Width - width) / 2, chip.Bounds.Bottom, chip.Bounds.X + (chip.Bounds.Width + width) / 2, chip.Bounds.Bottom);
     }
 
     void PaintSettingsPage(Graphics g, int left, int right)

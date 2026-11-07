@@ -71,7 +71,8 @@ class Toast : Form
         repeatedAction = action;
         BackColor = Theme.Background;
 
-        MascotStyle style = Settings.MascotStyle == MascotStyle.Classic ? MascotStyle.Pixel : Settings.MascotStyle;
+        MascotStyle style = Seasons.Effective(Settings.MascotStyle);
+        if (style == MascotStyle.Classic) style = MascotStyle.Pixel;
         if (mascot != null) mascot.Dispose();
         mascot = new PixelMascot(style, Math.Max(1, (int)(MascotPixelSize * scale)));
         mascot.Mood = mood;

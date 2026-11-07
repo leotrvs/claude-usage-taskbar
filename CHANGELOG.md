@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.8.0
+
+- The chart can show 12 hours, 24 hours or 7 days, and the 7-day view follows the weekly limit
+- A new "Today" line shows how much of a 5-hour session you have used since midnight
+- Outfit reactions: the Scientist's flask and red goggles, the Detective's shining magnifying glass, the Winter scarf in the wind and the Racer's checkered flag
+- Click the mascot five times in a row and it melts with love
+- On its walks, the mascot sometimes glances at the usage bars when a limit is close, or goes looking for the cursor
+- New Halloween and Carnival outfits, and a Holiday outfits switch that dresses the mascot for Christmas, Halloween and Carnival
+- The resting mascot walks every 15 to 30 seconds
+- The history now keeps 7 days instead of 1
+
 ## 1.7.3
 
 - The resting mascot walks more often, every 30 seconds to 1 minute

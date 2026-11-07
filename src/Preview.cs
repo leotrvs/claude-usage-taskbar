@@ -17,6 +17,7 @@ static class Preview
         RenderIconStyles(Path.Combine(directory, "icon-styles.png"));
         RenderMascots(Path.Combine(directory, "mascots.png"));
         RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
+        RenderReactions(Path.Combine(directory, "mascot-reactions.png"));
         RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective, false);
         RenderWalk(Path.Combine(directory, "mascot-panic-walk.png"), MascotStyle.Pixel, true);
         RenderWalk(Path.Combine(directory, "mascot-racer-drive.png"), MascotStyle.Racer, false);
@@ -37,7 +38,7 @@ static class Preview
         MascotStyle[] styles =
         {
             MascotStyle.Santa, MascotStyle.Headphones, MascotStyle.Chef, MascotStyle.Scientist,
-            MascotStyle.Detective, MascotStyle.Winter, MascotStyle.Racer
+            MascotStyle.Detective, MascotStyle.Winter, MascotStyle.Racer, MascotStyle.Halloween, MascotStyle.Carnival
         };
         const int Columns = 4;
         const int Pixel = 4;
@@ -51,6 +52,37 @@ static class Preview
             g.Clear(Color.FromArgb(10, 10, 10));
             for (int i = 0; i < styles.Length; i++)
                 using (Bitmap frame = PixelMascot.Render(styles[i], MascotMood.Idle, 3, Pixel))
+                    g.DrawImageUnscaled(frame, Gap + i % Columns * (Width + Gap), Gap + i / Columns * (Height + Gap));
+            sheet.Save(path, ImageFormat.Png);
+        }
+    }
+
+    // Reactions that belong to one outfit, and the melting after many clicks.
+    static void RenderReactions(string path)
+    {
+        const int Columns = 4;
+        const int Pixel = 4;
+        const int Width = 128;
+        const int Height = 88;
+        const int Gap = 16;
+        Func<Bitmap>[] cells =
+        {
+            delegate { return PixelMascot.Render(MascotStyle.Scientist, MascotMood.Work, 5, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Scientist, MascotMood.Panic, 0, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Detective, MascotMood.Waiting, 1, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Winter, MascotMood.Idle, 4, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Racer, MascotMood.Panic, 0, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Racer, MascotMood.Idle, 3, Pixel, MascotAction.Celebrate, 3); },
+            delegate { return PixelMascot.Render(MascotStyle.Pixel, MascotMood.Idle, 3, Pixel, MascotAction.Love, 10); },
+            delegate { return PixelMascot.Render(MascotStyle.Pixel, MascotMood.Idle, 3, Pixel, MascotAction.Love, 17); }
+        };
+        int rows = (cells.Length + Columns - 1) / Columns;
+        using (Bitmap sheet = new Bitmap(Columns * (Width + Gap) + Gap, rows * (Height + Gap) + Gap))
+        using (Graphics g = Graphics.FromImage(sheet))
+        {
+            g.Clear(Color.FromArgb(10, 10, 10));
+            for (int i = 0; i < cells.Length; i++)
+                using (Bitmap frame = cells[i]())
                     g.DrawImageUnscaled(frame, Gap + i % Columns * (Width + Gap), Gap + i / Columns * (Height + Gap));
             sheet.Save(path, ImageFormat.Png);
         }
@@ -129,7 +161,7 @@ static class Preview
     static void RenderDemoFrames(string directory, Language language)
     {
         const int Width = 324;
-        const int Height = 396;
+        const int Height = 414;
         const int TaskbarHeight = 44;
         const int PanelLeft = 12;
         const int PanelTop = 12;
@@ -215,6 +247,11 @@ static class Preview
             SaveTheme(panel, PanelTheme.Light, Path.Combine(directory, "panel-light-" + suffix + ".png"));
             panel.ShowChartDetails();
             SaveChart(panel, Path.Combine(directory, "chart-" + suffix + ".png"));
+            panel.ShowChartRange(ChartRange.Days7);
+            SaveChart(panel, Path.Combine(directory, "chart-week-" + suffix + ".png"));
+            panel.ShowChartRange(ChartRange.Hours24);
+            SaveChart(panel, Path.Combine(directory, "chart-day-" + suffix + ".png"));
+            panel.ShowChartRange(ChartRange.Hours12);
             panel.ShowMainPage();
             RenderThemes(panel, Path.Combine(directory, "themes-" + suffix + ".png"));
             panel.ShowSettingsPage();
@@ -304,11 +341,25 @@ static class Preview
     {
         double[] values = { 2, 8, 15, 21, 30, 38, 2, 6, 14, 22, 29, 36, 42 };
         List<UsageSample> samples = new List<UsageSample>();
+
+        // Six earlier days of the week, a few readings per day, so the week chart has a shape.
+        double[] week = { 4, 9, 15, 22, 28, 36, 44, 50, 57, 61 };
+        for (int day = 6; day >= 1; day--)
+            for (int part = 0; part < 4; part++)
+            {
+                UsageSample earlier = new UsageSample();
+                earlier.Time = DateTime.Now.AddDays(-day).AddHours(part * 5);
+                earlier.Session = 20 + (day * 7 + part * 13) % 60;
+                earlier.Weekly = week[(6 - day) * 10 / 7 + part % 2] ;
+                samples.Add(earlier);
+            }
+
         for (int i = 0; i < values.Length; i++)
         {
             UsageSample sample = new UsageSample();
             sample.Time = DateTime.Now.AddHours(i - values.Length + 1);
             sample.Session = values[i];
+            sample.Weekly = 55 + i * 1.0;
             samples.Add(sample);
         }
         return samples;

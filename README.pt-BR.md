@@ -77,6 +77,8 @@ Escolha em **Aparência**. De cima para baixo:
 
 O gráfico mostra o uso de 5 horas nas últimas 12 horas. Passe o mouse sobre ele para ver o horário, o percentual naquele momento e quanto subiu desde a leitura anterior.
 
+O seletor **12h**, **24h** e **7d** acima do gráfico muda o período. A visão de 7 dias acompanha o limite semanal. Abaixo do gráfico, **Hoje** mostra quanto de uma sessão de 5 horas você usou desde a meia-noite.
+
 ### Previsão de ritmo
 
 - **Limite de 5 horas:** a previsão combina a média de toda a janela com a tendência recente. Longe do limite, um pico isolado não domina o resultado; perto do limite, os últimos minutos pesam mais. Ela aparece a partir de 5% de uso e 15 minutos de dados.
@@ -123,6 +125,12 @@ Em **Aparência** você escolhe o visual:
 - **Natal**, **Fone**, **Chef**, **Cientista**, **Detetive**, **Inverno** e **Piloto:** o mesmo mascote com um outfit. O Chef diz `im cooking` enquanto trabalha, e o Detetive às vezes procura com a lupa.
 
 ![Os outfits](docs/images/mascot-outfits.png)
+
+Alguns outfits reagem: o Cientista mexe um frasco enquanto trabalha e os óculos piscam em vermelho no pânico, a lupa do Detetive brilha quando uma sessão espera por você, o cachecol do Inverno balança e o Piloto agita a bandeira quadriculada quando um limite renova. Clique no mascote cinco vezes seguidas e ele se derrete de amor.
+
+![As reações dos outfits e a animação de amor](docs/images/mascot-reactions.png)
+
+Com **Fantasias de datas especiais** ligado, o mascote sem outfit se veste sozinho no Natal, no Halloween e no Carnaval. Quando anda, às vezes para para olhar as barras de uso se um limite está perto, ou vai procurar onde estava o seu cursor.
 
 Quando está descansando, o mascote de vez em quando dá uma caminhada curta pelo espaço vazio do cabeçalho do painel e volta antes de chegar ao texto:
 

@@ -24,6 +24,16 @@ class ClassicMascot : IReactiveMascot
 
     public int WalkOffset { get { return other.WalkOffset; } }
 
+    public int UsagePercent
+    {
+        set { other.UsagePercent = value; }
+    }
+
+    public int? WalkGoal
+    {
+        set { other.WalkGoal = value; }
+    }
+
     public int WalkRoom
     {
         set { other.WalkRoom = value; }
