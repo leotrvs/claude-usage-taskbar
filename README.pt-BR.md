@@ -2,7 +2,11 @@
 
 [English](README.md) | **Português (Brasil)** | [Español](README.es.md) | [Русский](README.ru.md)
 
-Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precisar abrir nada.
+Veja seus limites do Claude Code de relance na barra de tarefas do Windows e saiba quando vão acabar ou se vão durar até o reinício.
+
+[![Baixar para Windows](https://img.shields.io/badge/Baixar_para_Windows-DE6E49?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/claude-usage-taskbar/releases/latest/download/ClaudeUsageTaskbar.exe)
+
+![Os ícones e o painel acompanhando o uso enquanto ele sobe](docs/images/demo-pt-BR.gif)
 
 <p>
 <img src="docs/images/panel-pt-BR.png" alt="O painel de uso no tema grafite" width="270">

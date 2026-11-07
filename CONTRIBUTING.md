@@ -23,6 +23,8 @@ The hooks stop commits and pushes that contain secrets or personal data. To add 
   .\bin\ClaudeUsageTaskbar.exe --preview docs\images
   ```
 
+  The README demo comes from `--demo-frames <folder>` and `python scripts/make-demo.py <folder>`, which needs Pillow.
+
 ## Project layout
 
 | Path | Purpose |

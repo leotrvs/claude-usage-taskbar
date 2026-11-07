@@ -2,7 +2,11 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md) | **Русский**
 
-Лимиты использования Claude Code прямо на панели задач Windows, ничего открывать не нужно.
+Лимиты Claude Code всегда на виду на панели задач Windows, а прогноз покажет, когда они закончатся и хватит ли их до сброса.
+
+[![Скачать для Windows](https://img.shields.io/badge/%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C_%D0%B4%D0%BB%D1%8F_Windows-DE6E49?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/claude-usage-taskbar/releases/latest/download/ClaudeUsageTaskbar.exe)
+
+![Значки и окно отслеживают рост использования](docs/images/demo-en.gif)
 
 > Приложение доступно на английском и португальском языках. Снимки экрана на этой странице на английском.
 

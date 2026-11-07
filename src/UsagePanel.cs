@@ -686,6 +686,12 @@ class UsagePanel : Form
         return working != null ? (IMascot)new ClassicMascot(working, other) : other;
     }
 
+    // Moves the animation without the timer, for the documentation demo.
+    public void StepMascot()
+    {
+        if (mascot != null) mascot.Advance();
+    }
+
     void AdvanceMascot()
     {
         mascot.Advance();

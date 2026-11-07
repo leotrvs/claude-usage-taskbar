@@ -25,6 +25,13 @@ static class Program
         if (args.Contains("--uninstall")) { Installer.RunUninstall(); return; }
         if (args.Contains("--install-silent")) { Installer.Install(); return; }
 
+        int demoIndex = Array.IndexOf(args, "--demo-frames");
+        if (demoIndex >= 0 && demoIndex + 1 < args.Length)
+        {
+            Preview.RenderDemo(args[demoIndex + 1]);
+            return;
+        }
+
         int previewIndex = Array.IndexOf(args, "--preview");
         if (previewIndex >= 0 && previewIndex + 1 < args.Length)
         {

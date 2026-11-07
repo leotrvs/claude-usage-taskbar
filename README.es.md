@@ -2,7 +2,11 @@
 
 [English](README.md) | [Português (Brasil)](README.pt-BR.md) | **Español** | [Русский](README.ru.md)
 
-Consulta los límites de uso de Claude Code en la barra de tareas de Windows, sin abrir nada.
+Consulta de un vistazo tus límites de Claude Code en la barra de tareas de Windows y descubre cuándo se agotarán o si durarán hasta el reinicio.
+
+[![Descargar para Windows](https://img.shields.io/badge/Descargar_para_Windows-DE6E49?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/claude-usage-taskbar/releases/latest/download/ClaudeUsageTaskbar.exe)
+
+![Los iconos y el panel siguiendo el uso mientras sube](docs/images/demo-en.gif)
 
 > La aplicación está disponible en inglés y portugués. Las capturas de esta página están en inglés.
 

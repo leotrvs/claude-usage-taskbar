@@ -2,7 +2,11 @@
 
 **English** | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md) | [Русский](README.ru.md)
 
-See your Claude Code usage limits in the Windows taskbar, without opening anything.
+See your Claude Code limits at a glance in the Windows taskbar, and know when they will run out or if they will last until the reset.
+
+[![Download for Windows](https://img.shields.io/badge/Download_for_Windows-DE6E49?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/claude-usage-taskbar/releases/latest/download/ClaudeUsageTaskbar.exe)
+
+![The icons and panel following usage as it rises](docs/images/demo-en.gif)
 
 <p>
 <img src="docs/images/panel-en.png" alt="The usage panel with the graphite theme" width="270">
