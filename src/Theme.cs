@@ -3,19 +3,25 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 enum ColorTemplate { Green, Blue, Purple }
-enum PanelTheme { Graphite, Black }
+enum PanelTheme { Graphite, Black, Light }
 
 static class Theme
 {
     public static ColorTemplate Colors = Settings.Colors;
     public static PanelTheme Panel = Settings.PanelTheme;
 
-    public static Color Background { get { return Panel == PanelTheme.Black ? Color.FromArgb(10, 10, 10) : Color.FromArgb(32, 32, 32); } }
-    public static Color Hover { get { return Panel == PanelTheme.Black ? Color.FromArgb(34, 34, 34) : Color.FromArgb(52, 52, 52); } }
-    public static Color Border { get { return Panel == PanelTheme.Black ? Color.FromArgb(46, 46, 46) : Color.FromArgb(62, 62, 62); } }
-    public static Color Track { get { return Panel == PanelTheme.Black ? Color.FromArgb(44, 44, 44) : Color.FromArgb(58, 58, 58); } }
-    public static readonly Color Text = Color.FromArgb(242, 242, 242);
-    public static readonly Color Muted = Color.FromArgb(160, 160, 160);
+    static Color Pick(Color graphite, Color black, Color light)
+    {
+        return Panel == PanelTheme.Light ? light : Panel == PanelTheme.Black ? black : graphite;
+    }
+
+    public static Color Background { get { return Pick(Color.FromArgb(32, 32, 32), Color.FromArgb(10, 10, 10), Color.FromArgb(250, 249, 245)); } }
+    public static Color Hover { get { return Pick(Color.FromArgb(52, 52, 52), Color.FromArgb(34, 34, 34), Color.FromArgb(238, 236, 229)); } }
+    public static Color Border { get { return Pick(Color.FromArgb(62, 62, 62), Color.FromArgb(46, 46, 46), Color.FromArgb(222, 219, 210)); } }
+    public static Color Track { get { return Pick(Color.FromArgb(58, 58, 58), Color.FromArgb(44, 44, 44), Color.FromArgb(226, 223, 214)); } }
+    public static Color Text { get { return Pick(TrayText, TrayText, Color.FromArgb(31, 30, 29)); } }
+    public static Color Muted { get { return Pick(Color.FromArgb(160, 160, 160), Color.FromArgb(160, 160, 160), Color.FromArgb(107, 105, 99)); } }
+    public static readonly Color TrayText = Color.FromArgb(242, 242, 242); // The taskbar stays dark whatever the panel theme is.
     public static readonly Color Accent = Color.FromArgb(222, 110, 73);
     public static readonly Color Red = Color.FromArgb(239, 68, 68);
     static readonly Color Amber = Color.FromArgb(245, 158, 11);
@@ -28,6 +34,17 @@ static class Theme
         if (percent.Value >= 90) return Red;
         if (percent.Value >= 70) return Colors == ColorTemplate.Green ? Amber : Yellow;
         return NormalColor(Colors);
+    }
+
+    // The brightest level colors are too faint on the light panel, so its bars and numbers use darker ones.
+    public static Color ForPanel(int? percent, bool stale)
+    {
+        Color color = ForPercent(percent, stale);
+        if (Panel != PanelTheme.Light) return color;
+        if (color == Yellow || color == Amber) return Color.FromArgb(202, 138, 4);
+        if (color == NormalColor(ColorTemplate.Green)) return Color.FromArgb(22, 163, 74);
+        if (color == NormalColor(ColorTemplate.Purple)) return Color.FromArgb(124, 92, 230);
+        return color;
     }
 
     public static Color NormalColor(ColorTemplate template)

@@ -86,7 +86,7 @@ static class Preview
     static void RenderThemes(UsagePanel panel, string path)
     {
         ColorTemplate[] colors = { ColorTemplate.Blue, ColorTemplate.Green, ColorTemplate.Purple };
-        PanelTheme[] themes = { PanelTheme.Graphite, PanelTheme.Black, PanelTheme.Graphite };
+        PanelTheme[] themes = { PanelTheme.Graphite, PanelTheme.Black, PanelTheme.Light };
         const int Gap = 16;
         using (Bitmap sheet = new Bitmap(colors.Length * (panel.Width + Gap) + Gap, panel.Height + Gap * 2))
         using (Graphics g = Graphics.FromImage(sheet))

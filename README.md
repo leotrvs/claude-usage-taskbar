@@ -12,7 +12,7 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 
 - Taskbar icons with your **5-hour** and **weekly** usage. Show both, or only one
 - Three icon styles: **Ring**, **Gauge** and **Needle**
-- Three color templates and two panel themes
+- Three color templates and three panel themes
 - A panel with reset times, a pace forecast and a 12-hour chart
 - An animated mascot, with pixel versions that react to your usage
 - Optional alerts at 80% and 90% of a limit
@@ -75,12 +75,12 @@ The chart shows your 5-hour usage over the last 12 hours. Hover over it to see t
 
 ### Colors and themes
 
-![Blue with graphite, green with black and purple with graphite](docs/images/themes-en.png)
+![Blue with graphite, green with black and purple with light](docs/images/themes-en.png)
 
 Under **Appearance**:
 
 - **Colors:** blue by default, or green or purple. They apply to the icons and the bars.
-- **Panel:** graphite or black.
+- **Panel:** graphite, black or light.
 
 ### Mascot
 

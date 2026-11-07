@@ -75,7 +75,7 @@ static class TrayIcon
             else if (style == IconStyle.Gauge) DrawArc(g, box, stroke, GaugeStart, GaugeSweep, progress, color);
             else DrawArc(g, box, stroke, DialStart, DialSweep, progress, color);
 
-            Color foreground = primary && !stale ? (onLight ? DarkForeground : Theme.Text) : color;
+            Color foreground = primary && !stale ? (onLight ? DarkForeground : Theme.TrayText) : color;
             if (style == IconStyle.Needle && percent.HasValue) DrawNeedle(g, box, progress, foreground);
             else if (style == IconStyle.Gauge || !percent.HasValue) DrawNumber(g, percent, foreground, box);
         }

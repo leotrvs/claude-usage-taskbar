@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.4
+
+- New light panel theme
+- The Classic mascot no longer has a dark outline
+
 ## 1.5.3
 
 - The update check when the app opens installs an update right away, and a notification confirms it

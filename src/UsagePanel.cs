@@ -220,6 +220,7 @@ class UsagePanel : Form
         AddColorChip(ColorTemplate.Purple, "colorPurple", 2, callbacks);
         AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 0, callbacks);
         AddPanelThemeChip(PanelTheme.Black, "panelBlack", 1, callbacks);
+        AddPanelThemeChip(PanelTheme.Light, "panelLight", 2, callbacks);
         AddMascotChip(MascotStyle.Classic, "mascotClassic", 0, callbacks);
         AddMascotChip(MascotStyle.Pixel, "mascotPixel", 1, callbacks);
         AddMascotChip(MascotStyle.Santa, "mascotSanta", 2, callbacks);
@@ -263,7 +264,7 @@ class UsagePanel : Form
     {
         PanelTarget chip = new PanelTarget();
         chip.LabelKey = labelKey;
-        chip.Bounds = ChipBounds(column, 2, 208, 32);
+        chip.Bounds = ChipBounds(column, 3, 208, 32);
         chip.Selected = delegate { return Theme.Panel == value; };
         chip.Run = delegate { callbacks.ChangePanelTheme(value); };
         appearanceTargets.Add(chip);
@@ -902,7 +903,7 @@ class UsagePanel : Form
 
     void DrawLimit(Graphics g, string label, UsageWindow window, string pace, bool withCountdown, int top, int left, int right)
     {
-        Color color = Theme.ForPercent(window.Percent, state.Stale);
+        Color color = Theme.ForPanel(window.Percent, state.Stale);
         string percent = window.Percent.HasValue ? window.Percent.Value + "%" : "--";
         Draw(g, label, labelFont, Theme.Text, left, top, right - left, TextFormatFlags.Left);
         Draw(g, percent, percentFont, color, left, top - Px(1), right - left, TextFormatFlags.Right);
@@ -978,7 +979,7 @@ class UsagePanel : Form
         int iconSize = Px(22);
         Rectangle icon = new Rectangle(chip.Bounds.X + (chip.Bounds.Width - iconSize) / 2, chip.Bounds.Y + Px(6), iconSize, iconSize);
         int? sample = state.Session.Percent ?? 60;
-        using (Bitmap preview = TrayIcon.Draw(chip.Style.Value, sample, true, state.Stale, iconSize, false))
+        using (Bitmap preview = TrayIcon.Draw(chip.Style.Value, sample, true, state.Stale, iconSize, Theme.Panel == PanelTheme.Light))
             g.DrawImageUnscaled(preview, icon.Location);
 
         Rectangle label = new Rectangle(chip.Bounds.X, icon.Bottom + Px(2), chip.Bounds.Width, chip.Bounds.Bottom - icon.Bottom - Px(3));
@@ -1054,7 +1055,7 @@ class UsagePanel : Form
 
         int knob = height - Px(6);
         float knobX = pill.X + Px(3) + (pill.Width - knob - Px(6)) * on;
-        using (Brush brush = new SolidBrush(Theme.Text))
+        using (Brush brush = new SolidBrush(Color.White))
             g.FillEllipse(brush, knobX, pill.Y + Px(3), knob, knob);
     }
 
