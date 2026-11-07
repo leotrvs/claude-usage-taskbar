@@ -6,6 +6,14 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
+enum UpdateResult { Failed, UpToDate, Available }
+
+class UpdateInfo
+{
+    public string Version;
+    public string Sha256;
+}
+
 // Update trust comes only from the RSA signature checked against the key built into this exe.
 // HTTPS and GitHub are transport: a tampered, unsigned or older release is rejected.
 static class Updater
@@ -30,7 +38,7 @@ static class Updater
 #if UPDATE_TEST
             return true;
 #else
-            return App.IsInstalled && Settings.AutoUpdate && UpdateKey.PublicKeyXml.Length > 0;
+            return App.IsInstalled && UpdateKey.PublicKeyXml.Length > 0;
 #endif
         }
     }
@@ -49,29 +57,46 @@ static class Updater
         }
     }
 
-    // Network and disk work only; returns true when a verified exe is ready to install.
-    public static bool DownloadVerified()
+    // Network work only. The manifest is trusted after its signature passes.
+    public static UpdateResult Check(out UpdateInfo latest)
     {
-        if (!CanUpdate) return false;
+        latest = null;
+        if (!CanUpdate) return UpdateResult.Failed;
         try
         {
             byte[] manifestBytes = Download("update.json", MaxManifestBytes);
             byte[] signature = Download("update.json.sig", MaxSignatureBytes);
-            if (!HasValidSignature(manifestBytes, signature)) return false;
+            if (!HasValidSignature(manifestBytes, signature)) return UpdateResult.Failed;
 
             Dictionary<string, object> manifest = Json.Object(Json.Parse(Encoding.UTF8.GetString(manifestBytes)));
-            Version latest = new Version((string)Json.Get(manifest, "version"));
-            if (latest <= new Version(App.Version)) return false;
+            string version = (string)Json.Get(manifest, "version");
+            if (new Version(version) <= new Version(App.Version)) return UpdateResult.UpToDate;
 
+            latest = new UpdateInfo();
+            latest.Version = version;
+            latest.Sha256 = (string)Json.Get(manifest, "sha256");
+            return UpdateResult.Available;
+        }
+        catch (Exception)
+        {
+            return UpdateResult.Failed; // Tried again on the next scheduled check.
+        }
+    }
+
+    // Network and disk work only; returns true when a verified exe is ready to install.
+    public static bool DownloadVerified(UpdateInfo update)
+    {
+        try
+        {
             byte[] exe = Download(App.ExeName, MaxExeBytes);
-            if (!Sha256Hex(exe).Equals((string)Json.Get(manifest, "sha256"), StringComparison.OrdinalIgnoreCase)) return false;
+            if (!Sha256Hex(exe).Equals(update.Sha256, StringComparison.OrdinalIgnoreCase)) return false;
 
             File.WriteAllBytes(NewFile, exe);
             return true;
         }
         catch (Exception)
         {
-            return false; // Tried again on the next scheduled check.
+            return false;
         }
     }
 

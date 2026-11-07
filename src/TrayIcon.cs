@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -9,38 +8,35 @@ using System.Windows.Forms;
 
 static class TrayIcon
 {
-    static readonly Color Tile = Color.FromArgb(34, 30, 28);
-    static readonly Color Track = Color.FromArgb(92, 85, 80);
+    static readonly Color Track = Color.FromArgb(120, 128, 128, 128); // Reads on dark and light taskbars.
+    static readonly Color DarkForeground = Color.FromArgb(32, 32, 32);
     const float DialStart = 135;
     const float DialSweep = 270;
-    const float GaugeHeight = 0.64f;
+    const float RingStart = -90; // The top of the circle.
+    const float RingSweep = 360;
     const float MinimumProgress = 0.09f; // Keeps a low value visible at 16 pixels.
     const string NumberFont = "Segoe UI";
 
     // primary = 5-hour limit (white number); the weekly icon colors its number by level.
-    public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size)
+    public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size, bool onLight)
     {
         Bitmap bitmap = new Bitmap(size, size, PixelFormat.Format32bppArgb);
         using (Graphics g = Graphics.FromImage(bitmap))
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.PixelOffsetMode = PixelOffsetMode.Half; // Keeps the circle centered on the pixel grid.
             g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
 
             Color color = Theme.ForPercent(percent, stale);
             float progress = percent.HasValue ? Math.Max(0, Math.Min(100, percent.Value)) / 100f : 0;
-            float stroke = Math.Max(2f, size * 0.12f);
+            float stroke = style == IconStyle.Gauge ? Math.Max(1.75f, size * 0.11f) : Math.Max(2f, size * 0.12f);
 
-            using (GraphicsPath tile = Theme.Rounded(new RectangleF(0, 0, size, size), size * 0.2f))
-            using (Brush brush = new SolidBrush(Tile))
-                g.FillPath(brush, tile);
+            if (style == IconStyle.Ring) DrawArc(g, size, stroke, RingStart, RingSweep, progress, color);
+            else DrawArc(g, size, stroke, DialStart, DialSweep, progress, color);
 
-            if (style == IconStyle.Outline) DrawOutline(g, size, stroke, progress, color);
-            else if (style == IconStyle.Gauge) DrawGauge(g, size, stroke, progress, color);
-            else DrawDial(g, size, stroke, progress, color);
-
-            Color foreground = primary && !stale ? Theme.Text : color;
+            Color foreground = primary && !stale ? (onLight ? DarkForeground : Theme.Text) : color;
             if (style == IconStyle.Needle && percent.HasValue) DrawNeedle(g, size, progress, foreground);
-            else DrawNumber(g, style, percent, foreground, size, stroke);
+            else if (style == IconStyle.Gauge || !percent.HasValue) DrawNumber(g, percent, foreground, size);
         }
         return bitmap;
     }
@@ -54,33 +50,15 @@ static class TrayIcon
         return pen;
     }
 
-    static float ArcInset(int size, float stroke)
+    static void DrawArc(Graphics g, int size, float stroke, float start, float sweep, float progress, Color color)
     {
-        return stroke / 2 + size * 0.02f;
-    }
-
-    // A half circle over the number, so the two never touch.
-    static void DrawGauge(Graphics g, int size, float stroke, float progress, Color color)
-    {
-        float inset = ArcInset(size, stroke);
-        DrawArc(g, new RectangleF(inset, inset, size - inset * 2, size * GaugeHeight), 180, 180, stroke, progress, color);
-    }
-
-    // The same 270-degree dial as the app icon, open at the bottom.
-    static void DrawDial(Graphics g, int size, float stroke, float progress, Color color)
-    {
-        float inset = ArcInset(size, stroke);
+        float inset = stroke / 2;
         float diameter = size - inset * 2;
-        DrawArc(g, new RectangleF(inset, inset, diameter, diameter), DialStart, DialSweep, stroke, progress, color);
-    }
-
-    static void DrawArc(Graphics g, RectangleF box, float start, float sweep, float stroke, float progress, Color color)
-    {
         using (Pen track = NewRoundPen(Track, stroke))
-            g.DrawArc(track, box.X, box.Y, box.Width, box.Height, start, sweep);
+            g.DrawArc(track, inset, inset, diameter, diameter, start, sweep);
         if (progress <= 0) return;
         using (Pen value = NewRoundPen(color, stroke))
-            g.DrawArc(value, box.X, box.Y, box.Width, box.Height, start, sweep * Math.Max(MinimumProgress, progress));
+            g.DrawArc(value, inset, inset, diameter, diameter, start, sweep * Math.Max(MinimumProgress, progress));
     }
 
     static void DrawNeedle(Graphics g, int size, float progress, Color color)
@@ -95,74 +73,12 @@ static class TrayIcon
             g.FillEllipse(brush, center - hub, center - hub, hub * 2, hub * 2);
     }
 
-    // A line that starts at the top and runs clockwise around the edge, over a track.
-    static void DrawOutline(Graphics g, int size, float stroke, float progress, Color color)
-    {
-        float left = stroke / 2;
-        float right = size - stroke / 2;
-        float center = size / 2f;
-        float diameter = size * 0.36f;
-        float radius = diameter / 2;
-
-        using (GraphicsPath path = new GraphicsPath())
-        {
-            path.AddLine(center, left, right - radius, left);
-            path.AddArc(right - diameter, left, diameter, diameter, 270, 90);
-            path.AddArc(right - diameter, right - diameter, diameter, diameter, 0, 90);
-            path.AddArc(left, right - diameter, diameter, diameter, 90, 90);
-            path.AddArc(left, left, diameter, diameter, 180, 90);
-            path.AddLine(left + radius, left, center, left);
-            path.Flatten(null, 0.1f);
-
-            using (Pen track = NewRoundPen(Track, stroke))
-                g.DrawLines(track, path.PathPoints);
-            if (progress <= 0) return;
-
-            PointF[] points = TakeFraction(path.PathPoints, Math.Max(MinimumProgress, progress));
-            if (points.Length < 2) return;
-            using (Pen pen = NewRoundPen(color, stroke))
-                g.DrawLines(pen, points);
-        }
-    }
-
-    static PointF[] TakeFraction(PointF[] points, float fraction)
-    {
-        float total = 0;
-        for (int i = 1; i < points.Length; i++) total += Distance(points[i - 1], points[i]);
-
-        float remaining = total * fraction;
-        List<PointF> taken = new List<PointF>();
-        taken.Add(points[0]);
-        for (int i = 1; i < points.Length && remaining > 0; i++)
-        {
-            float length = Distance(points[i - 1], points[i]);
-            if (length <= remaining)
-            {
-                taken.Add(points[i]);
-            }
-            else
-            {
-                float t = remaining / length;
-                taken.Add(new PointF(
-                    points[i - 1].X + (points[i].X - points[i - 1].X) * t,
-                    points[i - 1].Y + (points[i].Y - points[i - 1].Y) * t));
-            }
-            remaining -= length;
-        }
-        return taken.ToArray();
-    }
-
-    static float Distance(PointF a, PointF b)
-    {
-        float x = b.X - a.X;
-        float y = b.Y - a.Y;
-        return (float)Math.Sqrt(x * x + y * y);
-    }
-
-    static void DrawNumber(Graphics g, IconStyle style, int? percent, Color color, int size, float stroke)
+    static void DrawNumber(Graphics g, int? percent, Color color, int size)
     {
         string text = percent.HasValue ? percent.Value.ToString(CultureInfo.InvariantCulture) : "?";
-        RectangleF area = NumberArea(style, size, stroke);
+        g.PixelOffsetMode = PixelOffsetMode.Default; // The half-pixel shift would blur hinted digits.
+        // Inside the dial, a little low because its opening is at the bottom.
+        RectangleF area = new RectangleF(size * 0.19f, size * 0.32f, size * 0.62f, size * 0.46f);
 
         using (FontFamily family = new FontFamily(NumberFont))
         using (StringFormat format = (StringFormat)StringFormat.GenericTypographic.Clone())
@@ -172,8 +88,11 @@ static class TrayIcon
             // Whole pixel sizes keep the digits sharp; the measure is the drawn shape, not the font's box.
             for (int pixels = size; pixels > 4; pixels--)
             {
+                // Sized by the widest digit, so every value with the same digit count looks alike.
+                RectangleF widest = MeasureInk(new string('8', text.Length), family, pixels, format);
+                if (widest.Width > area.Width || widest.Height > area.Height) continue;
+
                 RectangleF ink = MeasureInk(text, family, pixels, format);
-                if (ink.Width > area.Width || ink.Height > area.Height) continue;
 
                 float x = (float)Math.Round(area.X + (area.Width - ink.Width) / 2 - ink.X);
                 float y = (float)Math.Round(area.Y + (area.Height - ink.Height) / 2 - ink.Y);
@@ -182,19 +101,6 @@ static class TrayIcon
                 return;
             }
         }
-    }
-
-    // Below the gauge's arc, or inside the outline's line.
-    static RectangleF NumberArea(IconStyle style, int size, float stroke)
-    {
-        if (style == IconStyle.Gauge)
-        {
-            float side = size * 0.06f;
-            float top = ArcInset(size, stroke) + size * GaugeHeight / 2 + stroke * 0.35f;
-            return new RectangleF(side, top, size - side * 2, size * 0.98f - top);
-        }
-        float inset = stroke + size * 0.03f;
-        return new RectangleF(inset, inset, size - inset * 2, size - inset * 2);
     }
 
     static RectangleF MeasureInk(string text, FontFamily family, int pixels, StringFormat format)
@@ -222,11 +128,12 @@ class TraySlot : IDisposable
 
     public void Update(IconStyle style, int? percent, bool stale, string tooltip, bool visible)
     {
-        string key = style + "|" + (percent.HasValue ? percent.Value.ToString(CultureInfo.InvariantCulture) : "?") + "|" + stale;
+        bool onLight = Settings.LightTaskbar;
+        string key = style + "|" + (percent.HasValue ? percent.Value.ToString(CultureInfo.InvariantCulture) : "?") + "|" + stale + "|" + Theme.Colors + "|" + onLight;
         if (key != renderedKey)
         {
             renderedKey = key;
-            using (Bitmap bitmap = TrayIcon.Draw(style, percent, primary, stale, SystemInformation.SmallIconSize.Width))
+            using (Bitmap bitmap = TrayIcon.Draw(style, percent, primary, stale, SystemInformation.SmallIconSize.Width, onLight))
             {
                 IntPtr handle = bitmap.GetHicon();
                 notifyIcon.Icon = Icon.FromHandle(handle);

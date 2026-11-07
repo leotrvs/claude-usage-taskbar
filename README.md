@@ -11,8 +11,9 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 ## Features
 
 - Taskbar icons with your **5-hour** and **weekly** usage percentages. Show both, or only one
-- Three icon styles: **Gauge** and **Outline**, which fill up as you use your limits, and **Needle**, a dial with no number
-- Colors by level: green, then amber at 70%, then red at 90%
+- Three icon styles: **Gauge**, a dial with the number inside, **Ring**, a circle that fills clockwise from the top, and **Needle**, a dial with a pointer
+- Colors by level: green, blue or purple, changing at 70% and turning red at 90%
+- Icons with no background, and a graphite or black panel
 - A dark panel with reset times, a 12-hour chart and a pace forecast
 - Optional alerts at 80% and 90% of a limit
 - English and Brazilian Portuguese, following your Windows language by default
@@ -44,7 +45,7 @@ The installer connects to Claude Code for you. See [how the connection works](#h
 
 - **Hover** over an icon to see the percentage and reset time.
 - **Click** an icon to open the panel. Choose the icon style there.
-- **Settings** in the panel holds the language, which icons appear, automatic updates, usage alerts, Start with Windows and the Claude Code connection.
+- **Settings** in the panel holds the language, which icons appear, automatic updates, usage alerts, Start with Windows, the Claude Code connection and **Appearance**, for the color template and panel theme.
 - **Close widget** only closes this app. It does not sign you out of Claude. Open it again from the Start menu or Desktop.
 
 On icons, the 5-hour limit has a white number and the weekly limit has a colored number.
@@ -84,7 +85,7 @@ Details are in [SECURITY.md](SECURITY.md).
 
 ## Updates
 
-Every 6 hours, the app checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app, so a tampered file is rejected. You can turn this off in Settings.
+Every 6 hours, the app checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app, so a tampered file is rejected. You can turn this off in Settings, where **Check for updates** also runs a check on demand. If the panel is open when an update is found, it shows a link to install it.
 
 ## Uninstall
 

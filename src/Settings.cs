@@ -1,20 +1,21 @@
 using System;
 using Microsoft.Win32;
 
-enum IconStyle { Gauge, Outline, Needle }
+enum IconStyle { Gauge, Ring, Needle }
 enum IconsShown { Both, Session, Weekly }
 
 static class Settings
 {
     public const string KeyPath = @"Software\" + App.Id;
     const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    const string PersonalizeKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
 
     public static IconStyle IconStyle
     {
         get
         {
             string value = Read("IconStyle") as string;
-            if ("Outline".Equals(value)) return IconStyle.Outline;
+            if ("Ring".Equals(value) || "Outline".Equals(value)) return IconStyle.Ring; // Outline is the older name.
             return "Needle".Equals(value) ? IconStyle.Needle : IconStyle.Gauge;
         }
         set { Write("IconStyle", value.ToString()); }
@@ -38,6 +39,36 @@ static class Settings
             return Enum.TryParse(Read("IconsShown") as string, out shown) ? shown : IconsShown.Both;
         }
         set { Write("IconsShown", value.ToString()); }
+    }
+
+    public static ColorTemplate Colors
+    {
+        get
+        {
+            ColorTemplate colors;
+            return Enum.TryParse(Read("Colors") as string, out colors) ? colors : ColorTemplate.Green;
+        }
+        set { Write("Colors", value.ToString()); }
+    }
+
+    public static PanelTheme PanelTheme
+    {
+        get
+        {
+            PanelTheme theme;
+            return Enum.TryParse(Read("PanelTheme") as string, out theme) ? theme : PanelTheme.Graphite;
+        }
+        set { Write("PanelTheme", value.ToString()); }
+    }
+
+    // The icons have no background, so they follow the color of the taskbar behind them.
+    public static bool LightTaskbar
+    {
+        get
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(PersonalizeKeyPath))
+                return key != null && 1.Equals(key.GetValue("SystemUsesLightTheme"));
+        }
     }
 
     public static bool Notifications

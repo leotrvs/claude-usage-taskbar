@@ -23,7 +23,7 @@
 
 ## Network access
 
-The app makes one kind of connection: every 6 hours it downloads release files from this repository on GitHub, unless you turn off automatic updates. GitHub can see your IP address, as with any download. No Claude data is sent.
+The app makes one kind of connection: every 6 hours it downloads release files from this repository on GitHub, unless you turn off automatic updates, and it does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude data is sent.
 
 ## Automatic update protection
 

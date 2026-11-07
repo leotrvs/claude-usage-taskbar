@@ -5,6 +5,8 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Windows.Forms;
 
+enum UpdatePhase { Idle, Checking, UpToDate, Failed, Available, Installing }
+
 class PanelState
 {
     public UsageWindow Session = new UsageWindow();
@@ -20,11 +22,14 @@ class PanelCallbacks
 {
     public Action<IconStyle> ChangeStyle = delegate { };
     public Action<Language> ChangeLanguage = delegate { };
+    public Action<ColorTemplate> ChangeColors = delegate { };
+    public Action<PanelTheme> ChangePanelTheme = delegate { };
     public Action<IconsShown> ChangeIconsShown = delegate { };
     public Action ToggleNotifications = delegate { };
     public Action ToggleStartWithWindows = delegate { };
     public Action ToggleAutoUpdate = delegate { };
     public Action ToggleConnection = delegate { };
+    public Action CheckOrInstallUpdate = delegate { };
     public Action CloseWidget = delegate { };
 }
 
@@ -39,6 +44,8 @@ class PanelTarget
     public Language? Language;
     public IconsShown? Shown;
     public Func<bool> Toggle;
+    public Func<bool> Selected; // For chips that are not tied to one of the fields above.
+    public Color? Swatch;
 
     public string Label
     {
@@ -63,6 +70,7 @@ class UsagePanel : Form
 
     readonly List<PanelTarget> mainTargets = new List<PanelTarget>();
     readonly List<PanelTarget> settingsTargets = new List<PanelTarget>();
+    readonly List<PanelTarget> appearanceTargets = new List<PanelTarget>();
     readonly float scale;
     readonly System.Windows.Forms.Timer mascotTimer = new System.Windows.Forms.Timer();
     Mascot mascot;
@@ -74,6 +82,10 @@ class UsagePanel : Form
     IconsShown iconsShown;
     int hovered = -1;
     int hiddenAt;
+    PanelTarget updateLink;
+    PanelTarget updateRow;
+    UpdatePhase updatePhase;
+    string updateVersion;
 
     public UsagePanel(PanelCallbacks callbacks)
     {
@@ -97,6 +109,7 @@ class UsagePanel : Form
 
         BuildMainPage(callbacks);
         BuildSettingsPage(callbacks);
+        BuildAppearancePage(callbacks);
         targets = mainTargets;
         mascotTimer.Tick += delegate { AdvanceMascot(); };
     }
@@ -104,8 +117,11 @@ class UsagePanel : Form
     void BuildMainPage(PanelCallbacks callbacks)
     {
         AddStyleChip(IconStyle.Gauge, "gauge", 0, callbacks);
-        AddStyleChip(IconStyle.Outline, "outline", 1, callbacks);
+        AddStyleChip(IconStyle.Ring, "ring", 1, callbacks);
         AddStyleChip(IconStyle.Needle, "needle", 2, callbacks);
+        updateLink = new PanelTarget();
+        updateLink.Bounds = new Rectangle(Px(18), Px(33), Px(224), Px(18));
+        updateLink.Run = callbacks.CheckOrInstallUpdate;
         mainTargets.Add(NewRow("", "settings", ActionsTop, delegate { ShowPage(settingsTargets); }));
         mainTargets.Add(NewRow("", "closeWidget", ActionsTop + 32, callbacks.CloseWidget));
     }
@@ -133,6 +149,40 @@ class UsagePanel : Form
         settingsTargets.Add(NewToggle("autoUpdate", 226, delegate { return Settings.AutoUpdate; }, callbacks.ToggleAutoUpdate));
         settingsTargets.Add(NewToggle("notifications", 260, delegate { return Settings.Notifications; }, callbacks.ToggleNotifications));
         settingsTargets.Add(NewToggle("claudeCodeConnected", 294, delegate { return ClaudeCodeConnection.IsConnected; }, callbacks.ToggleConnection));
+        updateRow = NewRow("\uE72C", "checkUpdates", 330, callbacks.CheckOrInstallUpdate);
+        settingsTargets.Add(updateRow);
+        settingsTargets.Add(NewRow("\uE790", "appearance", 362, delegate { ShowPage(appearanceTargets); }));
+    }
+
+    void BuildAppearancePage(PanelCallbacks callbacks)
+    {
+        appearanceTargets.Add(NewRow("\uE72B", "back", 8, delegate { ShowPage(settingsTargets); }));
+        AddColorChip(ColorTemplate.Green, "colorGreen", 0, callbacks);
+        AddColorChip(ColorTemplate.Blue, "colorBlue", 1, callbacks);
+        AddColorChip(ColorTemplate.Purple, "colorPurple", 2, callbacks);
+        AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 0, callbacks);
+        AddPanelThemeChip(PanelTheme.Black, "panelBlack", 1, callbacks);
+    }
+
+    void AddColorChip(ColorTemplate value, string labelKey, int column, PanelCallbacks callbacks)
+    {
+        PanelTarget chip = new PanelTarget();
+        chip.LabelKey = labelKey;
+        chip.Swatch = Theme.NormalColor(value);
+        chip.Bounds = ChipBounds(column, 3, 72, 32);
+        chip.Selected = delegate { return Theme.Colors == value; };
+        chip.Run = delegate { callbacks.ChangeColors(value); };
+        appearanceTargets.Add(chip);
+    }
+
+    void AddPanelThemeChip(PanelTheme value, string labelKey, int column, PanelCallbacks callbacks)
+    {
+        PanelTarget chip = new PanelTarget();
+        chip.LabelKey = labelKey;
+        chip.Bounds = ChipBounds(column, 2, 142, 32);
+        chip.Selected = delegate { return Theme.Panel == value; };
+        chip.Run = delegate { callbacks.ChangePanelTheme(value); };
+        appearanceTargets.Add(chip);
     }
 
     void AddShownChip(IconsShown value, string labelKey, int column, PanelCallbacks callbacks)
@@ -206,6 +256,41 @@ class UsagePanel : Form
         if (Visible) Invalidate();
     }
 
+    // A known version shows the install link until it succeeds.
+    public void SetUpdate(UpdatePhase phase, string version)
+    {
+        updatePhase = phase;
+        updateVersion = version;
+        updateRow.LabelKey = version != null ? "installUpdate" : "checkUpdates";
+        mainTargets.Remove(updateLink);
+        if (version != null) mainTargets.Add(updateLink);
+        hovered = -1;
+        if (Visible) Invalidate();
+    }
+
+    public void ShowMainPage()
+    {
+        ShowPage(mainTargets);
+    }
+
+    public void ApplyTheme()
+    {
+        BackColor = Theme.Background;
+        ApplyBorderColor();
+        Invalidate();
+    }
+
+    void ApplyBorderColor()
+    {
+        int border = Theme.Border.R | (Theme.Border.G << 8) | (Theme.Border.B << 16);
+        Native.DwmSetWindowAttribute(Handle, DWMWA_BORDER_COLOR, ref border, sizeof(int));
+    }
+
+    public void ShowAppearancePage()
+    {
+        ShowPage(appearanceTargets);
+    }
+
     public void ShowSettingsPage()
     {
         ShowPage(settingsTargets);
@@ -253,8 +338,7 @@ class UsagePanel : Form
         base.OnHandleCreated(e);
         int corners = DWMWCP_ROUND;
         Native.DwmSetWindowAttribute(Handle, DWMWA_WINDOW_CORNER_PREFERENCE, ref corners, sizeof(int));
-        int border = Theme.Border.R | (Theme.Border.G << 8) | (Theme.Border.B << 16);
-        Native.DwmSetWindowAttribute(Handle, DWMWA_BORDER_COLOR, ref border, sizeof(int));
+        ApplyBorderColor();
     }
 
     protected override void OnVisibleChanged(EventArgs e)
@@ -324,13 +408,15 @@ class UsagePanel : Form
         int right = ClientSize.Width - Px(18);
 
         if (targets == mainTargets) PaintMainPage(g, left, right);
-        else PaintSettingsPage(g, left, right);
+        else if (targets == settingsTargets) PaintSettingsPage(g, left, right);
+        else PaintAppearancePage(g, left, right);
 
         for (int i = 0; i < targets.Count; i++)
         {
             PanelTarget target = targets[i];
             bool isHovered = i == hovered;
-            if (target.Style.HasValue || target.Language.HasValue || target.Shown.HasValue) DrawChip(g, target, isHovered);
+            if (target == updateLink) DrawUpdateLink(g, isHovered);
+            else if (target.Selected != null || target.Style.HasValue || target.Language.HasValue || target.Shown.HasValue) DrawChip(g, target, isHovered);
             else if (target.Toggle != null) DrawToggle(g, target, isHovered);
             else DrawRow(g, target, isHovered);
         }
@@ -340,7 +426,7 @@ class UsagePanel : Form
     {
         Draw(g, App.Name, titleFont, Theme.Text, left, Px(14), right - left, TextFormatFlags.Left);
         int mascotSpace = mascot != null ? mascot.CurrentFrame.Width + Px(8) : 0;
-        Draw(g, state.Status, tinyFont, Theme.Muted, left, Px(35), right - left - mascotSpace, TextFormatFlags.Left);
+        if (updateVersion == null) Draw(g, state.Status, tinyFont, Theme.Muted, left, Px(35), right - left - mascotSpace, TextFormatFlags.Left);
         if (mascot != null && targets == mainTargets)
         {
             Bitmap frame = mascot.CurrentFrame;
@@ -394,8 +480,39 @@ class UsagePanel : Form
         DrawDivider(g, Px(44));
         Draw(g, Localization.T("language"), tinyFont, Theme.Muted, left, Px(52), right - left, TextFormatFlags.Left);
         Draw(g, Localization.T("taskbarIcons"), tinyFont, Theme.Muted, left, Px(122), right - left, TextFormatFlags.Left);
-        Draw(g, Localization.T("version", App.Version), tinyFont, Theme.Muted, left, Px(392), right - left, TextFormatFlags.Left);
+        string status = UpdateStatus();
+        string version = Localization.T("version", App.Version) + (status != null ? " · " + status : "");
+        Draw(g, version, tinyFont, Theme.Muted, left, Px(402), right - left, TextFormatFlags.Left);
     }
+
+    void PaintAppearancePage(Graphics g, int left, int right)
+    {
+        DrawDivider(g, Px(44));
+        Draw(g, Localization.T("colors"), tinyFont, Theme.Muted, left, Px(52), right - left, TextFormatFlags.Left);
+        Draw(g, Localization.T("panelTheme"), tinyFont, Theme.Muted, left, Px(122), right - left, TextFormatFlags.Left);
+    }
+
+    string UpdateStatus()
+    {
+        switch (updatePhase)
+        {
+            case UpdatePhase.Checking: return Localization.T("updateChecking");
+            case UpdatePhase.UpToDate: return Localization.T("updateCurrent");
+            case UpdatePhase.Failed: return Localization.T(updateVersion != null ? "updateInstallFailed" : "updateCheckFailed");
+            case UpdatePhase.Available: return Localization.T("updateAvailable", updateVersion);
+            case UpdatePhase.Installing: return Localization.T("updateInstalling");
+            default: return null;
+        }
+    }
+
+    void DrawUpdateLink(Graphics g, bool isHovered)
+    {
+        string text = UpdateStatus();
+        if (updatePhase == UpdatePhase.Available || updatePhase == UpdatePhase.Failed) text += " · " + Localization.T("updateInstallAction");
+        TextRenderer.DrawText(g, text, tinyFont, updateLink.Bounds, isHovered ? Theme.Text : Theme.Accent,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
+    }
+
     void DrawDivider(Graphics g, int y)
     {
         using (Pen divider = new Pen(Theme.Border))
@@ -443,7 +560,8 @@ class UsagePanel : Form
 
     void DrawChip(Graphics g, PanelTarget chip, bool isHovered)
     {
-        bool selected = chip.Style.HasValue ? chip.Style.Value == iconStyle
+        bool selected = chip.Selected != null ? chip.Selected()
+            : chip.Style.HasValue ? chip.Style.Value == iconStyle
             : chip.Shown.HasValue ? chip.Shown.Value == iconsShown : chip.Language.Value == language;
         using (GraphicsPath path = Theme.Rounded(chip.Bounds, Px(8)))
         {
@@ -455,6 +573,12 @@ class UsagePanel : Form
         }
 
         Color textColor = selected ? Theme.Text : Theme.Muted;
+        if (chip.Swatch.HasValue)
+        {
+            int dot = Px(9);
+            using (Brush brush = new SolidBrush(chip.Swatch.Value))
+                g.FillEllipse(brush, chip.Bounds.X + Px(9), chip.Bounds.Y + (chip.Bounds.Height - dot) / 2, dot, dot);
+        }
         if (!chip.Style.HasValue)
         {
             TextRenderer.DrawText(g, chip.Label, tinyFont, chip.Bounds, textColor,
@@ -465,7 +589,7 @@ class UsagePanel : Form
         int iconSize = Px(22);
         Rectangle icon = new Rectangle(chip.Bounds.X + (chip.Bounds.Width - iconSize) / 2, chip.Bounds.Y + Px(6), iconSize, iconSize);
         int? sample = state.Session.Percent ?? 60;
-        using (Bitmap preview = TrayIcon.Draw(chip.Style.Value, sample, true, state.Stale, iconSize))
+        using (Bitmap preview = TrayIcon.Draw(chip.Style.Value, sample, true, state.Stale, iconSize, false))
             g.DrawImageUnscaled(preview, icon.Location);
 
         Rectangle label = new Rectangle(chip.Bounds.X, icon.Bottom + Px(2), chip.Bounds.Width, chip.Bounds.Bottom - icon.Bottom - Px(3));

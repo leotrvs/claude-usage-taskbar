@@ -10,6 +10,8 @@ static class Preview
     public static void Render(string directory)
     {
         Directory.CreateDirectory(directory);
+        Theme.Colors = ColorTemplate.Green;
+        Theme.Panel = PanelTheme.Graphite;
         RenderPanels(directory, Language.English, "en");
         RenderPanels(directory, Language.Portuguese, "pt-BR");
         RenderIconStyles(Path.Combine(directory, "icon-styles.png"));
@@ -35,6 +37,18 @@ static class Preview
             Save(panel, Path.Combine(directory, "panel-" + suffix + ".png"));
             panel.ShowSettingsPage();
             Save(panel, Path.Combine(directory, "settings-" + suffix + ".png"));
+            panel.ShowAppearancePage();
+            Save(panel, Path.Combine(directory, "appearance-" + suffix + ".png"));
+            panel.SetUpdate(UpdatePhase.Available, "1.1.0");
+            Save(panel, Path.Combine(directory, "update-settings-" + suffix + ".png"));
+            panel.ShowMainPage();
+            Save(panel, Path.Combine(directory, "update-" + suffix + ".png"));
+            Theme.Colors = ColorTemplate.Blue;
+            Theme.Panel = PanelTheme.Black;
+            panel.ApplyTheme();
+            Save(panel, Path.Combine(directory, "black-" + suffix + ".png"));
+            Theme.Colors = ColorTemplate.Green;
+            Theme.Panel = PanelTheme.Graphite;
         }
     }
 
@@ -75,7 +89,7 @@ static class Preview
             {
                 int x = Gap + i * (Size + Gap);
                 DrawIcon(g, IconStyle.Gauge, samples[i], x, Gap);
-                DrawIcon(g, IconStyle.Outline, samples[i], x, Size + Gap * 2);
+                DrawIcon(g, IconStyle.Ring, samples[i], x, Size + Gap * 2);
                 DrawIcon(g, IconStyle.Needle, samples[i], x, Size * 2 + Gap * 3);
             }
             sheet.Save(path, ImageFormat.Png);
@@ -84,7 +98,7 @@ static class Preview
 
     static void DrawIcon(Graphics g, IconStyle style, int percent, int x, int y)
     {
-        using (Bitmap icon = TrayIcon.Draw(style, percent, true, false, 64))
+        using (Bitmap icon = TrayIcon.Draw(style, percent, true, false, 64, false))
             g.DrawImageUnscaled(icon, x, y);
     }
 }

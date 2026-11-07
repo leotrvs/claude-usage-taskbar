@@ -11,8 +11,9 @@ Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precis
 ## Recursos
 
 - Ícones na barra de tarefas com o percentual de uso de **5 horas** e o **semanal**. Mostre os dois, ou só um
-- Três estilos de ícone: **Velocímetro** e **Contorno**, que vão enchendo conforme o uso, e **Ponteiro**, um mostrador sem número
-- Cores por nível: verde, âmbar a partir de 70% e vermelho a partir de 90%
+- Três estilos de ícone: **Velocímetro**, um mostrador com o número dentro, **Círculo**, que enche em sentido horário a partir do topo, e **Ponteiro**, um mostrador com ponteiro
+- Cores por nível: verde, azul ou roxo, mudando em 70% e ficando vermelho em 90%
+- Ícones sem fundo e painel grafite ou preto
 - Painel escuro com horários de reinício, gráfico de 12 horas e previsão de ritmo
 - Alertas opcionais em 80% e 90% de um limite
 - Inglês e português do Brasil, seguindo o idioma do Windows por padrão
@@ -44,7 +45,7 @@ O instalador faz a conexão com o Claude Code para você. Veja [como a conexão 
 
 - **Passe o mouse** sobre um ícone para ver o percentual e o horário de reinício.
 - **Clique** em um ícone para abrir o painel. É lá que você escolhe o estilo do ícone.
-- **Configurações**, no painel, reúne idioma, ícones exibidos, atualizações automáticas, alertas de uso, iniciar com o Windows e a conexão com o Claude Code.
+- **Configurações**, no painel, reúne idioma, ícones exibidos, atualizações automáticas, alertas de uso, iniciar com o Windows, a conexão com o Claude Code e **Aparência**, com o modelo de cor e o tema do painel.
 - **Fechar widget** fecha só este app. Ele não sai da sua conta do Claude. Para reabrir, use o menu Iniciar ou a Área de Trabalho.
 
 Nos ícones, o limite de 5 horas tem número branco, e o semanal tem número colorido.
@@ -84,7 +85,7 @@ Os detalhes estão em [docs/SECURITY.pt-BR.md](docs/SECURITY.pt-BR.md).
 
 ## Atualizações
 
-A cada 6 horas, o app verifica a versão mais recente no GitHub. Ele só instala uma atualização se a assinatura digital bater com a chave embutida no app, então um arquivo adulterado é rejeitado. Você pode desligar isso em Configurações.
+A cada 6 horas, o app verifica a versão mais recente no GitHub. Ele só instala uma atualização se a assinatura digital bater com a chave embutida no app, então um arquivo adulterado é rejeitado. Você pode desligar isso em Configurações, onde **Verificar atualizações** também faz uma verificação na hora. Se o painel estiver aberto quando uma atualização for encontrada, ele mostra um link para instalar.
 
 ## Desinstalação
 

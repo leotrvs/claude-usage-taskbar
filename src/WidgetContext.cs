@@ -22,6 +22,8 @@ class WidgetContext : ApplicationContext
     IconStyle iconStyle = Settings.IconStyle;
     DateTime lastFileWrite = DateTime.MinValue;
     int ticksSinceRender;
+    UpdateInfo availableUpdate;
+    bool updateBusy;
 
     public WidgetContext(WaitHandle showEvent, bool showPanelNow)
     {
@@ -31,11 +33,14 @@ class WidgetContext : ApplicationContext
         PanelCallbacks callbacks = new PanelCallbacks();
         callbacks.ChangeStyle = ChangeStyle;
         callbacks.ChangeLanguage = ChangeLanguage;
+        callbacks.ChangeColors = ChangeColors;
+        callbacks.ChangePanelTheme = ChangePanelTheme;
         callbacks.ToggleStartWithWindows = delegate { Settings.StartWithWindows = !Settings.StartWithWindows; };
         callbacks.ToggleAutoUpdate = delegate { Settings.AutoUpdate = !Settings.AutoUpdate; };
         callbacks.ToggleConnection = ToggleConnection;
         callbacks.ChangeIconsShown = ChangeIconsShown;
         callbacks.ToggleNotifications = delegate { Settings.Notifications = !Settings.Notifications; };
+        callbacks.CheckOrInstallUpdate = CheckOrInstallUpdate;
         callbacks.CloseWidget = ExitThread;
 
         panel = new UsagePanel(callbacks);
@@ -51,7 +56,7 @@ class WidgetContext : ApplicationContext
         fileTimer.Start();
 
         updateTimer.Interval = FirstUpdateCheckMs;
-        updateTimer.Tick += delegate { CheckForUpdate(); };
+        updateTimer.Tick += delegate { OnUpdateTimer(); };
         updateTimer.Start();
 
         showWait = ThreadPool.RegisterWaitForSingleObject(showEvent, delegate
@@ -143,6 +148,20 @@ class WidgetContext : ApplicationContext
         Render();
     }
 
+    void ChangeColors(ColorTemplate colors)
+    {
+        Theme.Colors = colors;
+        Settings.Colors = colors;
+        Render();
+    }
+
+    void ChangePanelTheme(PanelTheme theme)
+    {
+        Theme.Panel = theme;
+        Settings.PanelTheme = theme;
+        panel.ApplyTheme();
+    }
+
     void ChangeIconsShown(IconsShown shown)
     {
         Settings.IconsShown = shown;
@@ -162,15 +181,69 @@ class WidgetContext : ApplicationContext
         else ClaudeCodeConnection.Connect(App.ExePath);
     }
 
-    void CheckForUpdate()
+    // With the panel open, the update waits for a click instead of closing it under the cursor.
+    void OnUpdateTimer()
     {
         updateTimer.Interval = UpdateCheckIntervalMs;
+        if (Settings.AutoUpdate) CheckForUpdate(false, !panel.Visible);
+    }
+
+    void CheckOrInstallUpdate()
+    {
+        if (availableUpdate != null)
+        {
+            InstallUpdate();
+            return;
+        }
+        if (updateBusy) return;
+        panel.SetUpdate(UpdatePhase.Checking, null);
+        CheckForUpdate(true, false);
+    }
+
+    void CheckForUpdate(bool manual, bool install)
+    {
+        if (updateBusy) return;
+        updateBusy = true;
         ThreadPool.QueueUserWorkItem(delegate
         {
-            if (!Updater.DownloadVerified()) return;
+            UpdateInfo latest;
+            UpdateResult result = Updater.Check(out latest);
+            bool ready = install && result == UpdateResult.Available && Updater.DownloadVerified(latest);
             panel.BeginInvoke(new Action(delegate
             {
-                if (Updater.ApplyAndRestart()) ExitThread();
+                updateBusy = false;
+                if (ready && Updater.ApplyAndRestart())
+                {
+                    ExitThread();
+                    return;
+                }
+                if (result == UpdateResult.Available)
+                {
+                    availableUpdate = latest;
+                    panel.SetUpdate(UpdatePhase.Available, latest.Version);
+                }
+                else if (manual)
+                {
+                    panel.SetUpdate(result == UpdateResult.UpToDate ? UpdatePhase.UpToDate : UpdatePhase.Failed, null);
+                }
+            }));
+        });
+    }
+
+    void InstallUpdate()
+    {
+        if (updateBusy) return;
+        updateBusy = true;
+        UpdateInfo update = availableUpdate;
+        panel.SetUpdate(UpdatePhase.Installing, update.Version);
+        ThreadPool.QueueUserWorkItem(delegate
+        {
+            bool ready = Updater.DownloadVerified(update);
+            panel.BeginInvoke(new Action(delegate
+            {
+                updateBusy = false;
+                if (ready && Updater.ApplyAndRestart()) ExitThread();
+                else panel.SetUpdate(UpdatePhase.Failed, update.Version);
             }));
         });
     }
