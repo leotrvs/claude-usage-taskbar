@@ -12,12 +12,21 @@ class ClassicMascot : IReactiveMascot
         this.other = other;
     }
 
+    public PixelMascot Pixel { get { return other; } }
+
     IMascot Active { get { return other.Mood == MascotMood.Work && !other.IsPlaying ? (IMascot)working : other; } }
 
     public MascotMood Mood
     {
         get { return other.Mood; }
         set { other.Mood = value; }
+    }
+
+    public int WalkOffset { get { return other.WalkOffset; } }
+
+    public int WalkRoom
+    {
+        set { other.WalkRoom = value; }
     }
 
     public void Play(MascotAction action)

@@ -121,9 +121,13 @@ En **Appearance** puedes elegir el aspecto:
 
 - **Laptop:** la animación original mientras trabaja, y los dibujos pixelados en los demás estados. Es la predeterminada.
 - **Classic:** los dibujos pixelados todo el tiempo.
-- **Christmas**, **Headphones** y **Chef:** la misma mascota con un atuendo. El Chef dice `im cooking` mientras trabaja.
+- **Christmas**, **Headphones**, **Chef**, **Scientist**, **Detective**, **Winter** y **Racer:** la misma mascota con un atuendo. El Chef dice `im cooking` mientras trabaja, y el Detective a veces busca con una lupa.
 
-![Los atuendos Christmas, Headphones y Chef](docs/images/mascot-outfits.png)
+![Los atuendos](docs/images/mascot-outfits.png)
+
+Cuando descansa, la mascota da de vez en cuando un paseo corto por la parte vacía de la cabecera del panel y vuelve antes de llegar al texto:
+
+![La mascota paseando por la cabecera](docs/images/mascot-walk.png)
 
 Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y el personaje pertenece a sus dueños. La licencia MIT no lo cubre.
 

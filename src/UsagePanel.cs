@@ -69,7 +69,7 @@ class UsagePanel : Form
     const int LogicalWidth = 300;
     const int MainHeight = 328;
     const int SettingsHeight = 394;
-    const int AppearanceHeight = 432;
+    const int AppearanceHeight = 512;
     const int SessionTop = 62;
     const int WeeklyTop = 132;
     const int WeeklyTopWithoutPace = 118; // Moves up into the line the session pace would use.
@@ -235,6 +235,10 @@ class UsagePanel : Form
         AddMascotChip(MascotStyle.Santa, "mascotSanta", 2, 0, callbacks);
         AddMascotChip(MascotStyle.Headphones, "mascotHeadphones", 0, 1, callbacks);
         AddMascotChip(MascotStyle.Chef, "mascotChef", 1, 1, callbacks);
+        AddMascotChip(MascotStyle.Scientist, "mascotScientist", 2, 1, callbacks);
+        AddMascotChip(MascotStyle.Detective, "mascotDetective", 0, 2, callbacks);
+        AddMascotChip(MascotStyle.Winter, "mascotWinter", 1, 2, callbacks);
+        AddMascotChip(MascotStyle.Racer, "mascotRacer", 2, 2, callbacks);
     }
 
     void AddMascotChip(MascotStyle value, string labelKey, int column, int row, PanelCallbacks callbacks)
@@ -375,7 +379,7 @@ class UsagePanel : Form
         {
             if (mascot == null) return Rectangle.Empty;
             Bitmap frame = mascot.CurrentFrame;
-            return new Rectangle(ClientSize.Width - Px(18) - frame.Width, Px(14), frame.Width, frame.Height);
+            return new Rectangle(ClientSize.Width - Px(18) - frame.Width - WalkShift, Px(14), frame.Width, frame.Height);
         }
     }
 
@@ -722,14 +726,53 @@ class UsagePanel : Form
     // Moves the animation without the timer, for the documentation demo.
     public void StepMascot()
     {
-        if (mascot != null) mascot.Advance();
+        if (mascot == null) return;
+        UpdateWalkRoom();
+        mascot.Advance();
+    }
+
+    // Starts a walk right away, for the documentation images.
+    public void StartMascotWalk()
+    {
+        IReactiveMascot reactive = mascot as IReactiveMascot;
+        if (reactive == null) return;
+        UpdateWalkRoom();
+        PixelMascot walker = mascot as PixelMascot;
+        if (walker == null) walker = ((ClassicMascot)mascot).Pixel;
+        walker.BeginWalk();
     }
 
     void AdvanceMascot()
     {
+        UpdateWalkRoom();
         mascot.Advance();
         mascotTimer.Interval = mascot.CurrentDelayMs;
-        Invalidate(new Rectangle(ClientSize.Width - Px(90), 0, Px(90), Px(60)));
+        Invalidate(new Rectangle(Math.Max(0, ClientSize.Width - Px(230)), 0, Px(230), Px(60)));
+    }
+
+    int WalkShift
+    {
+        get
+        {
+            IReactiveMascot reactive = mascot as IReactiveMascot;
+            return reactive == null ? 0 : reactive.WalkOffset * MascotPixel;
+        }
+    }
+
+    // The character may walk over the empty part of the header, never over the title or the status line.
+    void UpdateWalkRoom()
+    {
+        IReactiveMascot reactive = mascot as IReactiveMascot;
+        if (reactive == null) return;
+        if (updateVersion != null)
+        {
+            reactive.WalkRoom = 0;
+            return;
+        }
+        Size title = TextRenderer.MeasureText(PanelTitle, titleFont, Size.Empty, TextFormatFlags.NoPadding);
+        Size status = TextRenderer.MeasureText(state.Status ?? "", tinyFont, Size.Empty, TextFormatFlags.NoPadding);
+        int free = ClientSize.Width - Px(36) - mascot.CurrentFrame.Width - Math.Max(title.Width, status.Width) - Px(10);
+        reactive.WalkRoom = Math.Max(0, free / MascotPixel);
     }
 
     protected override void OnDeactivate(EventArgs e)
@@ -839,7 +882,7 @@ class UsagePanel : Form
         if (mascot != null && targets == mainTargets)
         {
             Bitmap frame = mascot.CurrentFrame;
-            g.DrawImageUnscaled(frame, right - frame.Width, Px(14));
+            g.DrawImageUnscaled(frame, right - frame.Width - WalkShift, Px(14));
             if (ChefIsWorking) DrawChefBalloon(g, right - frame.Width);
         }
         DrawLimit(g, Localization.T("session"), state.Session, state.SessionPace, true, Px(SessionTop), left, right);

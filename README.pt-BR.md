@@ -120,9 +120,13 @@ Em **Aparência** você escolhe o visual:
 
 - **Notebook:** a animação original enquanto trabalha, e os desenhos em pixels nos outros estados. É o padrão.
 - **Clássico:** os desenhos em pixels o tempo todo.
-- **Natal**, **Fone** e **Chef:** o mesmo mascote com um outfit. O Chef diz `im cooking` enquanto trabalha.
+- **Natal**, **Fone**, **Chef**, **Cientista**, **Detetive**, **Inverno** e **Piloto:** o mesmo mascote com um outfit. O Chef diz `im cooking` enquanto trabalha, e o Detetive às vezes procura com a lupa.
 
-![Os outfits de Natal, Fone e Chef](docs/images/mascot-outfits.png)
+![Os outfits](docs/images/mascot-outfits.png)
+
+Quando está descansando, o mascote de vez em quando dá uma caminhada curta pelo espaço vazio do cabeçalho do painel e volta antes de chegar ao texto:
+
+![O mascote andando pelo cabeçalho](docs/images/mascot-walk.png)
 
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 

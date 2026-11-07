@@ -120,9 +120,13 @@ Under **Appearance** you can choose the look:
 
 - **Laptop:** the original animation while working, and the pixel drawings otherwise. This is the default.
 - **Classic:** the pixel drawings all the time.
-- **Christmas**, **Headphones** and **Chef:** the same mascot with an outfit. The Chef says `im cooking` while it works.
+- **Christmas**, **Headphones**, **Chef**, **Scientist**, **Detective**, **Winter** and **Racer:** the same mascot with an outfit. The Chef says `im cooking` while it works, and the Detective sometimes searches with a magnifying glass.
 
-![The Christmas, Headphones and Chef outfits](docs/images/mascot-outfits.png)
+![The outfits](docs/images/mascot-outfits.png)
+
+When it is resting, the mascot now and then takes a short walk across the empty part of the panel header, and turns back before it reaches the text:
+
+![The mascot walking across the header](docs/images/mascot-walk.png)
 
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 

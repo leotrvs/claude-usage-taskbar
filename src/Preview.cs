@@ -17,6 +17,7 @@ static class Preview
         RenderIconStyles(Path.Combine(directory, "icon-styles.png"));
         RenderMascots(Path.Combine(directory, "mascots.png"));
         RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
+        RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective);
     }
 
     static void RenderMascots(string path)
@@ -31,19 +32,65 @@ static class Preview
 
     static void RenderOutfits(string path)
     {
-        MascotStyle[] styles = { MascotStyle.Santa, MascotStyle.Headphones, MascotStyle.Chef };
+        MascotStyle[] styles =
+        {
+            MascotStyle.Santa, MascotStyle.Headphones, MascotStyle.Chef, MascotStyle.Scientist,
+            MascotStyle.Detective, MascotStyle.Winter, MascotStyle.Racer
+        };
+        const int Columns = 4;
         const int Pixel = 4;
         const int Width = 128;
         const int Height = 88;
         const int Gap = 16;
-        using (Bitmap sheet = new Bitmap(styles.Length * (Width + Gap) + Gap, Height + Gap * 2))
+        int rows = (styles.Length + Columns - 1) / Columns;
+        using (Bitmap sheet = new Bitmap(Columns * (Width + Gap) + Gap, rows * (Height + Gap) + Gap))
         using (Graphics g = Graphics.FromImage(sheet))
         {
             g.Clear(Color.FromArgb(10, 10, 10));
             for (int i = 0; i < styles.Length; i++)
                 using (Bitmap frame = PixelMascot.Render(styles[i], MascotMood.Idle, 3, Pixel))
-                    g.DrawImageUnscaled(frame, Gap + i * (Width + Gap), Gap);
+                    g.DrawImageUnscaled(frame, Gap + i % Columns * (Width + Gap), Gap + i / Columns * (Height + Gap));
             sheet.Save(path, ImageFormat.Png);
+        }
+    }
+
+    // The idle character walking across the empty part of the panel header, as snapshots of one walk.
+    static void RenderWalk(string path, MascotStyle style)
+    {
+        const int HeaderHeight = 64;
+        const int Gap = 8;
+        int[] steps = { 0, 14, 12, 14, 14, 14 };
+        Localization.Apply(Language.English);
+        PanelState state = new PanelState();
+        state.Stale = false;
+        state.Status = Localization.T("updatedAt", "14:32");
+        state.Sessions.Running = 1;
+        state.Session.Percent = 42;
+        state.Weekly.Percent = 67;
+        state.History = new List<UsageSample>();
+
+        using (UsagePanel panel = new UsagePanel(new PanelCallbacks()))
+        {
+            panel.ChangeMascot(style);
+            panel.SetState(state, IconStyle.Ring, Language.English, IconsShown.Both);
+            panel.StartMascotWalk();
+            int height = HeaderHeight * steps.Length + Gap * (steps.Length + 1);
+            using (Bitmap sheet = new Bitmap(panel.Width + Gap * 2, height))
+            using (Graphics g = Graphics.FromImage(sheet))
+            {
+                g.Clear(Color.FromArgb(10, 10, 10));
+                for (int i = 0; i < steps.Length; i++)
+                {
+                    for (int s = 0; s < steps[i]; s++) panel.StepMascot();
+                    using (Bitmap shot = new Bitmap(panel.Width, panel.Height))
+                    {
+                        panel.DrawToBitmap(shot, new Rectangle(Point.Empty, panel.Size));
+                        g.DrawImage(shot, new Rectangle(Gap, Gap + i * (HeaderHeight + Gap), panel.Width, HeaderHeight),
+                            new Rectangle(0, 0, panel.Width, HeaderHeight), GraphicsUnit.Pixel);
+                    }
+                }
+                sheet.Save(path, ImageFormat.Png);
+            }
         }
     }
 

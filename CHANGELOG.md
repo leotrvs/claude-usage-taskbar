@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.0
+
+- Four new outfits: Scientist, Detective, Winter and Racer
+- When it is resting, the mascot now and then walks across the empty part of the panel header and back. The Detective sometimes stops to search with a magnifying glass
+
 ## 1.6.3
 
 - The mascot picker labels changed: the laptop mascot is now Laptop (Notebook in Portuguese) and the pixel mascot is now Classic (Clássico)
