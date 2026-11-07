@@ -133,6 +133,10 @@ En pánico, de vez en cuando corre de un lado a otro de la cabecera:
 
 ![La mascota corriendo en pánico](docs/images/mascot-panic-walk.png)
 
+El Racer sale con estilo: ondea una bandera de cuadros, llega un coche de Fórmula 1, y el piloto sube, corre por la cabecera y vuelve:
+
+![El Racer conduciendo un coche de Fórmula 1](docs/images/mascot-racer-drive.png)
+
 Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y el personaje pertenece a sus dueños. La licencia MIT no lo cubre.
 
 ### Configuración

@@ -61,6 +61,10 @@ class PixelMascot : IReactiveMascot
     const int MaxPanicWaitMs = 55000;
     const int PanicSpeed = 2;
     const int PanicTickMs = 70;
+    const int RaceSpeed = 3;
+    const int FlagTicks = 14; // The checkered flag waves, then the car arrives and the driver gets in.
+    const int BoardTicks = 5;
+    const int ParkTicks = 6;
 
     static readonly Color Body = Color.FromArgb(208, 106, 75);
     static readonly Color Eye = Color.FromArgb(20, 20, 22);
@@ -155,7 +159,7 @@ class PixelMascot : IReactiveMascot
     static readonly string[] HeartShape = { "#.#", "###", ".#." };
     static readonly string[] HappyEye = { ".#.", "#.#" };
 
-    enum WalkStep { None, Out, Look, Search, Back }
+    enum WalkStep { None, Out, Look, Search, Back, Flag, Board, Park, Alight }
 
     // What the idle character is doing while it walks around the header.
     class WalkPose
@@ -164,6 +168,12 @@ class PixelMascot : IReactiveMascot
         public int Step;
         public int Look;
         public bool Searching;
+        public bool Racing; // The Racer drives instead of walking.
+        public bool Flag;
+        public bool Car;
+        public bool Seated;
+        public bool Mirror;
+        public int Slide; // Columns the car is still to the right of its place.
     }
 
     static readonly Random Chance = new Random();
@@ -177,6 +187,7 @@ class PixelMascot : IReactiveMascot
     int walkStops;
     bool walkPatrol;
     bool walkPanic;
+    bool walkRace;
     int walkLegs;
     int nextWalk;
     Bitmap frame;
@@ -204,7 +215,7 @@ class PixelMascot : IReactiveMascot
         get
         {
             if (action.HasValue) return ActionDelayMs;
-            if (walkStep != WalkStep.None) return walkPanic ? PanicTickMs : WalkTickMs;
+            if (walkStep != WalkStep.None) return walkPanic || walkRace ? PanicTickMs : WalkTickMs;
             switch (mood)
             {
                 case MascotMood.Sleep:
@@ -256,14 +267,27 @@ class PixelMascot : IReactiveMascot
             BeginWalk();
         }
         walkTick++;
-        int speed = walkPanic ? PanicSpeed : 1;
+        int speed = walkRace ? RaceSpeed : walkPanic ? PanicSpeed : 1;
         switch (walkStep)
         {
+            case WalkStep.Flag:
+                if (--walkWait <= 0) { walkStep = WalkStep.Board; walkWait = BoardTicks; }
+                break;
+            case WalkStep.Board:
+                if (--walkWait <= 0) walkStep = WalkStep.Out;
+                break;
+            case WalkStep.Park:
+                if (--walkWait <= 0) walkStep = WalkStep.Back;
+                break;
+            case WalkStep.Alight:
+                if (--walkWait <= 0) EndWalk();
+                break;
             case WalkStep.Out:
                 WalkOffset = Math.Min(walkTarget, WalkOffset + speed);
                 if (WalkOffset >= Math.Min(walkTarget, WalkRoom))
                 {
-                    if (walkPanic) walkStep = WalkStep.Back;
+                    if (walkRace) { walkStep = WalkStep.Park; walkWait = ParkTicks; }
+                    else if (walkPanic) walkStep = WalkStep.Back;
                     else { walkStep = WalkStep.Look; walkWait = WalkLookTicks; }
                 }
                 else if (walkPatrol && WalkOffset % PatrolStride == 0 && WalkOffset / PatrolStride > walkStops)
@@ -282,7 +306,8 @@ class PixelMascot : IReactiveMascot
             case WalkStep.Back:
                 WalkOffset = Math.Max(0, WalkOffset - speed);
                 if (WalkOffset > 0) break;
-                if (walkPanic && --walkLegs > 0) walkStep = WalkStep.Out;
+                if (walkRace) { walkStep = WalkStep.Alight; walkWait = BoardTicks; }
+                else if (walkPanic && --walkLegs > 0) walkStep = WalkStep.Out;
                 else EndWalk();
                 break;
         }
@@ -302,6 +327,14 @@ class PixelMascot : IReactiveMascot
         walkTarget = peek ? room / 2 : room;
         walkStops = 0;
         walkTick = 0;
+        walkRace = style == MascotStyle.Racer && !walkPanic;
+        if (walkRace)
+        {
+            walkTarget = room;
+            walkStep = WalkStep.Flag;
+            walkWait = FlagTicks;
+            return;
+        }
         walkStep = WalkStep.Out;
     }
 
@@ -330,6 +363,17 @@ class PixelMascot : IReactiveMascot
         else if (walkStep == WalkStep.Look) pose.Look = walkTick % WalkLookTicks < WalkLookTicks / 2 ? 1 : -1;
         else if (walkStep == WalkStep.Search) pose.Look = walkTick / 3 % 2 == 0 ? -1 : 0;
         else pose.Look = -1;
+        if (walkRace)
+        {
+            pose.Racing = true;
+            pose.Look = -1;
+            pose.Flag = walkStep == WalkStep.Flag;
+            pose.Car = walkStep != WalkStep.Flag;
+            pose.Seated = walkStep == WalkStep.Out || walkStep == WalkStep.Park || walkStep == WalkStep.Back || (walkStep == WalkStep.Board && walkWait <= 2);
+            pose.Mirror = walkStep == WalkStep.Back || walkStep == WalkStep.Alight;
+            if (walkStep == WalkStep.Board) pose.Slide = walkWait * 4;
+            else if (walkStep == WalkStep.Alight) pose.Slide = (BoardTicks - walkWait) * 4;
+        }
         return pose;
     }
 
@@ -439,6 +483,11 @@ class PixelMascot : IReactiveMascot
 
     static void DrawIdle(Canvas canvas, MascotStyle style, int tick, WalkPose walk)
     {
+        if (walk != null && walk.Racing)
+        {
+            DrawRacing(canvas, style, tick, walk);
+            return;
+        }
         if (walk != null)
         {
             int stride = walk.Moving ? walk.Step / 2 % 2 : 0;
@@ -456,6 +505,93 @@ class PixelMascot : IReactiveMascot
         if (tick % 24 == 0) DrawClosedEyes(canvas, BodyTop + crouch);
         else DrawOpenEyes(canvas, BodyTop + crouch, look, 0, 4);
         DrawOutfit(canvas, style, BodyTop + crouch);
+    }
+
+    static readonly Color CarRed = Color.FromArgb(214, 48, 49);
+    static readonly Color Tire = Color.FromArgb(62, 62, 70);
+    static readonly Color Hub = Color.FromArgb(176, 176, 184);
+
+    // The Racer's outing: a checkered flag waves, a Formula 1 car arrives, the driver climbs in and drives off.
+    static void DrawRacing(Canvas canvas, MascotStyle style, int tick, WalkPose walk)
+    {
+        int top = walk.Seated ? BodyTop + 1 : BodyTop;
+        canvas.Mirror = walk.Mirror && walk.Seated;
+        if (walk.Seated)
+        {
+            // Only the head shows above the cockpit, so the body, arms and legs are left out.
+            canvas.Fill(BodyLeft + 4, top, 16, 6, Body);
+            canvas.Fill(BodyLeft + 4, top + 7, 16, 1, Suit);
+        }
+        else DrawFigure(canvas, top, 0, walk.Flag ? -3 : 0, 0);
+        if (tick % 24 == 0) DrawClosedEyes(canvas, top);
+        else DrawOpenEyes(canvas, top, walk.Look, 0, 4);
+        DrawOutfit(canvas, style, top);
+        canvas.Mirror = walk.Mirror;
+        if (walk.Car)
+        {
+            canvas.ShiftX = walk.Slide;
+            DrawCar(canvas, walk.Step, walk.Moving);
+            canvas.ShiftX = 0;
+        }
+        canvas.Mirror = false;
+        if (walk.Flag) DrawFlag(canvas, walk.Step);
+    }
+
+    // A Formula 1 car seen from the side, nose to the left. R red, W white, N navy, Y yellow.
+    static readonly string[] CarArt =
+    {
+        "..........................WWWWWW", // Rear wing, from y12.
+        "..........................NNNNNN",
+        "......................RRR.R.NN.R..",
+        ".........NNNNNNNNNNNRRRRR.R.NN.R",
+        "...........RRRRRRRRRRRRRRRRRNN.R",
+        "........RRRRRYYYRRRRRRRRRRRRNN..",
+        "....RRRRRRRWWWWWWWWWWWWWWRRR....",
+        "NRRRRRRRRRRRRRRRRRRRRRRRRRR.....",
+        "NWWNNNNNNNNNNNNNNNNNNNNNNNN.....",
+        "NWWWWWWWW......................."
+    };
+    const int CarTop = 12;
+
+    static void DrawCar(Canvas canvas, int step, bool moving)
+    {
+        for (int row = 0; row < CarArt.Length; row++)
+            for (int column = 0; column < CarArt[row].Length; column++)
+            {
+                Color color;
+                switch (CarArt[row][column])
+                {
+                    case 'R': color = CarRed; break;
+                    case 'W': color = Coat; break;
+                    case 'N': color = Suit; break;
+                    case 'Y': color = Gold; break;
+                    default: continue;
+                }
+                canvas.Fill(column, CarTop + row, 1, 1, color);
+            }
+        bool spin = step % 2 == 0;
+        canvas.Fill(8, 17, 5, 5, Tire);
+        canvas.Fill(21, 15, 8, 7, Tire);
+        canvas.Fill(10, 19, 1, 1, Hub);
+        canvas.Fill(spin ? 9 : 11, 18, 1, 1, Hub);
+        canvas.Fill(23, 17, 3, 3, Hub);
+        canvas.Fill(spin ? 24 : 23, spin ? 18 : 19, 1, 1, Tire);
+        if (!moving) return;
+        Color puff = Color.FromArgb(150, 175, 175, 180);
+        canvas.Fill(29 + step % 3, 17 + step / 2 % 3, 1, 1, puff);
+        canvas.Fill(30 + step % 2, 20 - step % 2, 1, 1, puff);
+    }
+
+    // A pole at the left edge with a checkered cloth that flutters.
+    static void DrawFlag(Canvas canvas, int step)
+    {
+        canvas.Fill(1, 3, 1, 17, Color.FromArgb(150, 150, 156));
+        for (int column = 0; column < 3; column++)
+        {
+            int dip = (step / 2 + column) % 2;
+            for (int row = 0; row < 2; row++)
+                canvas.Fill(2 + column * 2, 3 + row * 2 + dip, 2, 2, (column + row) % 2 == 0 ? Boot : Coat);
+        }
     }
 
     static void DrawWork(Canvas canvas, MascotStyle style, int tick, bool tired)
@@ -841,6 +977,7 @@ class PixelMascot : IReactiveMascot
         public MascotStyle Style;
         public int RightArm;
         public bool Glint;
+        public bool Mirror;
 
         public Canvas(Graphics graphics, int pixel)
         {
@@ -851,6 +988,7 @@ class PixelMascot : IReactiveMascot
         public void Fill(int x, int y, int width, int height, Color color)
         {
             if (UpsideDownAround.HasValue) y = UpsideDownAround.Value - y - height;
+            if (Mirror) x = Columns - x - width;
             using (Brush brush = new SolidBrush(color))
                 graphics.FillRectangle(brush, (x + ShiftX) * pixel, y * pixel, width * pixel, height * pixel);
         }

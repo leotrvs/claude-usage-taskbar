@@ -19,6 +19,7 @@ static class Preview
         RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
         RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective, false);
         RenderWalk(Path.Combine(directory, "mascot-panic-walk.png"), MascotStyle.Pixel, true);
+        RenderWalk(Path.Combine(directory, "mascot-racer-drive.png"), MascotStyle.Racer, false);
     }
 
     static void RenderMascots(string path)
@@ -60,7 +61,9 @@ static class Preview
     {
         const int HeaderHeight = 64;
         const int Gap = 8;
-        int[] steps = panic ? new[] { 0, 3, 3, 3, 3, 3, 3 } : new[] { 0, 14, 12, 14, 14, 14 };
+        int[] steps = panic ? new[] { 0, 3, 3, 3, 3, 3, 3 }
+            : style == MascotStyle.Racer ? new[] { 4, 9, 4, 4, 4, 7, 8, 8 }
+            : new[] { 0, 14, 12, 14, 14, 14 };
         Localization.Apply(Language.English);
         PanelState state = new PanelState();
         state.Stale = false;

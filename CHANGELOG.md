@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2
+
+- The Racer now goes out in a Formula 1 car: a checkered flag waves, the car arrives, and the driver races down the panel header and back
+
 ## 1.7.1
 
 - When it is panicking, the mascot now and then runs back and forth across the panel header

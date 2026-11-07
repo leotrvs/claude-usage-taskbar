@@ -132,6 +132,10 @@ When panicking, it now and then runs back and forth across the header:
 
 ![The mascot running in a panic](docs/images/mascot-panic-walk.png)
 
+The Racer goes out in style: a checkered flag waves, a Formula 1 car arrives, and the driver climbs in, races down the header and back:
+
+![The Racer driving a Formula 1 car](docs/images/mascot-racer-drive.png)
+
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 
 ### Settings

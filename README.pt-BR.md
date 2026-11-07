@@ -132,6 +132,10 @@ Em pânico, ele de vez em quando corre de um lado para o outro do cabeçalho:
 
 ![O mascote correndo em pânico](docs/images/mascot-panic-walk.png)
 
+O Piloto sai com estilo: uma bandeira quadriculada balança, um carro de Fórmula 1 chega, e ele monta, corre pelo cabeçalho e volta:
+
+![O Piloto dirigindo um carro de Fórmula 1](docs/images/mascot-racer-drive.png)
+
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 
 ### Configurações
