@@ -19,7 +19,8 @@ Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precis
 - Três modelos de cor e quatro temas, incluindo um que segue o Windows
 - Painel com horários de reinício, previsão de ritmo e gráfico de 12 horas
 - Mascote animado, com versões em pixels que reagem ao seu uso
-- Alertas opcionais em 80% e 90% de um limite
+- Alertas opcionais em 80% e 90% de um limite, e aviso quando um limite renova
+- Menu com o botão direito nos ícones, com Abrir painel, Atualizar agora, Configurações e Encerrar
 - Inglês e português do Brasil, seguindo o idioma do Windows por padrão
 - Inicia com o Windows, com atalhos na Área de Trabalho e no menu Iniciar
 - Atualizações automáticas assinadas

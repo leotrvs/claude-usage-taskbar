@@ -22,5 +22,11 @@ if (-not $Publish) {
     return
 }
 
-gh release create "v$version" $exe "$out\update.json" "$out\update.json.sig" --title "v$version" --notes-file (Join-Path $root 'CHANGELOG.md')
+$changelog = Get-Content (Join-Path $root 'CHANGELOG.md') -Raw
+$section = [regex]::Match($changelog, "(?ms)^## $([regex]::Escape($version))\r?\n(.*?)(?=^## |\z)")
+if (-not $section.Success) { throw "CHANGELOG.md has no section for $version." }
+$hash = (Get-FileHash $exe -Algorithm SHA256).Hash
+$notes = "$($section.Groups[1].Value.Trim())`n`nSHA-256 of ``ClaudeUsageTaskbar.exe``: ``$hash``"
+
+gh release create "v$version" $exe "$out\update.json" "$out\update.json.sig" --title "v$version" --notes $notes
 if ($LASTEXITCODE -ne 0) { throw 'Could not create the release.' }

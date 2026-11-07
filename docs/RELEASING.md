@@ -30,7 +30,7 @@ Forks must create their own key and change `BaseUrl` in `src\Updater.cs`.
    pwsh -File scripts/release.ps1 -Publish
    ```
 
-5. Add the SHA-256 printed by the script to the release notes.
+The script writes the release notes from the version's section in `CHANGELOG.md` and adds the SHA-256 of the app.
 
 The release must include exactly these files: `ClaudeUsageTaskbar.exe`, `update.json` and `update.json.sig`.
 

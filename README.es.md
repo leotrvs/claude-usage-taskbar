@@ -21,7 +21,8 @@ Consulta los límites de uso de Claude Code en la barra de tareas de Windows, si
 - Tres plantillas de color y cuatro temas, incluido uno que sigue a Windows
 - Un panel con horas de reinicio, previsión de ritmo y un gráfico de 12 horas
 - Una mascota animada, con versiones pixeladas que reaccionan a tu uso
-- Alertas opcionales al 80% y al 90% de un límite
+- Alertas opcionales al 80% y al 90% de un límite, y un aviso cuando un límite se renueva
+- Un menú con clic derecho en los iconos, con Open panel, Refresh now, Settings y Quit
 - Se inicia con Windows, con accesos directos en el Escritorio y el menú Inicio
 - Actualizaciones automáticas firmadas
 - **Nunca lee tu inicio de sesión ni tu token de Claude**

@@ -19,7 +19,8 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 - Three color templates and four themes, including one that follows Windows
 - A panel with reset times, a pace forecast and a 12-hour chart
 - An animated mascot, with pixel versions that react to your usage
-- Optional alerts at 80% and 90% of a limit
+- Optional alerts at 80% and 90% of a limit, and a notice when a limit renews
+- A right-click menu on the icons, with Open panel, Refresh now, Settings and Quit
 - English and Brazilian Portuguese, following your Windows language by default
 - Starts with Windows, with Desktop and Start menu shortcuts
 - Signed automatic updates
