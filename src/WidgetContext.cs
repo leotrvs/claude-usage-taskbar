@@ -14,6 +14,8 @@ class WidgetContext : ApplicationContext
     const int UpdateCheckIntervalMs = 60 * 60 * 1000;
     const int FirstProbeMs = 3 * 1000;
     const int ProbeIntervalMs = 2 * 60 * 1000;
+    const int ShortestProbeGapMs = 30 * 1000; // Opening the panel repeatedly reads once.
+    const int OutOfDateMinutes = 6;
     const int MinimumManualCheckMs = 900; // Long enough to see the icon turn on a fast connection.
 
     readonly UsagePanel panel;
@@ -30,6 +32,7 @@ class WidgetContext : ApplicationContext
     UpdateInfo availableUpdate;
     bool updateBusy;
     int probing;
+    int lastProbeTick = Environment.TickCount - ShortestProbeGapMs;
 
     public WidgetContext(WaitHandle showEvent, bool showPanelNow)
     {
@@ -51,7 +54,11 @@ class WidgetContext : ApplicationContext
         callbacks.CloseWidget = ExitThread;
 
         panel = new UsagePanel(callbacks);
-        panel.VisibleChanged += delegate { InstallWaitingUpdate(); };
+        panel.VisibleChanged += delegate
+        {
+            InstallWaitingUpdate();
+            if (panel.Visible) ReadUsage();
+        };
         IntPtr ensureHandle = panel.Handle; // BeginInvoke needs it before the first Show.
         GC.KeepAlive(ensureHandle);
 
@@ -90,13 +97,28 @@ class WidgetContext : ApplicationContext
     void OnProbeTimer()
     {
         probeTimer.Interval = ProbeIntervalMs;
+        ReadUsage();
+    }
+
+    void ReadUsage()
+    {
+        if (Environment.TickCount - lastProbeTick < ShortestProbeGapMs) return;
         if (!ClaudeCodeConnection.IsConnected) return;
         if (Interlocked.CompareExchange(ref probing, 1, 0) != 0) return;
+        lastProbeTick = Environment.TickCount;
         ThreadPool.QueueUserWorkItem(delegate
         {
             UsageProbe.Run();
             Interlocked.Exchange(ref probing, 0);
+            ShowProbeResult();
         });
+    }
+
+    // Also needed after a failed read, which leaves the usage file unchanged.
+    void ShowProbeResult()
+    {
+        try { panel.BeginInvoke(new Action(Reload)); }
+        catch (InvalidOperationException) { } // The app is closing.
     }
 
     void CheckFile()
@@ -114,14 +136,16 @@ class WidgetContext : ApplicationContext
         PanelState next = new PanelState();
         if (snapshot == null)
         {
-            next.Status = Localization.T("waiting");
+            next.Status = Localization.T(UsageProbe.ClaudeFound ? "waiting" : "claudeMissing");
         }
         else
         {
             next.Session = snapshot.Session;
             next.Weekly = snapshot.Weekly;
             next.Stale = false;
+            next.OutOfDate = (DateTime.Now - snapshot.UpdatedAt).TotalMinutes > OutOfDateMinutes;
             next.Status = Localization.T("updatedAt", snapshot.UpdatedAt.ToString("HH:mm", Localization.Culture));
+            if (next.OutOfDate) next.Status += " · " + Localization.T("outOfDate");
             next.History = UsageStore.LoadHistory();
             next.SessionPace = PaceEstimator.DescribeSession(next.Session, next.History, DateTime.Now);
             next.WeeklyPace = PaceEstimator.DescribeWeekly(next.Weekly, DateTime.Now);

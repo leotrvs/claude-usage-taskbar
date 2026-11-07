@@ -56,7 +56,7 @@ static class Settings
         get
         {
             PanelTheme theme;
-            return Enum.TryParse(Read("PanelTheme") as string, out theme) ? theme : PanelTheme.Graphite;
+            return Enum.TryParse(Read("PanelTheme") as string, out theme) ? theme : PanelTheme.Auto;
         }
         set { Write("PanelTheme", value.ToString()); }
     }

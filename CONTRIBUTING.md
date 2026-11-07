@@ -3,7 +3,7 @@
 ## Setup
 
 ```powershell
-git clone https://github.com/ggleoo/claude-usage-taskbar.git
+git clone https://github.com/leotrvs/claude-usage-taskbar.git
 cd claude-usage-taskbar
 git config core.hooksPath .githooks
 pwsh -File scripts/build.ps1

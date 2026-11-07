@@ -15,6 +15,8 @@ static class UsageProbe
     const int TimeoutMs = 30 * 1000;
     const int OldestResetDays = 30; // The output has no year, so an older date belongs to next year.
 
+    public static volatile bool ClaudeFound = true;
+
     static readonly Regex Percent = new Regex(@":\s*(\d+)%");
     static readonly Regex Reset = new Regex(
         @"resets\s+([a-z]{3})\s+(\d{1,2}),?\s+(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)", RegexOptions.IgnoreCase);
@@ -39,6 +41,7 @@ static class UsageProbe
     static string ReadOutput()
     {
         ProcessStartInfo start = NewStartInfo();
+        ClaudeFound = start != null;
         if (start == null) return null;
         start.UseShellExecute = false;
         start.CreateNoWindow = true;

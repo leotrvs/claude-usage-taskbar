@@ -47,6 +47,8 @@ static class Theme
     static readonly Color Yellow = Color.FromArgb(250, 204, 21);
     public static readonly Color Stale = Color.FromArgb(130, 130, 130);
 
+    public static Color Warning { get { return IsLight ? Color.FromArgb(202, 138, 4) : Yellow; } }
+
     public static Color ForPercent(int? percent, bool stale)
     {
         if (stale || !percent.HasValue) return Stale;

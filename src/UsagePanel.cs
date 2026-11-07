@@ -13,6 +13,7 @@ class PanelState
     public UsageWindow Session = new UsageWindow();
     public UsageWindow Weekly = new UsageWindow();
     public bool Stale = true;
+    public bool OutOfDate; // Numbers exist, but the latest reads have failed.
     public string Status = Localization.T("reading");
     public string SessionPace;
     public string WeeklyPace;
@@ -777,7 +778,7 @@ class UsagePanel : Form
     {
         Draw(g, PanelTitle, titleFont, Theme.Text, left, Px(14), right - left, TextFormatFlags.Left);
         int mascotSpace = mascot != null ? mascot.CurrentFrame.Width + Px(8) : 0;
-        if (updateVersion == null) Draw(g, state.Status, tinyFont, Theme.Muted, left, Px(35), right - left - mascotSpace, TextFormatFlags.Left);
+        if (updateVersion == null) Draw(g, state.Status, tinyFont, state.OutOfDate ? Theme.Warning : Theme.Muted, left, Px(35), right - left - mascotSpace, TextFormatFlags.Left);
         if (mascot != null && targets == mainTargets)
         {
             Bitmap frame = mascot.CurrentFrame;

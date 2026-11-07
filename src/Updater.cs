@@ -21,7 +21,7 @@ static class Updater
 #if UPDATE_TEST
     const string BaseUrl = "http://127.0.0.1:8765/";
 #else
-    const string BaseUrl = "https://github.com/ggleoo/claude-usage-taskbar/releases/latest/download/";
+    const string BaseUrl = "https://github.com/leotrvs/claude-usage-taskbar/releases/latest/download/";
 #endif
     const int MaxManifestBytes = 16 * 1024;
     const int MaxSignatureBytes = 4 * 1024;

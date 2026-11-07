@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.8
+
+- Auto is now the default theme
+- Opening the panel reads your usage right away
+- The update time turns yellow and says out of date when readings stop working
+- The panel says when Claude Code cannot be found
+- The app and its links now use the repository's current address
+
 ## 1.5.7
 
 - New Auto theme, which follows the Windows light or dark mode

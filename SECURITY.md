@@ -8,7 +8,7 @@
 |---|---|---|
 | `~/.claude/settings.json` | Reads and changes only the `statusLine` entry, after your consent | Connects to Claude Code. A `.bak` copy is saved beside it. |
 | Status line data from Claude Code | Reads it in memory | Keeps only limit percentages and reset times |
-| Claude Code's `/usage` command | Runs it every 2 minutes while connected | Keeps only limit percentages and reset times. It makes no model call and spends no tokens. |
+| Claude Code's `/usage` command | Runs it every 2 minutes and when you open the panel, while connected | Keeps only limit percentages and reset times. It makes no model call and spends no tokens. |
 | `%LOCALAPPDATA%\ClaudeUsageTaskbar` | Reads and writes | Stores `usage.json`, `history.csv` (24 hours of times and 5-hour percentages), and your earlier status line if you had one |
 | `%LOCALAPPDATA%\Programs\ClaudeUsageTaskbar` | Reads and writes | Holds the installed app |
 | `HKCU\Software\ClaudeUsageTaskbar` | Reads and writes | Stores preferences |
@@ -58,4 +58,4 @@ The app does not have a paid code-signing certificate, so Windows SmartScreen ma
 
 ## Report a vulnerability
 
-Please use [private vulnerability reporting](https://github.com/ggleoo/claude-usage-taskbar/security/advisories/new) instead of a public issue.
+Please use [private vulnerability reporting](https://github.com/leotrvs/claude-usage-taskbar/security/advisories/new) instead of a public issue.

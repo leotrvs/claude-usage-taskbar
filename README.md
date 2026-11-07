@@ -38,7 +38,7 @@ You do not need to keep a terminal open.
 
 ### Step by step
 
-1. **Download** `ClaudeUsageTaskbar.exe` from the [latest release](https://github.com/ggleoo/claude-usage-taskbar/releases/latest).
+1. **Download** `ClaudeUsageTaskbar.exe` from the [latest release](https://github.com/leotrvs/claude-usage-taskbar/releases/latest).
 2. **Open the downloaded file.** Windows may show a SmartScreen warning because the app has no paid code-signing certificate. Choose **More info**, then **Run anyway**. If you prefer, [check the file](SECURITY.md#verify-a-download) or [build it yourself](#build-from-source) first.
 3. **Choose Yes** in the install window. The app is installed for your Windows user only and connects to Claude Code for you. You can delete the downloaded file afterwards.
 4. **Keep the icons visible.** Windows hides new tray icons. Drag them from the **^** menu to the taskbar, or go to **Settings > Personalization > Taskbar > Other system tray icons** and turn them on. There are two icons, one for each limit.
@@ -84,7 +84,7 @@ The chart shows your 5-hour usage over the last 12 hours. Hover over it to see t
 Under **Appearance**:
 
 - **Colors:** blue by default, or green or purple. They apply to the icons and the bars.
-- **Theme:** auto, graphite, black or light. Auto follows the Windows mode: light when it is light, and black when it is dark.
+- **Theme:** auto by default, or graphite, black or light. Auto follows the Windows mode: light when it is light, and black when it is dark.
 
 ### Mascot
 
@@ -135,7 +135,7 @@ This is a fan project, not affiliated with or endorsed by Anthropic, and the cha
 
 The app reads your limits in two official ways:
 
-- **`/usage` command:** every 2 minutes it runs `claude -p /usage` in the background, the same numbers you see in Claude Code. It makes no model call and spends no tokens.
+- **`/usage` command:** every 2 minutes, and when you open the panel, it runs `claude -p /usage` in the background, the same numbers you see in Claude Code. It makes no model call and spends no tokens.
 - **[Status line](https://code.claude.com/docs/en/statusline):** during install, it adds one `statusLine` entry to `~/.claude/settings.json` and saves a backup next to it. Claude Code then sends it fresh numbers after each response in a terminal.
 
 In both cases the app keeps only the 5-hour and weekly percentages and reset times in `%LOCALAPPDATA%\ClaudeUsageTaskbar`, and discards the rest. The widget reads that file.
@@ -168,17 +168,18 @@ Go to **Windows Settings > Apps > Installed apps > Claude Usage Taskbar > Uninst
 | Problem | What to do |
 |---|---|
 | "Waiting for Claude Code" | Wait a few seconds. If it stays, run `claude` in a terminal to check that Claude Code is installed and signed in. |
+| "Claude Code not found" | Install [Claude Code](https://code.claude.com/docs), then run `claude` in a terminal to sign in. |
 | Still no percentages | Check that **Connected to Claude Code** is on, then run `claude -p /usage` in a terminal. Data is available on Pro, Max and Ultra plans. |
 | Icons are hidden | Follow step 4 of the [install steps](#step-by-step). |
 | Connection could not be turned on | `~/.claude/settings.json` may have invalid JSON. Fix it and try again. |
-| A percentage looks old | It is the last value that could be read. The app tries again every 2 minutes. |
+| "Out of date" in yellow | The last readings failed, so the numbers may be old. The app tries again every 2 minutes. |
 
 ## Build from source
 
 No SDK is needed, because Windows includes the C# compiler.
 
 ```powershell
-git clone https://github.com/ggleoo/claude-usage-taskbar.git
+git clone https://github.com/leotrvs/claude-usage-taskbar.git
 cd claude-usage-taskbar
 pwsh -File scripts/build.ps1
 ```

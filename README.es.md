@@ -39,7 +39,7 @@ No hace falta dejar una terminal abierta.
 
 ### Paso a paso
 
-1. **Descarga** `ClaudeUsageTaskbar.exe` desde la [última versión](https://github.com/ggleoo/claude-usage-taskbar/releases/latest).
+1. **Descarga** `ClaudeUsageTaskbar.exe` desde la [última versión](https://github.com/leotrvs/claude-usage-taskbar/releases/latest).
 2. **Abre el archivo descargado.** Windows puede mostrar un aviso de SmartScreen, porque la aplicación no tiene un certificado de firma de código de pago. Elige **Más información** y luego **Ejecutar de todas formas**. Si lo prefieres, antes [comprueba el archivo](SECURITY.md#verify-a-download) o [compílala tú mismo](#compilar-desde-el-código).
 3. **Elige Yes** en la ventana de instalación. La aplicación se instala solo para tu usuario de Windows y se conecta a Claude Code por ti. Después puedes borrar el archivo descargado.
 4. **Mantén visibles los iconos.** Windows oculta los iconos nuevos de la bandeja. Arrástralos desde el menú **^** a la barra de tareas, o ve a **Configuración > Personalización > Barra de tareas > Otros iconos de la bandeja del sistema** y actívalos. Son dos iconos, uno para cada límite.
@@ -85,7 +85,7 @@ El gráfico muestra tu uso de 5 horas durante las últimas 12 horas. Pasa el rat
 En **Appearance**:
 
 - **Colors:** azul de forma predeterminada, o verde o morado. Se aplican a los iconos y las barras.
-- **Theme:** auto, grafito, negro o claro. Auto sigue el modo de Windows: claro cuando está claro y negro cuando está oscuro.
+- **Theme:** auto de forma predeterminada, o grafito, negro o claro. Auto sigue el modo de Windows: claro cuando está claro y negro cuando está oscuro.
 
 ### Mascota
 
@@ -136,7 +136,7 @@ Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y 
 
 La aplicación lee tus límites de dos formas oficiales:
 
-- **Comando `/usage`:** cada 2 minutos ejecuta `claude -p /usage` en segundo plano, con los mismos números que ves en Claude Code. No llama al modelo ni gasta tokens.
+- **Comando `/usage`:** cada 2 minutos, y al abrir el panel, ejecuta `claude -p /usage` en segundo plano, con los mismos números que ves en Claude Code. No llama al modelo ni gasta tokens.
 - **[Status line](https://code.claude.com/docs/en/statusline):** durante la instalación, añade una entrada `statusLine` a `~/.claude/settings.json` y guarda una copia de seguridad al lado. Claude Code envía entonces números nuevos con cada respuesta en una terminal.
 
 En ambos casos, la aplicación guarda solo los porcentajes y las horas de reinicio de los límites de 5 horas y semanal en `%LOCALAPPDATA%\ClaudeUsageTaskbar`, y descarta el resto. El widget lee ese archivo.
@@ -169,17 +169,18 @@ Ve a **Configuración de Windows > Aplicaciones > Aplicaciones instaladas > Clau
 | Problema | Qué hacer |
 |---|---|
 | "Waiting for Claude Code" | Espera unos segundos. Si continúa, ejecuta `claude` en una terminal para comprobar que Claude Code está instalado y con la sesión iniciada. |
+| "Claude Code not found" | Instala [Claude Code](https://code.claude.com/docs) y ejecuta `claude` en una terminal para iniciar sesión. |
 | Siguen sin aparecer los porcentajes | Comprueba que **Connected to Claude Code** esté activado y ejecuta `claude -p /usage` en una terminal. Los datos están disponibles en los planes Pro, Max y Ultra. |
 | Los iconos están ocultos | Sigue el paso 4 del [paso a paso](#paso-a-paso). |
 | No se pudo activar la conexión | `~/.claude/settings.json` puede tener un JSON no válido. Corrígelo e inténtalo de nuevo. |
-| Un porcentaje parece antiguo | Es el último valor que se pudo leer. La aplicación lo intenta de nuevo cada 2 minutos. |
+| "Out of date" en amarillo | Las últimas lecturas fallaron, así que los números pueden ser antiguos. La aplicación lo intenta de nuevo cada 2 minutos. |
 
 ## Compilar desde el código
 
 No hace falta ningún SDK, porque Windows incluye el compilador de C#.
 
 ```powershell
-git clone https://github.com/ggleoo/claude-usage-taskbar.git
+git clone https://github.com/leotrvs/claude-usage-taskbar.git
 cd claude-usage-taskbar
 pwsh -File scripts/build.ps1
 ```

@@ -38,7 +38,7 @@ Não é preciso deixar um terminal aberto.
 
 ### Passo a passo
 
-1. **Baixe** o `ClaudeUsageTaskbar.exe` na [versão mais recente](https://github.com/ggleoo/claude-usage-taskbar/releases/latest).
+1. **Baixe** o `ClaudeUsageTaskbar.exe` na [versão mais recente](https://github.com/leotrvs/claude-usage-taskbar/releases/latest).
 2. **Abra o arquivo baixado.** O Windows pode mostrar um aviso do SmartScreen, porque o app não tem um certificado pago de assinatura de código. Escolha **Mais informações** e depois **Executar assim mesmo**. Se preferir, antes [confira o arquivo](docs/SECURITY.pt-BR.md#confira-um-download) ou [compile você mesmo](#compilar-o-código).
 3. **Escolha Sim** na janela de instalação. O app é instalado só para o seu usuário do Windows e faz a conexão com o Claude Code para você. Depois, você pode apagar o arquivo baixado.
 4. **Deixe os ícones visíveis.** O Windows esconde ícones novos da bandeja. Arraste-os do menu **^** para a barra de tarefas, ou vá em **Configurações > Personalização > Barra de Tarefas > Outros ícones da bandeja do sistema** e ligue-os. São dois ícones, um para cada limite.
@@ -84,7 +84,7 @@ O gráfico mostra o uso de 5 horas nas últimas 12 horas. Passe o mouse sobre el
 Em **Aparência**:
 
 - **Cores:** azul por padrão, ou verde ou roxo. Valem para os ícones e as barras.
-- **Tema:** auto, grafite, preto ou claro. O Auto segue o modo do Windows: claro quando ele está claro, e preto quando está escuro.
+- **Tema:** auto por padrão, ou grafite, preto ou claro. O Auto segue o modo do Windows: claro quando ele está claro, e preto quando está escuro.
 
 ### Mascote
 
@@ -135,7 +135,7 @@ Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o persona
 
 O app lê seus limites de duas formas oficiais:
 
-- **Comando `/usage`:** a cada 2 minutos ele roda `claude -p /usage` em segundo plano, com os mesmos números que você vê no Claude Code. Isso não chama o modelo nem gasta tokens.
+- **Comando `/usage`:** a cada 2 minutos, e ao abrir o painel, ele roda `claude -p /usage` em segundo plano, com os mesmos números que você vê no Claude Code. Isso não chama o modelo nem gasta tokens.
 - **[Status line](https://code.claude.com/docs/en/statusline):** na instalação, ele adiciona uma entrada `statusLine` em `~/.claude/settings.json` e salva um backup ao lado. O Claude Code então envia números novos a cada resposta em um terminal.
 
 Nos dois casos, o app guarda só os percentuais e os horários de reinício dos limites de 5 horas e semanal em `%LOCALAPPDATA%\ClaudeUsageTaskbar`, e descarta o resto. O widget lê esse arquivo.
@@ -168,17 +168,18 @@ Vá em **Configurações do Windows > Aplicativos > Aplicativos instalados > Cla
 | Problema | O que fazer |
 |---|---|
 | "Aguardando o Claude Code" | Aguarde alguns segundos. Se continuar, rode `claude` em um terminal para confirmar que o Claude Code está instalado e com login feito. |
+| "Claude Code não encontrado" | Instale o [Claude Code](https://code.claude.com/docs) e rode `claude` em um terminal para fazer login. |
 | Os percentuais continuam sem aparecer | Confira se **Conectado ao Claude Code** está ligado e rode `claude -p /usage` em um terminal. Os dados existem nos planos Pro, Max e Ultra. |
 | Os ícones estão escondidos | Siga o passo 4 do [passo a passo](#passo-a-passo). |
 | Não foi possível ligar a conexão | O `~/.claude/settings.json` pode ter um JSON inválido. Corrija e tente de novo. |
-| Um percentual parece antigo | É o último valor que foi possível ler. O app tenta de novo a cada 2 minutos. |
+| "Atrasado" em amarelo | As últimas leituras falharam, então os números podem estar antigos. O app tenta de novo a cada 2 minutos. |
 
 ## Compilar o código
 
 Não é preciso instalar SDK, porque o Windows já inclui o compilador C#.
 
 ```powershell
-git clone https://github.com/ggleoo/claude-usage-taskbar.git
+git clone https://github.com/leotrvs/claude-usage-taskbar.git
 cd claude-usage-taskbar
 pwsh -File scripts/build.ps1
 ```
