@@ -14,7 +14,7 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 - Three icon styles: **Gauge**, a dial with the number inside, **Ring**, a circle that fills clockwise from the top, and **Needle**, a dial with a pointer
 - Colors by level: green, blue or purple, changing at 70% and turning red at 90%
 - Icons with no background, and a graphite or black panel
-- A dark panel with reset times, a 12-hour chart and a pace forecast
+- A dark panel with reset times, a pace forecast and a 12-hour chart that shows details on hover
 - Optional alerts at 80% and 90% of a limit
 - English and Brazilian Portuguese, following your Windows language by default
 - Starts with Windows, with Desktop and Start menu shortcuts

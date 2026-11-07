@@ -14,7 +14,7 @@ Veja os limites de uso do Claude Code na barra de tarefas do Windows, sem precis
 - Três estilos de ícone: **Velocímetro**, um mostrador com o número dentro, **Círculo**, que enche em sentido horário a partir do topo, e **Ponteiro**, um mostrador com ponteiro
 - Cores por nível: verde, azul ou roxo, mudando em 70% e ficando vermelho em 90%
 - Ícones sem fundo e painel grafite ou preto
-- Painel escuro com horários de reinício, gráfico de 12 horas e previsão de ritmo
+- Painel escuro com horários de reinício, previsão de ritmo e gráfico de 12 horas com detalhes ao passar o mouse
 - Alertas opcionais em 80% e 90% de um limite
 - Inglês e português do Brasil, seguindo o idioma do Windows por padrão
 - Inicia com o Windows, com atalhos na Área de Trabalho e no menu Iniciar

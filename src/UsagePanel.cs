@@ -88,6 +88,7 @@ class UsagePanel : Form
     IconsShown iconsShown;
     int hovered = -1;
     int hiddenAt;
+    int chartHoverX = -1;
     int animationStart;
     int restingTop;
     bool closing;
@@ -301,6 +302,7 @@ class UsagePanel : Form
     {
         targets = page;
         hovered = -1;
+        chartHoverX = -1;
         Invalidate();
     }
 
@@ -318,6 +320,7 @@ class UsagePanel : Form
     public void ShowPanel()
     {
         targets = mainTargets;
+        chartHoverX = -1;
         Rectangle area = Screen.FromPoint(Cursor.Position).WorkingArea;
         restingTop = area.Bottom - Height - Px(12);
         closing = false;
@@ -437,6 +440,13 @@ class UsagePanel : Form
     protected override void OnMouseMove(MouseEventArgs e)
     {
         base.OnMouseMove(e);
+        int chartX = targets == mainTargets && ChartArea.Contains(e.Location) ? e.X : -1;
+        if (chartX != chartHoverX)
+        {
+            chartHoverX = chartX;
+            Invalidate();
+        }
+
         int index = targets.FindIndex(delegate(PanelTarget t) { return t.Bounds.Contains(e.Location); });
         if (index == hovered) return;
         hovered = index;
@@ -448,6 +458,7 @@ class UsagePanel : Form
     {
         base.OnMouseLeave(e);
         hovered = -1;
+        chartHoverX = -1;
         Invalidate();
     }
 
@@ -492,9 +503,14 @@ class UsagePanel : Form
         DrawLimit(g, Localization.T("session"), state.Session, state.SessionPace, true, Px(62), left, right);
         DrawLimit(g, Localization.T("weekly"), state.Weekly, state.WeeklyPace, false, Px(138), left, right);
         Draw(g, Localization.T("history"), tinyFont, Theme.Muted, left, Px(214), right - left, TextFormatFlags.Left);
-        DrawChart(g, new Rectangle(left, Px(232), right - left, Px(40)));
+        DrawChart(g, ChartArea);
         Draw(g, Localization.T("taskbarIcon"), tinyFont, Theme.Muted, left, Px(280), right - left, TextFormatFlags.Left);
         DrawDivider(g, Px(358));
+    }
+
+    Rectangle ChartArea
+    {
+        get { return new Rectangle(Px(18), Px(232), ClientSize.Width - Px(36), Px(40)); }
     }
 
     void DrawChart(Graphics g, Rectangle area)
@@ -505,12 +521,14 @@ class UsagePanel : Form
         DateTime end = DateTime.Now;
         DateTime start = end.AddHours(-ChartHours);
         List<PointF> points = new List<PointF>();
+        List<UsageSample> shown = new List<UsageSample>();
         foreach (UsageSample sample in state.History)
         {
             if (sample.Time < start) continue;
             float x = area.Left + (float)((sample.Time - start).TotalHours / ChartHours) * area.Width;
             float y = area.Bottom - (float)(Math.Min(100, sample.Session) / 100) * area.Height;
             points.Add(new PointF(x, y));
+            shown.Add(sample);
         }
 
         if (points.Count < 2)
@@ -530,6 +548,31 @@ class UsagePanel : Form
             line.LineJoin = LineJoin.Round;
             g.DrawLines(line, points.ToArray());
         }
+        if (chartHoverX >= 0) DrawChartHover(g, area, points, shown);
+    }
+
+    // The history holds only time and percentage, which is all the status line reports.
+    void DrawChartHover(Graphics g, Rectangle area, List<PointF> points, List<UsageSample> samples)
+    {
+        int nearest = 0;
+        for (int i = 1; i < points.Count; i++)
+            if (Math.Abs(points[i].X - chartHoverX) < Math.Abs(points[nearest].X - chartHoverX)) nearest = i;
+
+        PointF point = points[nearest];
+        float radius = Px(3);
+        using (Pen guide = new Pen(Theme.Muted))
+            g.DrawLine(guide, point.X, area.Top, point.X, area.Bottom);
+        using (Brush dot = new SolidBrush(Theme.Text))
+            g.FillEllipse(dot, point.X - radius, point.Y - radius, radius * 2, radius * 2);
+
+        int percent = (int)Math.Round(samples[nearest].Session);
+        string text = samples[nearest].Time.ToString("HH:mm", Localization.Culture) + " · " + percent + "%";
+        if (nearest > 0)
+        {
+            int change = percent - (int)Math.Round(samples[nearest - 1].Session);
+            if (change > 0) text += " · +" + change + "%";
+        }
+        Draw(g, text, tinyFont, Theme.Text, area.Left, Px(214), area.Width, TextFormatFlags.Right);
     }
 
     void PaintSettingsPage(Graphics g, int left, int right)

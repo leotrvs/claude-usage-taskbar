@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- Hovering the chart shows the time, the usage and how much it rose since the previous reading
+
 ## 1.3.0
 
 - Inter font built into the app, so the panel looks the same on every PC
