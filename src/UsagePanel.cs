@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Windows.Forms;
 
@@ -48,6 +49,10 @@ class PanelTarget
     public Func<bool> Selected; // For chips that are not tied to one of the fields above.
     public Color? Swatch;
     public Bitmap Picture;
+    public bool Tile;
+    public float Hover; // How far the hover and on states have animated, from 0 to 1.
+    public float On;
+    public bool IsOn;
 
     public string Label
     {
@@ -58,11 +63,26 @@ class PanelTarget
 class UsagePanel : Form
 {
     const int LogicalWidth = 300;
-    const int LogicalHeight = 434;
-    const int ChipTop = 300;
-    const int ActionsTop = 364;
+    const int MainHeight = 328;
+    const int SettingsHeight = 394;
+    const int AppearanceHeight = 352;
+    const int SessionTop = 62;
+    const int WeeklyTop = 132;
+    const int WeeklyTopWithoutPace = 118; // Moves up into the line the session pace would use.
+    const int HistoryTop = 200;
+    const int ChartTop = 216;
+    const int DividerTop = 266;
+    const int ActionsTop = 274;
+    const int ActionHeight = 46;
     const int MascotHeight = 42;
     const int SpinTickMs = 40;
+    const int SelectedFill = 70; // Strong enough to stay orange over the panel background.
+    const int MotionTickMs = 15;
+    const float HoverMs = 110;
+    const float SwitchMs = 170;
+    const float PageMs = 190;
+    const int PageSlide = 18;
+    const int LongestFrameMs = 50; // A late timer tick continues the motion instead of jumping.
     const string RefreshGlyph = "\uE72C";
     const string DownloadGlyph = "\uE896";
     const double ChartHours = 12;
@@ -85,6 +105,7 @@ class UsagePanel : Form
     readonly System.Windows.Forms.Timer mascotTimer = new System.Windows.Forms.Timer();
     readonly System.Windows.Forms.Timer animationTimer = new System.Windows.Forms.Timer();
     readonly System.Windows.Forms.Timer spinTimer = new System.Windows.Forms.Timer();
+    readonly System.Windows.Forms.Timer motionTimer = new System.Windows.Forms.Timer();
     IMascot mascot;
     MascotStyle mascotStyle = Settings.MascotStyle;
     readonly Font titleFont, labelFont, smallFont, tinyFont, percentFont, glyphFont;
@@ -99,10 +120,18 @@ class UsagePanel : Form
     int animationStart;
     int restingTop;
     bool closing;
+    int lastMotionTick;
+    Bitmap pageFrom;
+    Bitmap pageTo;
+    float pageProgress;
+    int pageDirection;
+    int pageHeightFrom;
+    int pageHeightTo;
     PanelTarget updateLink;
     PanelTarget updateRow;
     UpdatePhase updatePhase;
     string updateVersion;
+    DateTime updateCheckedAt;
 
     public UsagePanel(PanelCallbacks callbacks)
     {
@@ -115,7 +144,7 @@ class UsagePanel : Form
         KeyPreview = true;
         BackColor = Theme.Background;
         Text = App.Name;
-        ClientSize = new Size(Px(LogicalWidth), Px(LogicalHeight));
+        ClientSize = new Size(Px(LogicalWidth), Px(MainHeight));
 
         titleFont = NewUiFont(16, true);
         labelFont = NewUiFont(13, false);
@@ -131,20 +160,26 @@ class UsagePanel : Form
         mascotTimer.Tick += delegate { AdvanceMascot(); };
         animationTimer.Interval = AnimationTickMs;
         animationTimer.Tick += delegate { AdvanceAnimation(); };
+        motionTimer.Interval = MotionTickMs;
+        motionTimer.Tick += delegate { AdvanceMotion(); };
         spinTimer.Interval = SpinTickMs;
         spinTimer.Tick += delegate { if (targets == settingsTargets) Invalidate(updateRow.Bounds); };
     }
 
     void BuildMainPage(PanelCallbacks callbacks)
     {
-        AddStyleChip(IconStyle.Ring, "ring", 0, callbacks);
-        AddStyleChip(IconStyle.Gauge, "gauge", 1, callbacks);
-        AddStyleChip(IconStyle.Needle, "needle", 2, callbacks);
         updateLink = new PanelTarget();
         updateLink.Bounds = new Rectangle(Px(18), Px(33), Px(224), Px(18));
         updateLink.Run = callbacks.CheckOrInstallUpdate;
         mainTargets.Add(NewRow("", "settings", ActionsTop, delegate { ShowPage(settingsTargets); }));
-        mainTargets.Add(NewRow("", "closeWidget", ActionsTop + 32, callbacks.CloseWidget));
+        mainTargets.Add(NewRow("\uE790", "appearance", ActionsTop + 32, delegate { ShowPage(appearanceTargets); }));
+        mainTargets.Add(NewRow("", "closeWidget", ActionsTop + 64, callbacks.CloseWidget));
+        for (int column = 0; column < 3; column++)
+        {
+            PanelTarget action = mainTargets[column];
+            action.Tile = true;
+            action.Bounds = ChipBounds(column, 3, ActionsTop, ActionHeight);
+        }
     }
 
     void AddStyleChip(IconStyle style, string labelKey, int column, PanelCallbacks callbacks)
@@ -152,9 +187,9 @@ class UsagePanel : Form
         PanelTarget chip = new PanelTarget();
         chip.Style = style;
         chip.LabelKey = labelKey;
-        chip.Bounds = ChipBounds(column, 3, ChipTop, 50);
+        chip.Bounds = ChipBounds(column, 3, 70, 50);
         chip.Run = delegate { callbacks.ChangeStyle(style); };
-        mainTargets.Add(chip);
+        appearanceTargets.Add(chip);
     }
 
     void BuildSettingsPage(PanelCallbacks callbacks)
@@ -172,12 +207,14 @@ class UsagePanel : Form
         settingsTargets.Add(NewToggle("claudeCodeConnected", 294, delegate { return ClaudeCodeConnection.IsConnected; }, callbacks.ToggleConnection));
         updateRow = NewRow(RefreshGlyph, "checkUpdates", 330, callbacks.CheckOrInstallUpdate);
         settingsTargets.Add(updateRow);
-        settingsTargets.Add(NewRow("\uE790", "appearance", 362, delegate { ShowPage(appearanceTargets); }));
     }
 
     void BuildAppearancePage(PanelCallbacks callbacks)
     {
-        appearanceTargets.Add(NewRow("\uE72B", "back", 8, delegate { ShowPage(settingsTargets); }));
+        appearanceTargets.Add(NewRow("\uE72B", "back", 8, delegate { ShowPage(mainTargets); }));
+        AddStyleChip(IconStyle.Ring, "ring", 0, callbacks);
+        AddStyleChip(IconStyle.Gauge, "gauge", 1, callbacks);
+        AddStyleChip(IconStyle.Needle, "needle", 2, callbacks);
         AddColorChip(ColorTemplate.Blue, "colorBlue", 0, callbacks);
         AddColorChip(ColorTemplate.Green, "colorGreen", 1, callbacks);
         AddColorChip(ColorTemplate.Purple, "colorPurple", 2, callbacks);
@@ -193,7 +230,7 @@ class UsagePanel : Form
         PanelTarget chip = new PanelTarget();
         chip.LabelKey = labelKey;
         chip.Picture = MascotPicture(value);
-        chip.Bounds = ChipBounds(column, 3, 212, 72);
+        chip.Bounds = ChipBounds(column, 3, 268, 72);
         chip.Selected = delegate { return mascotStyle == value; };
         chip.Run = delegate { callbacks.ChangeMascot(value); };
         appearanceTargets.Add(chip);
@@ -216,7 +253,7 @@ class UsagePanel : Form
         PanelTarget chip = new PanelTarget();
         chip.LabelKey = labelKey;
         chip.Swatch = Theme.NormalColor(value);
-        chip.Bounds = ChipBounds(column, 3, 72, 32);
+        chip.Bounds = ChipBounds(column, 3, 148, 32);
         chip.Selected = delegate { return Theme.Colors == value; };
         chip.Run = delegate { callbacks.ChangeColors(value); };
         appearanceTargets.Add(chip);
@@ -226,7 +263,7 @@ class UsagePanel : Form
     {
         PanelTarget chip = new PanelTarget();
         chip.LabelKey = labelKey;
-        chip.Bounds = ChipBounds(column, 2, 142, 32);
+        chip.Bounds = ChipBounds(column, 2, 208, 32);
         chip.Selected = delegate { return Theme.Panel == value; };
         chip.Run = delegate { callbacks.ChangePanelTheme(value); };
         appearanceTargets.Add(chip);
@@ -267,7 +304,7 @@ class UsagePanel : Form
         PanelTarget toggle = new PanelTarget();
         toggle.LabelKey = labelKey;
         toggle.Toggle = isOn;
-        toggle.Run = delegate { run(); Invalidate(); };
+        toggle.Run = run;
         toggle.Bounds = new Rectangle(Px(6), Px(top), ClientSize.Width - Px(12), Px(32));
         return toggle;
     }
@@ -291,7 +328,7 @@ class UsagePanel : Form
         language = selectedLanguage;
         iconsShown = shown;
         ApplyMascotMood();
-        if (Visible) Invalidate();
+        StartMotion();
     }
 
     void ApplyMascotMood()
@@ -316,6 +353,7 @@ class UsagePanel : Form
     {
         updatePhase = phase;
         updateVersion = version;
+        if (phase == UpdatePhase.UpToDate) updateCheckedAt = DateTime.Now;
         updateRow.LabelKey = version != null ? "installUpdate" : "checkUpdates";
         updateRow.Glyph = version != null && phase != UpdatePhase.Installing ? DownloadGlyph : RefreshGlyph;
         mainTargets.Remove(updateLink);
@@ -372,10 +410,140 @@ class UsagePanel : Form
 
     void ShowPage(List<PanelTarget> page)
     {
+        bool animate = Visible && SystemInformation.UIEffectsEnabled && page != targets;
+        int height = Px(page == settingsTargets ? SettingsHeight : page == appearanceTargets ? AppearanceHeight : MainHeight);
+        Bitmap from = animate ? CapturePage(ClientSize.Height) : null;
+        pageDirection = page == mainTargets ? -1 : 1;
         targets = page;
         hovered = -1;
         chartHoverX = -1;
+        SettleMotion();
+        if (animate)
+        {
+            EndPageMotion();
+            pageFrom = from;
+            pageTo = CapturePage(height);
+            pageProgress = 0;
+            pageHeightFrom = ClientSize.Height;
+            pageHeightTo = height;
+            StartMotion();
+        }
+        else SetPanelHeight(height);
         Invalidate();
+    }
+
+    // The panel stays anchored to the taskbar, so it grows upward.
+    void SetPanelHeight(int height)
+    {
+        int bottom = restingTop + Height;
+        ClientSize = new Size(ClientSize.Width, height);
+        if (!Visible) return;
+        restingTop = bottom - Height;
+        Top = restingTop;
+    }
+
+    Bitmap CapturePage(int height)
+    {
+        Bitmap page = new Bitmap(ClientSize.Width, height);
+        using (Graphics g = Graphics.FromImage(page))
+        {
+            g.Clear(Theme.Background);
+            PaintPage(g);
+        }
+        return page;
+    }
+
+    void EndPageMotion()
+    {
+        if (pageFrom != null) pageFrom.Dispose();
+        if (pageTo != null) pageTo.Dispose();
+        pageFrom = pageTo = null;
+    }
+
+    IEnumerable<PanelTarget> AllTargets()
+    {
+        foreach (PanelTarget target in mainTargets) yield return target;
+        foreach (PanelTarget target in settingsTargets) yield return target;
+        foreach (PanelTarget target in appearanceTargets) yield return target;
+    }
+
+    bool ReadIsOn(PanelTarget target)
+    {
+        if (target.Toggle != null) return target.Toggle();
+        if (target.Selected != null) return target.Selected();
+        if (target.Style.HasValue) return target.Style.Value == iconStyle;
+        if (target.Shown.HasValue) return target.Shown.Value == iconsShown;
+        return target.Language.HasValue && target.Language.Value == language;
+    }
+
+    // Jumps to the current state, for a page that is not on screen yet.
+    void SettleMotion()
+    {
+        foreach (PanelTarget target in AllTargets())
+        {
+            target.IsOn = ReadIsOn(target);
+            target.On = target.IsOn ? 1 : 0;
+            target.Hover = 0;
+        }
+    }
+
+    void StartMotion()
+    {
+        if (!Visible) return;
+        if (!SystemInformation.UIEffectsEnabled)
+        {
+            SettleMotion();
+            Invalidate();
+            return;
+        }
+        foreach (PanelTarget target in targets) target.IsOn = ReadIsOn(target);
+        if (!motionTimer.Enabled) lastMotionTick = Environment.TickCount;
+        motionTimer.Start();
+    }
+
+    void AdvanceMotion()
+    {
+        int now = Environment.TickCount;
+        float elapsed = Math.Min(LongestFrameMs, now - lastMotionTick);
+        lastMotionTick = now;
+
+        bool moving = false;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            PanelTarget target = targets[i];
+            float hover = MoveToward(target.Hover, i == hovered ? 1 : 0, elapsed / HoverMs);
+            float on = MoveToward(target.On, target.IsOn ? 1 : 0, elapsed / SwitchMs);
+            moving |= hover != target.Hover || on != target.On;
+            target.Hover = hover;
+            target.On = on;
+        }
+        if (pageFrom != null)
+        {
+            pageProgress = Math.Min(1, pageProgress + elapsed / PageMs);
+            moving = true;
+            SetPanelHeight(pageHeightFrom + (int)((pageHeightTo - pageHeightFrom) * Ease(pageProgress)));
+            if (pageProgress >= 1) EndPageMotion();
+        }
+        if (!moving) motionTimer.Stop();
+        Invalidate();
+    }
+
+    static float MoveToward(float value, float goal, float step)
+    {
+        return value < goal ? Math.Min(goal, value + step) : Math.Max(goal, value - step);
+    }
+
+    static float Ease(float value)
+    {
+        return value * value * (3 - 2 * value);
+    }
+
+    static Color Blend(Color from, Color to, float amount)
+    {
+        return Color.FromArgb(
+            (int)(from.R + (to.R - from.R) * amount),
+            (int)(from.G + (to.G - from.G) * amount),
+            (int)(from.B + (to.B - from.B) * amount));
     }
 
     public void Toggle()
@@ -393,6 +561,9 @@ class UsagePanel : Form
     {
         targets = mainTargets;
         chartHoverX = -1;
+        EndPageMotion();
+        SettleMotion();
+        ClientSize = new Size(ClientSize.Width, Px(MainHeight));
         Rectangle area = Screen.FromPoint(Cursor.Position).WorkingArea;
         restingTop = area.Bottom - Height - Px(12);
         closing = false;
@@ -476,6 +647,7 @@ class UsagePanel : Form
         if (!Visible)
         {
             mascotTimer.Stop();
+            motionTimer.Stop();
             return;
         }
         LoadMascot();
@@ -530,7 +702,7 @@ class UsagePanel : Form
         if (index == hovered) return;
         hovered = index;
         Cursor = index >= 0 ? Cursors.Hand : Cursors.Default;
-        Invalidate();
+        StartMotion();
     }
 
     protected override void OnMouseLeave(EventArgs e)
@@ -538,18 +710,47 @@ class UsagePanel : Form
         base.OnMouseLeave(e);
         hovered = -1;
         chartHoverX = -1;
-        Invalidate();
+        StartMotion();
     }
 
     protected override void OnMouseClick(MouseEventArgs e)
     {
         base.OnMouseClick(e);
-        if (hovered >= 0) targets[hovered].Run();
+        if (hovered < 0) return;
+        targets[hovered].Run();
+        StartMotion();
     }
 
     protected override void OnPaint(PaintEventArgs e)
     {
-        Graphics g = e.Graphics;
+        if (!Visible) SettleMotion(); // The documentation images have no timer to finish the motion.
+        if (pageFrom != null) PaintPageMotion(e.Graphics);
+        else PaintPage(e.Graphics);
+    }
+
+    void PaintPageMotion(Graphics g)
+    {
+        // One page fades out before the next fades in, so their text never overlaps.
+        float eased = Ease(pageProgress);
+        int slide = (int)(Px(PageSlide) * pageDirection * (1 - eased));
+        g.Clear(Theme.Background);
+        if (eased < 0.5f) DrawFaded(g, pageFrom, slide - Px(PageSlide) * pageDirection, 1 - eased * 2);
+        else DrawFaded(g, pageTo, slide, eased * 2 - 1);
+    }
+
+    void DrawFaded(Graphics g, Bitmap page, int x, float opacity)
+    {
+        ColorMatrix matrix = new ColorMatrix();
+        matrix.Matrix33 = opacity;
+        using (ImageAttributes attributes = new ImageAttributes())
+        {
+            attributes.SetColorMatrix(matrix);
+            g.DrawImage(page, new Rectangle(x, 0, page.Width, page.Height), 0, 0, page.Width, page.Height, GraphicsUnit.Pixel, attributes);
+        }
+    }
+
+    void PaintPage(Graphics g)
+    {
         g.SmoothingMode = SmoothingMode.AntiAlias;
         int left = Px(18);
         int right = ClientSize.Width - Px(18);
@@ -579,17 +780,16 @@ class UsagePanel : Form
             Bitmap frame = mascot.CurrentFrame;
             g.DrawImageUnscaled(frame, right - frame.Width, Px(14));
         }
-        DrawLimit(g, Localization.T("session"), state.Session, state.SessionPace, true, Px(62), left, right);
-        DrawLimit(g, Localization.T("weekly"), state.Weekly, state.WeeklyPace, false, Px(138), left, right);
-        Draw(g, Localization.T("history"), tinyFont, Theme.Muted, left, Px(214), right - left, TextFormatFlags.Left);
+        DrawLimit(g, Localization.T("session"), state.Session, state.SessionPace, true, Px(SessionTop), left, right);
+        DrawLimit(g, Localization.T("weekly"), state.Weekly, state.WeeklyPace, false, Px(state.SessionPace != null ? WeeklyTop : WeeklyTopWithoutPace), left, right);
+        Draw(g, Localization.T("history"), tinyFont, Theme.Muted, left, Px(HistoryTop), right - left, TextFormatFlags.Left);
         DrawChart(g, ChartArea);
-        Draw(g, Localization.T("taskbarIcon"), tinyFont, Theme.Muted, left, Px(280), right - left, TextFormatFlags.Left);
-        DrawDivider(g, Px(358));
+        DrawDivider(g, Px(DividerTop));
     }
 
     Rectangle ChartArea
     {
-        get { return new Rectangle(Px(18), Px(232), ClientSize.Width - Px(36), Px(40)); }
+        get { return new Rectangle(Px(18), Px(ChartTop), ClientSize.Width - Px(36), Px(40)); }
     }
 
     void DrawChart(Graphics g, Rectangle area)
@@ -651,7 +851,7 @@ class UsagePanel : Form
             int change = percent - (int)Math.Round(samples[nearest - 1].Session);
             if (change > 0) text += " · +" + change + "%";
         }
-        Draw(g, text, tinyFont, Theme.Text, area.Left, Px(214), area.Width, TextFormatFlags.Right);
+        Draw(g, text, tinyFont, Theme.Text, area.Left, Px(HistoryTop), area.Width, TextFormatFlags.Right);
     }
 
     void PaintSettingsPage(Graphics g, int left, int right)
@@ -661,15 +861,16 @@ class UsagePanel : Form
         Draw(g, Localization.T("taskbarIcons"), tinyFont, Theme.Muted, left, Px(122), right - left, TextFormatFlags.Left);
         string status = UpdateStatus();
         string version = Localization.T("version", App.Version) + (status != null ? " · " + status : "");
-        Draw(g, version, tinyFont, Theme.Muted, left, Px(402), right - left, TextFormatFlags.Left);
+        Draw(g, version, tinyFont, Theme.Muted, left, Px(370), right - left, TextFormatFlags.Left);
     }
 
     void PaintAppearancePage(Graphics g, int left, int right)
     {
         DrawDivider(g, Px(44));
-        Draw(g, Localization.T("colors"), tinyFont, Theme.Muted, left, Px(52), right - left, TextFormatFlags.Left);
-        Draw(g, Localization.T("panelTheme"), tinyFont, Theme.Muted, left, Px(122), right - left, TextFormatFlags.Left);
-        Draw(g, Localization.T("mascot"), tinyFont, Theme.Muted, left, Px(192), right - left, TextFormatFlags.Left);
+        Draw(g, Localization.T("taskbarIcon"), tinyFont, Theme.Muted, left, Px(52), right - left, TextFormatFlags.Left);
+        Draw(g, Localization.T("colors"), tinyFont, Theme.Muted, left, Px(130), right - left, TextFormatFlags.Left);
+        Draw(g, Localization.T("panelTheme"), tinyFont, Theme.Muted, left, Px(190), right - left, TextFormatFlags.Left);
+        Draw(g, Localization.T("mascot"), tinyFont, Theme.Muted, left, Px(250), right - left, TextFormatFlags.Left);
     }
 
     string UpdateStatus()
@@ -677,7 +878,7 @@ class UsagePanel : Form
         switch (updatePhase)
         {
             case UpdatePhase.Checking: return Localization.T("updateChecking");
-            case UpdatePhase.UpToDate: return Localization.T("updateCurrent");
+            case UpdatePhase.UpToDate: return Localization.T("updateCurrentAt", updateCheckedAt.ToString("HH:mm", Localization.Culture));
             case UpdatePhase.Failed: return Localization.T(updateVersion != null ? "updateInstallFailed" : "updateCheckFailed");
             case UpdatePhase.Available: return Localization.T("updateAvailable", updateVersion);
             case UpdatePhase.Installing: return Localization.T("updateInstalling");
@@ -689,7 +890,7 @@ class UsagePanel : Form
     {
         string text = UpdateStatus();
         if (updatePhase == UpdatePhase.Available || updatePhase == UpdatePhase.Failed) text += " · " + Localization.T("updateInstallAction");
-        TextRenderer.DrawText(g, text, tinyFont, updateLink.Bounds, isHovered ? Theme.Text : Theme.Accent,
+        TextRenderer.DrawText(g, text, tinyFont, updateLink.Bounds, Blend(Theme.Accent, Theme.Text, Ease(updateLink.Hover)),
             TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis);
     }
 
@@ -720,8 +921,8 @@ class UsagePanel : Form
                 g.FillPath(brush, path);
         }
 
-        Draw(g, ResetText(window, withCountdown), tinyFont, Theme.Muted, left, top + Px(38), right - left, TextFormatFlags.Left);
-        if (pace != null) Draw(g, pace, tinyFont, Theme.Accent, left, top + Px(54), right - left, TextFormatFlags.Left);
+        Draw(g, ResetText(window, withCountdown), tinyFont, Theme.Muted, left, top + Px(36), right - left, TextFormatFlags.Left);
+        if (pace != null) Draw(g, pace, tinyFont, Theme.Accent, left, top + Px(50), right - left, TextFormatFlags.Left);
     }
 
     static string ResetText(UsageWindow window, bool withCountdown)
@@ -740,19 +941,18 @@ class UsagePanel : Form
 
     void DrawChip(Graphics g, PanelTarget chip, bool isHovered)
     {
-        bool selected = chip.Selected != null ? chip.Selected()
-            : chip.Style.HasValue ? chip.Style.Value == iconStyle
-            : chip.Shown.HasValue ? chip.Shown.Value == iconsShown : chip.Language.Value == language;
+        float on = Ease(chip.On);
         using (GraphicsPath path = Theme.Rounded(chip.Bounds, Px(8)))
         {
-            if (selected || isHovered)
-                using (Brush brush = new SolidBrush(selected ? Color.FromArgb(44, Theme.Accent) : Theme.Hover))
-                    g.FillPath(brush, path);
-            using (Pen pen = new Pen(selected ? Theme.Accent : Theme.Border))
+            using (Brush brush = new SolidBrush(Color.FromArgb((int)(255 * Ease(chip.Hover) * (1 - on)), Theme.Hover)))
+                g.FillPath(brush, path);
+            using (Brush brush = new SolidBrush(Color.FromArgb((int)(SelectedFill * on), Theme.Accent)))
+                g.FillPath(brush, path);
+            using (Pen pen = new Pen(Blend(Theme.Border, Theme.Accent, on)))
                 g.DrawPath(pen, path);
         }
 
-        Color textColor = selected ? Theme.Text : Theme.Muted;
+        Color textColor = Blend(Theme.Muted, Theme.Text, on);
         if (chip.Swatch.HasValue)
         {
             int dot = Px(9);
@@ -786,16 +986,32 @@ class UsagePanel : Form
             TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
     }
 
-    void DrawHover(Graphics g, Rectangle bounds)
+    void DrawHover(Graphics g, Rectangle bounds, float amount)
     {
-        using (Brush brush = new SolidBrush(Theme.Hover))
+        if (amount <= 0) return;
+        using (Brush brush = new SolidBrush(Color.FromArgb((int)(255 * Ease(amount)), Theme.Hover)))
         using (GraphicsPath path = Theme.Rounded(bounds, Px(6)))
             g.FillPath(brush, path);
     }
 
+    void DrawTile(Graphics g, PanelTarget tile)
+    {
+        DrawHover(g, tile.Bounds, tile.Hover);
+        Rectangle glyph = new Rectangle(tile.Bounds.X, tile.Bounds.Y + Px(6), tile.Bounds.Width, Px(18));
+        Rectangle label = new Rectangle(tile.Bounds.X, tile.Bounds.Y + Px(26), tile.Bounds.Width, Px(16));
+        TextFormatFlags flags = TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding;
+        TextRenderer.DrawText(g, tile.Glyph, glyphFont, glyph, Theme.Accent, flags);
+        TextRenderer.DrawText(g, tile.Label, tinyFont, label, Theme.Text, flags);
+    }
+
     void DrawRow(Graphics g, PanelTarget row, bool isHovered)
     {
-        if (isHovered) DrawHover(g, row.Bounds);
+        if (row.Tile)
+        {
+            DrawTile(g, row);
+            return;
+        }
+        DrawHover(g, row.Bounds, row.Hover);
         Rectangle glyph = new Rectangle(row.Bounds.X + Px(12), row.Bounds.Y, Px(18), row.Bounds.Height);
         Rectangle label = new Rectangle(glyph.Right + Px(10), row.Bounds.Y, row.Bounds.Right - glyph.Right - Px(10), row.Bounds.Height);
         TextFormatFlags flags = TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding;
@@ -823,21 +1039,21 @@ class UsagePanel : Form
 
     void DrawToggle(Graphics g, PanelTarget toggle, bool isHovered)
     {
-        if (isHovered) DrawHover(g, toggle.Bounds);
+        DrawHover(g, toggle.Bounds, toggle.Hover);
         Rectangle label = new Rectangle(toggle.Bounds.X + Px(12), toggle.Bounds.Y, toggle.Bounds.Width - Px(60), toggle.Bounds.Height);
         TextRenderer.DrawText(g, toggle.Label, labelFont, label, Theme.Text,
             TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPadding);
 
-        bool on = toggle.Toggle();
+        float on = Ease(toggle.On);
         int width = Px(34);
         int height = Px(18);
         Rectangle pill = new Rectangle(toggle.Bounds.Right - width - Px(12), toggle.Bounds.Y + (toggle.Bounds.Height - height) / 2, width, height);
-        using (Brush brush = new SolidBrush(on ? Theme.Accent : Theme.Track))
+        using (Brush brush = new SolidBrush(Blend(Theme.Track, Theme.Accent, on)))
         using (GraphicsPath path = Theme.Rounded(pill, height / 2f))
             g.FillPath(brush, path);
 
         int knob = height - Px(6);
-        int knobX = on ? pill.Right - knob - Px(3) : pill.X + Px(3);
+        float knobX = pill.X + Px(3) + (pill.Width - knob - Px(6)) * on;
         using (Brush brush = new SolidBrush(Theme.Text))
             g.FillEllipse(brush, knobX, pill.Y + Px(3), knob, knob);
     }

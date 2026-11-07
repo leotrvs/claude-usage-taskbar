@@ -45,10 +45,10 @@ Não é preciso deixar um terminal aberto.
 1. **Leia os ícones.** O limite de 5 horas tem número branco, e o semanal tem número colorido. A cor muda em 70% e fica vermelha em 90%.
 2. **Passe o mouse** sobre um ícone para ver o percentual e o horário de reinício.
 3. **Clique** em um ícone para abrir o painel. Clique fora dele ou aperte **Esc** para fechar.
-4. **Escolha o estilo do ícone** na parte de baixo do painel.
-5. **Abra Configurações** no painel para o resto, e **Aparência**, dentro dela, para cores e mascote.
+4. **Escolha o estilo do ícone** em **Aparência**.
+5. **Abra Configurações** no painel para o resto, e **Aparência** para cores e mascote.
 
-**Fechar widget** fecha só este app. Ele não sai da sua conta do Claude. Para reabrir, use o menu Iniciar ou a Área de Trabalho.
+**Encerrar** fecha só este app. Ele não sai da sua conta do Claude. Para reabrir, use o menu Iniciar ou a Área de Trabalho.
 
 ## O que você pode ver e mudar
 
@@ -56,7 +56,7 @@ Não é preciso deixar um terminal aberto.
 
 ![Estilos de ícone](docs/images/icon-styles.png)
 
-De cima para baixo:
+Escolha em **Aparência**. De cima para baixo:
 
 - **Velocímetro:** um mostrador com o número dentro.
 - **Círculo:** enche em sentido horário a partir do topo. É o padrão.
@@ -77,7 +77,7 @@ O gráfico mostra o uso de 5 horas nas últimas 12 horas. Passe o mouse sobre el
 
 ![Azul com grafite, verde com preto e roxo com grafite](docs/images/themes-pt-BR.png)
 
-Em **Configurações > Aparência**:
+Em **Aparência**:
 
 - **Cores:** azul por padrão, ou verde ou roxo. Valem para os ícones e as barras.
 - **Painel:** grafite ou preto.
@@ -96,7 +96,7 @@ Por padrão, o painel mostra o mascote **Clássico** trabalhando no notebook. Es
 | Cansado e suando | Está trabalhando e um limite está em 90% ou mais |
 | Caído | Um limite chegou a 100% |
 
-Em **Configurações > Aparência** você escolhe o visual:
+Em **Aparência** você escolhe o visual:
 
 - **Clássico:** a animação original, que não reage ao uso. É o padrão.
 - **Pixel:** o mascote que reage ao uso, na linha de cima.
@@ -119,10 +119,9 @@ Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o persona
 | Ícones exibidos | Os dois limites, só 5 horas ou só semanal |
 | Iniciar com o Windows | Abre o app quando você entra no Windows |
 | Atualizações automáticas | Instala sozinho as atualizações assinadas |
-| Alertas de uso | Avisa em 80% e 90% de um limite |
+| Notificações | Alertas em 80% e 90% de um limite, e aviso quando uma atualização é instalada |
 | Conectado ao Claude Code | Liga ou desliga a conexão |
 | Verificar atualizações | Procura uma atualização agora. O ícone gira enquanto verifica e vira um símbolo de baixar quando há uma pronta |
-| Aparência | Cores, tema do painel e mascote |
 
 ## Como a conexão funciona
 
@@ -150,7 +149,7 @@ Os detalhes estão em [docs/SECURITY.pt-BR.md](docs/SECURITY.pt-BR.md).
 
 ## Atualizações
 
-Ao abrir e depois a cada hora, o app verifica a versão mais recente no GitHub. Ele só instala uma atualização se a assinatura digital bater com a chave embutida no app, então um arquivo adulterado é rejeitado. Você pode desligar isso em Configurações, onde **Verificar atualizações** também faz uma verificação na hora. Se o painel estiver aberto quando uma atualização for encontrada, ele mostra um link para instalar, e ela se instala sozinha quando o painel fecha.
+Ao abrir e depois a cada hora, o app verifica a versão mais recente no GitHub. Ele só instala uma atualização se a assinatura digital bater com a chave embutida no app, então um arquivo adulterado é rejeitado. Você pode desligar isso em Configurações, onde **Verificar atualizações** também faz uma verificação na hora. A verificação ao abrir instala a atualização na hora, sem perguntar. As verificações seguintes esperam o painel fechar e, enquanto isso, mostram um link para instalar. Uma notificação confirma a atualização, a menos que você desligue **Notificações**.
 
 ## Desinstalação
 

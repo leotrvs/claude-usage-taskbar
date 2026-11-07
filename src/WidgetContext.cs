@@ -57,6 +57,7 @@ class WidgetContext : ApplicationContext
         sessionSlot = new TraySlot(true, OnTrayMouseUp);
         weeklySlot = new TraySlot(false, OnTrayMouseUp);
         Reload();
+        NotifyIfUpdated();
 
         fileTimer.Interval = FileCheckIntervalMs;
         fileTimer.Tick += delegate { CheckFile(); };
@@ -211,11 +212,23 @@ class WidgetContext : ApplicationContext
         else ClaudeCodeConnection.Connect(App.ExePath);
     }
 
-    // With the panel open, the update waits for a click instead of closing it under the cursor.
+    // Earlier versions kept no record, so one with usage data on disk counts as an update.
+    void NotifyIfUpdated()
+    {
+        string last = Settings.LastVersion;
+        Settings.LastVersion = App.Version;
+        bool updated = last != null ? last != App.Version : UsageStore.LastWriteUtc != DateTime.MinValue;
+        if (!updated || !Settings.Notifications) return;
+        TraySlot slot = sessionSlot.IsShown ? sessionSlot : weeklySlot;
+        slot.NotifyInfo(Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, App.Version));
+    }
+
+    // The first check installs at once. Later ones find the panel in use, so it is not closed under the cursor.
     void OnUpdateTimer()
     {
+        bool firstCheck = updateTimer.Interval == FirstUpdateCheckMs;
         updateTimer.Interval = UpdateCheckIntervalMs;
-        if (Settings.AutoUpdate) CheckForUpdate(false, !panel.Visible);
+        if (Settings.AutoUpdate) CheckForUpdate(false, firstCheck || !panel.Visible);
     }
 
     // An update found with the panel open is installed once the panel closes.
@@ -231,8 +244,6 @@ class WidgetContext : ApplicationContext
             InstallUpdate();
             return;
         }
-        if (updateBusy) return;
-        panel.SetUpdate(UpdatePhase.Checking, null);
         CheckForUpdate(true, false);
     }
 
@@ -240,6 +251,7 @@ class WidgetContext : ApplicationContext
     {
         if (updateBusy) return;
         updateBusy = true;
+        panel.SetUpdate(UpdatePhase.Checking, null);
         ThreadPool.QueueUserWorkItem(delegate
         {
             int started = Environment.TickCount;
@@ -261,9 +273,13 @@ class WidgetContext : ApplicationContext
                     availableUpdate = latest;
                     panel.SetUpdate(UpdatePhase.Available, latest.Version);
                 }
-                else if (manual)
+                else if (result == UpdateResult.UpToDate)
                 {
-                    panel.SetUpdate(result == UpdateResult.UpToDate ? UpdatePhase.UpToDate : UpdatePhase.Failed, null);
+                    panel.SetUpdate(UpdatePhase.UpToDate, null);
+                }
+                else
+                {
+                    panel.SetUpdate(manual ? UpdatePhase.Failed : UpdatePhase.Idle, null);
                 }
             }));
         });

@@ -46,10 +46,10 @@ No hace falta dejar una terminal abierta.
 1. **Lee los iconos.** El límite de 5 horas tiene el número blanco y el semanal tiene el número de color. El color cambia al 70% y pasa a rojo al 90%.
 2. **Pasa el ratón** sobre un icono para ver el porcentaje y la hora de reinicio.
 3. **Haz clic** en un icono para abrir el panel. Haz clic fuera o pulsa **Esc** para cerrarlo.
-4. **Elige un estilo de icono** en la parte inferior del panel.
-5. **Abre Settings** en el panel para todo lo demás, y **Appearance**, dentro de esa página, para los colores y la mascota.
+4. **Elige un estilo de icono** en **Appearance**.
+5. **Abre Settings** en el panel para todo lo demás, y **Appearance** para los colores y la mascota.
 
-**Close widget** solo cierra esta aplicación. No cierra tu sesión de Claude. Vuelve a abrirla desde el menú Inicio o el Escritorio.
+**Quit** solo cierra esta aplicación. No cierra tu sesión de Claude. Vuelve a abrirla desde el menú Inicio o el Escritorio.
 
 ## Qué puedes ver y cambiar
 
@@ -57,7 +57,7 @@ No hace falta dejar una terminal abierta.
 
 ![Estilos de icono](docs/images/icon-styles.png)
 
-De arriba abajo:
+Elige uno en **Appearance**. De arriba abajo:
 
 - **Gauge:** un indicador con el número dentro.
 - **Ring:** un círculo que se llena en sentido horario desde arriba. Es el estilo predeterminado.
@@ -78,7 +78,7 @@ El gráfico muestra tu uso de 5 horas durante las últimas 12 horas. Pasa el rat
 
 ![Azul con grafito, verde con negro y morado con grafito](docs/images/themes-en.png)
 
-En **Settings > Appearance**:
+En **Appearance**:
 
 - **Colors:** azul de forma predeterminada, o verde o morado. Se aplican a los iconos y las barras.
 - **Panel:** grafito o negro.
@@ -97,7 +97,7 @@ De forma predeterminada, el panel muestra la mascota **Classic** trabajando en s
 | Cansada y sudando | Está trabajando y un límite está al 90% o más |
 | Caída | Un límite llegó al 100% |
 
-En **Settings > Appearance** puedes elegir el aspecto:
+En **Appearance** puedes elegir el aspecto:
 
 - **Classic:** la animación original, que no reacciona al uso. Es la predeterminada.
 - **Pixel:** la mascota que reacciona al uso, en la fila superior.
@@ -120,10 +120,9 @@ Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y 
 | Icons shown | Ambos límites, solo 5 horas o solo semanal |
 | Start with Windows | Abre la aplicación al iniciar sesión en Windows |
 | Automatic updates | Instala por sí sola las actualizaciones firmadas |
-| Usage alerts | Avisa al 80% y al 90% de un límite |
+| Notifications | Alertas al 80% y al 90% de un límite, y un aviso cuando se instala una actualización |
 | Connected to Claude Code | Activa o desactiva la conexión |
 | Check for updates | Busca una actualización ahora. El icono gira mientras comprueba y se convierte en un icono de descarga cuando hay una lista |
-| Appearance | Colores, tema del panel y mascota |
 
 ## Cómo funciona la conexión
 
@@ -151,7 +150,7 @@ Los detalles están en [SECURITY.md](SECURITY.md), en inglés.
 
 ## Actualizaciones
 
-Al abrirse y después cada hora, la aplicación comprueba la última versión en GitHub. Solo instala una actualización si su firma digital coincide con la clave integrada en la aplicación, así que un archivo manipulado se rechaza. Puedes desactivarlo en Settings, donde **Check for updates** también hace una comprobación al momento. Si el panel está abierto cuando se encuentra una actualización, muestra un enlace para instalarla, y se instala sola cuando el panel se cierra.
+Al abrirse y después cada hora, la aplicación comprueba la última versión en GitHub. Solo instala una actualización si su firma digital coincide con la clave integrada en la aplicación, así que un archivo manipulado se rechaza. Puedes desactivarlo en Settings, donde **Check for updates** también hace una comprobación al momento. La comprobación al abrirse instala la actualización de inmediato, sin preguntar. Las comprobaciones siguientes esperan a que se cierre el panel y, mientras tanto, muestran un enlace para instalarla. Una notificación confirma la actualización, salvo que desactives **Notifications**.
 
 ## Desinstalación
 

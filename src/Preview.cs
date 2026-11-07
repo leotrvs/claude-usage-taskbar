@@ -116,7 +116,7 @@ static class Preview
         using (Bitmap bitmap = new Bitmap(panel.Width, panel.Height))
         {
             panel.DrawToBitmap(bitmap, new Rectangle(Point.Empty, panel.Size));
-            using (Bitmap chart = bitmap.Clone(new Rectangle(0, 206 * unit, panel.Width, 72 * unit), bitmap.PixelFormat))
+            using (Bitmap chart = bitmap.Clone(new Rectangle(0, 197 * unit, panel.Width, 66 * unit), bitmap.PixelFormat))
                 chart.Save(path, ImageFormat.Png);
         }
     }

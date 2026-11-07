@@ -260,6 +260,11 @@ class TraySlot : IDisposable
         notifyIcon.ShowBalloonTip(0, title, text, ToolTipIcon.Warning);
     }
 
+    public void NotifyInfo(string title, string text)
+    {
+        notifyIcon.ShowBalloonTip(0, title, text, ToolTipIcon.Info);
+    }
+
     public void Dispose()
     {
         notifyIcon.Visible = false;

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.3
+
+- The update check when the app opens installs an update right away, and a notification confirms it
+- The app shows when it last checked for updates
+- Notifications is now one option, for usage alerts and installed updates
+- Settings, Appearance and Quit are now one row of buttons
+- Icon styles moved into Appearance, and each page has its own height
+- Selected options have a stronger orange
+- The weekly limit sits closer to the session limit
+- Close widget is now called Quit
+- Smoother animations on toggles, selectors, hover and page changes
+
 ## 1.5.2
 
 - A stronger orange accent in the panel

@@ -87,6 +87,13 @@ static class Settings
         set { Write("Notifications", value.ToString()); }
     }
 
+    // The last version that ran here, to tell the user once when an update finishes.
+    public static string LastVersion
+    {
+        get { return Read("LastVersion") as string; }
+        set { Write("LastVersion", value); }
+    }
+
     // Remembers the alert already shown for a limit period, so a restart does not repeat it.
     public static string AlertState(string limit)
     {

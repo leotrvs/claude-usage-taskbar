@@ -45,10 +45,10 @@ You do not need to keep a terminal open.
 1. **Read the icons.** The 5-hour limit has a white number and the weekly limit has a colored number. The color changes at 70% and turns red at 90%.
 2. **Hover** over an icon to see the percentage and reset time.
 3. **Click** an icon to open the panel. Click outside it or press **Esc** to close it.
-4. **Choose an icon style** at the bottom of the panel.
-5. **Open Settings** in the panel for everything else, and **Appearance** inside it for colors and the mascot.
+4. **Choose an icon style** under **Appearance**.
+5. **Open Settings** in the panel for everything else, and **Appearance** for colors and the mascot.
 
-**Close widget** only closes this app. It does not sign you out of Claude. Open it again from the Start menu or Desktop.
+**Quit** only closes this app. It does not sign you out of Claude. Open it again from the Start menu or Desktop.
 
 ## What you can see and change
 
@@ -56,7 +56,7 @@ You do not need to keep a terminal open.
 
 ![Icon styles](docs/images/icon-styles.png)
 
-From top to bottom:
+Choose one under **Appearance**. From top to bottom:
 
 - **Gauge:** a dial with the number inside.
 - **Ring:** a circle that fills clockwise from the top. This is the default.
@@ -77,7 +77,7 @@ The chart shows your 5-hour usage over the last 12 hours. Hover over it to see t
 
 ![Blue with graphite, green with black and purple with graphite](docs/images/themes-en.png)
 
-Under **Settings > Appearance**:
+Under **Appearance**:
 
 - **Colors:** blue by default, or green or purple. They apply to the icons and the bars.
 - **Panel:** graphite or black.
@@ -96,7 +96,7 @@ By default, the panel shows the **Classic** mascot working on its laptop. Choose
 | Tired and sweating | It is working and a limit is at 90% or more |
 | Fallen over | A limit reached 100% |
 
-Under **Settings > Appearance** you can choose the look:
+Under **Appearance** you can choose the look:
 
 - **Classic:** the original animation, which does not react to usage. This is the default.
 - **Pixel:** the reactive mascot, shown on the top row.
@@ -119,10 +119,9 @@ This is a fan project, not affiliated with or endorsed by Anthropic, and the cha
 | Icons shown | Both limits, only 5 hours or only weekly |
 | Start with Windows | Opens the app when you sign in to Windows |
 | Automatic updates | Installs signed updates by itself |
-| Usage alerts | Warns you at 80% and 90% of a limit |
+| Notifications | Alerts at 80% and 90% of a limit, and a notice when an update is installed |
 | Connected to Claude Code | Turns the connection on or off |
 | Check for updates | Looks for an update now. The icon turns while it checks and becomes a download icon when one is ready |
-| Appearance | Colors, panel theme and mascot |
 
 ## How the connection works
 
@@ -150,7 +149,7 @@ Details are in [SECURITY.md](SECURITY.md).
 
 ## Updates
 
-When it opens and then every hour, the app checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app, so a tampered file is rejected. You can turn this off in Settings, where **Check for updates** also runs a check on demand. If the panel is open when an update is found, it shows a link to install it, and the update installs by itself when the panel closes.
+When it opens and then every hour, the app checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app, so a tampered file is rejected. You can turn this off in Settings, where **Check for updates** also runs a check on demand. The check when it opens installs any update right away, with no prompt. Later checks wait for the panel to close and show a link to install it meanwhile. A notification confirms the update, unless you turn off **Notifications**.
 
 ## Uninstall
 
