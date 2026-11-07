@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.2
+
+- A stronger orange accent in the panel
+- Larger taskbar numbers in Gauge, with a thinner line that gives them room
+- Updates are checked 5 seconds after the app opens and then every hour, and one found with the panel open installs when it closes
+
 ## 1.5.1
 
 - Usage is now read from Claude Code's `/usage` command every 2 minutes, so it updates with no terminal open

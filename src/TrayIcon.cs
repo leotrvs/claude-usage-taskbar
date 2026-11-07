@@ -20,23 +20,40 @@ static class TrayIcon
     const string NumberFont = "Segoe UI";
     const int LargestPixelDigits = 20; // Below 125% scaling a font has too few pixels to stay readable.
 
-    // Drawn by hand for the taskbar. Rows are separated by a slash. Three-pixel digits give every
-    // value an odd width, so the icon is drawn one pixel smaller to have a center pixel.
+    // Drawn by hand for the taskbar, as large as the circle allows. Rows are separated by a slash.
+    // One pixel between two digits makes an odd width, so the icon is one pixel smaller to have a center pixel.
     static readonly string[] PixelDigits =
     {
-        "###/#.#/#.#/#.#/###",
-        ".#./##./.#./.#./###",
-        "###/..#/###/#../###",
-        "###/..#/.##/..#/###",
-        "#.#/#.#/###/..#/..#",
-        "###/#../###/..#/###",
-        "###/#../###/#.#/###",
-        "###/..#/..#/.#./.#.",
-        "###/#.#/###/#.#/###",
-        "###/#.#/###/..#/###"
+        ".##./#..#/#..#/#..#/#..#/#..#/.##.",
+        "..#./.##./..#./..#./..#./..#./####",
+        ".##./#..#/...#/..#./.#../#.../####",
+        "###./...#/...#/.##./...#/...#/###.",
+        "#..#/#..#/#..#/####/...#/...#/...#",
+        "####/#.../#.../###./...#/...#/###.",
+        ".##./#.../#.../###./#..#/#..#/.##.",
+        "####/...#/...#/..#./..#./.#../.#..",
+        ".##./#..#/#..#/.##./#..#/#..#/.##.",
+        ".##./#..#/#..#/.###/...#/...#/.##."
     };
-    const string PixelUnknown = "###/..#/.##/.../.#.";
-    const string NarrowOne = "#/#/#/#/#"; // Keeps 100 clear of the arc.
+    const string UnitsOne = ".#../##../.#../.#../.#../.#../####"; // Mirrors the stem of a tens 1, so 11 stays balanced.
+    // A single digit is five pixels wide, also an odd width.
+    static readonly string[] PixelSingleDigits =
+    {
+        ".###./#...#/#...#/#...#/#...#/#...#/.###.",
+        "..#../.##../..#../..#../..#../..#../.###.",
+        ".###./#...#/....#/...#./..#../.#.../#####",
+        "####./....#/....#/.###./....#/....#/####.",
+        "#...#/#...#/#...#/#####/....#/....#/....#",
+        "#####/#..../#..../####./....#/....#/####.",
+        ".###./#..../#..../####./#...#/#...#/.###.",
+        "#####/....#/....#/...#./..#../..#../..#..",
+        ".###./#...#/#...#/.###./#...#/#...#/.###.",
+        ".###./#...#/#...#/.####/....#/....#/.###."
+    };
+    const string PixelUnknown = ".###./#...#/....#/...#./..#../...../..#..";
+    const string NarrowOne = "#/#/#/#/#/#/#"; // 100 has no room for full digits.
+    const string NarrowZero = "###/#.#/#.#/#.#/#.#/#.#/###";
+    const float PixelGaugeStroke = 1.25f; // A thin line leaves the digits room inside the small dial.
 
     // primary = 5-hour limit (white number); the weekly icon colors its number by level.
     public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size, bool onLight)
@@ -51,7 +68,8 @@ static class TrayIcon
 
             Color color = Theme.ForPercent(percent, stale);
             float progress = percent.HasValue ? Math.Max(0, Math.Min(100, percent.Value)) / 100f : 0;
-            float stroke = style == IconStyle.Gauge ? Math.Max(1.75f, box * 0.1f) : Math.Max(2f, box * 0.12f);
+            float gaugeStroke = box < size ? PixelGaugeStroke : Math.Max(1.75f, box * 0.1f);
+            float stroke = style == IconStyle.Gauge ? gaugeStroke : Math.Max(2f, box * 0.12f);
 
             if (style == IconStyle.Ring) DrawArc(g, box, stroke, RingStart, RingSweep, progress, color);
             else if (style == IconStyle.Gauge) DrawArc(g, box, stroke, GaugeStart, GaugeSweep, progress, color);
@@ -160,9 +178,9 @@ static class TrayIcon
     {
         if (!percent.HasValue) return new[] { PixelUnknown };
         int value = Math.Max(0, Math.Min(100, percent.Value));
-        if (value == 100) return new[] { NarrowOne, PixelDigits[0], PixelDigits[0] };
-        if (value < 10) return new[] { PixelDigits[value] };
-        return new[] { PixelDigits[value / 10], PixelDigits[value % 10] };
+        if (value == 100) return new[] { NarrowOne, NarrowZero, NarrowZero };
+        if (value < 10) return new[] { PixelSingleDigits[value] };
+        return new[] { PixelDigits[value / 10], value % 10 == 1 ? UnitsOne : PixelDigits[value % 10] };
     }
 
     // Hinting moves digits away from their measured outline, so centering uses the real pixels.

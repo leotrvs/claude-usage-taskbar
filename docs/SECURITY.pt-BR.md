@@ -24,7 +24,7 @@
 
 ## Acesso à rede
 
-O app faz um único tipo de conexão: a cada 6 horas, baixa arquivos de release deste repositório no GitHub, a menos que você desligue as atualizações automáticas, e faz o mesmo quando você clica em **Verificar atualizações**. O GitHub pode ver seu endereço IP, como em qualquer download. Nenhum dado do Claude é enviado.
+O app faz um único tipo de conexão: ao abrir e depois a cada hora, baixa arquivos de release deste repositório no GitHub, a menos que você desligue as atualizações automáticas, e faz o mesmo quando você clica em **Verificar atualizações**. O GitHub pode ver seu endereço IP, como em qualquer download. Nenhum dado do Claude é enviado.
 
 ## Proteção das atualizações automáticas
 

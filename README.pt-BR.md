@@ -150,7 +150,7 @@ Os detalhes estão em [docs/SECURITY.pt-BR.md](docs/SECURITY.pt-BR.md).
 
 ## Atualizações
 
-A cada 6 horas, o app verifica a versão mais recente no GitHub. Ele só instala uma atualização se a assinatura digital bater com a chave embutida no app, então um arquivo adulterado é rejeitado. Você pode desligar isso em Configurações, onde **Verificar atualizações** também faz uma verificação na hora. Se o painel estiver aberto quando uma atualização for encontrada, ele mostra um link para instalar.
+Ao abrir e depois a cada hora, o app verifica a versão mais recente no GitHub. Ele só instala uma atualização se a assinatura digital bater com a chave embutida no app, então um arquivo adulterado é rejeitado. Você pode desligar isso em Configurações, onde **Verificar atualizações** também faz uma verificação na hora. Se o painel estiver aberto quando uma atualização for encontrada, ele mostra um link para instalar, e ela se instala sozinha quando o painel fecha.
 
 ## Desinstalação
 

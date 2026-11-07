@@ -28,7 +28,7 @@ function New-GaugePng([int]$Size) {
     $inset = [float]($Size * 0.18 + $stroke / 2)
     $arc = [float]($Size - 2 * $inset)
     $track = New-Object Drawing.Pen ([Drawing.Color]::FromArgb(84, 76, 72)), $stroke
-    $value = New-Object Drawing.Pen ([Drawing.Color]::FromArgb(224, 138, 91)), $stroke
+    $value = New-Object Drawing.Pen ([Drawing.Color]::FromArgb(222, 110, 73)), $stroke
     foreach ($pen in @($track, $value)) {
         $pen.StartCap = 'Round'
         $pen.EndCap = 'Round'

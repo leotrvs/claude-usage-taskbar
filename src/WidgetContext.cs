@@ -9,8 +9,8 @@ class WidgetContext : ApplicationContext
     const int WarningPercent = 80;
     const int CriticalPercent = 90;
     const int MinuteInTicks = 12; // File checks per minute, to roll countdowns and passed resets forward.
-    const int FirstUpdateCheckMs = 60 * 1000;
-    const int UpdateCheckIntervalMs = 6 * 60 * 60 * 1000;
+    const int FirstUpdateCheckMs = 5 * 1000;
+    const int UpdateCheckIntervalMs = 60 * 60 * 1000;
     const int FirstProbeMs = 3 * 1000;
     const int ProbeIntervalMs = 2 * 60 * 1000;
     const int MinimumManualCheckMs = 900; // Long enough to see the icon turn on a fast connection.
@@ -50,6 +50,7 @@ class WidgetContext : ApplicationContext
         callbacks.CloseWidget = ExitThread;
 
         panel = new UsagePanel(callbacks);
+        panel.VisibleChanged += delegate { InstallWaitingUpdate(); };
         IntPtr ensureHandle = panel.Handle; // BeginInvoke needs it before the first Show.
         GC.KeepAlive(ensureHandle);
 
@@ -215,6 +216,12 @@ class WidgetContext : ApplicationContext
     {
         updateTimer.Interval = UpdateCheckIntervalMs;
         if (Settings.AutoUpdate) CheckForUpdate(false, !panel.Visible);
+    }
+
+    // An update found with the panel open is installed once the panel closes.
+    void InstallWaitingUpdate()
+    {
+        if (!panel.Visible && availableUpdate != null && Settings.AutoUpdate) InstallUpdate();
     }
 
     void CheckOrInstallUpdate()

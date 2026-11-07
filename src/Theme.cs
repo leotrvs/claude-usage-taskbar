@@ -16,7 +16,7 @@ static class Theme
     public static Color Track { get { return Panel == PanelTheme.Black ? Color.FromArgb(44, 44, 44) : Color.FromArgb(58, 58, 58); } }
     public static readonly Color Text = Color.FromArgb(242, 242, 242);
     public static readonly Color Muted = Color.FromArgb(160, 160, 160);
-    public static readonly Color Accent = Color.FromArgb(224, 138, 91);
+    public static readonly Color Accent = Color.FromArgb(222, 110, 73);
     public static readonly Color Red = Color.FromArgb(239, 68, 68);
     static readonly Color Amber = Color.FromArgb(245, 158, 11);
     static readonly Color Yellow = Color.FromArgb(250, 204, 21);

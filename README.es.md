@@ -151,7 +151,7 @@ Los detalles están en [SECURITY.md](SECURITY.md), en inglés.
 
 ## Actualizaciones
 
-Cada 6 horas, la aplicación comprueba la última versión en GitHub. Solo instala una actualización si su firma digital coincide con la clave integrada en la aplicación, así que un archivo manipulado se rechaza. Puedes desactivarlo en Settings, donde **Check for updates** también hace una comprobación al momento. Si el panel está abierto cuando se encuentra una actualización, muestra un enlace para instalarla.
+Al abrirse y después cada hora, la aplicación comprueba la última versión en GitHub. Solo instala una actualización si su firma digital coincide con la clave integrada en la aplicación, así que un archivo manipulado se rechaza. Puedes desactivarlo en Settings, donde **Check for updates** también hace una comprobación al momento. Si el panel está abierto cuando se encuentra una actualización, muestra un enlace para instalarla, y se instala sola cuando el panel se cierra.
 
 ## Desinstalación
 

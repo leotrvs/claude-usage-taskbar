@@ -24,7 +24,7 @@
 
 ## Network access
 
-The app itself makes one kind of connection: every 6 hours it downloads release files from this repository on GitHub, unless you turn off automatic updates, and it does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude data is sent.
+The app itself makes one kind of connection: when it opens and then every hour it downloads release files from this repository on GitHub, unless you turn off automatic updates, and it does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude data is sent.
 
 The `/usage` command is part of Claude Code, which connects to Anthropic with your own login. The app never sees that login.
 

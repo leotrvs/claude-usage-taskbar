@@ -150,7 +150,7 @@ Details are in [SECURITY.md](SECURITY.md).
 
 ## Updates
 
-Every 6 hours, the app checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app, so a tampered file is rejected. You can turn this off in Settings, where **Check for updates** also runs a check on demand. If the panel is open when an update is found, it shows a link to install it.
+When it opens and then every hour, the app checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app, so a tampered file is rejected. You can turn this off in Settings, where **Check for updates** also runs a check on demand. If the panel is open when an update is found, it shows a link to install it, and the update installs by itself when the panel closes.
 
 ## Uninstall
 
