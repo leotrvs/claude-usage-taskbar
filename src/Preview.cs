@@ -11,7 +11,7 @@ static class Preview
     {
         Directory.CreateDirectory(directory);
         Theme.Colors = ColorTemplate.Blue;
-        Theme.Panel = PanelTheme.Graphite;
+        Theme.Panel = PanelTheme.Black;
         RenderPanels(directory, Language.English, "en");
         RenderPanels(directory, Language.Portuguese, "pt-BR");
         RenderIconStyles(Path.Combine(directory, "icon-styles.png"));
@@ -29,7 +29,7 @@ static class Preview
         using (Bitmap sheet = new Bitmap(moods.Length * (Width + Gap) + Gap, styles.Length * (Height + Gap) + Gap))
         using (Graphics g = Graphics.FromImage(sheet))
         {
-            g.Clear(Color.FromArgb(32, 32, 32));
+            g.Clear(Color.FromArgb(10, 10, 10));
             for (int row = 0; row < styles.Length; row++)
             {
                 for (int column = 0; column < moods.Length; column++)
@@ -60,7 +60,7 @@ static class Preview
         {
             panel.ChangeMascot(MascotStyle.Classic);
             panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
-            Save(panel, Path.Combine(directory, "panel-" + suffix + ".png"));
+            SaveTheme(panel, PanelTheme.Graphite, Path.Combine(directory, "panel-" + suffix + ".png"));
             SaveTheme(panel, PanelTheme.Black, Path.Combine(directory, "panel-black-" + suffix + ".png"));
             SaveTheme(panel, PanelTheme.Light, Path.Combine(directory, "panel-light-" + suffix + ".png"));
             panel.ShowChartDetails();
@@ -78,10 +78,6 @@ static class Preview
             Save(panel, Path.Combine(directory, "update-settings-" + suffix + ".png"));
             panel.ShowMainPage();
             Save(panel, Path.Combine(directory, "update-" + suffix + ".png"));
-            Theme.Panel = PanelTheme.Black;
-            panel.ApplyTheme();
-            Save(panel, Path.Combine(directory, "black-" + suffix + ".png"));
-            Theme.Panel = PanelTheme.Graphite;
         }
     }
 
@@ -90,7 +86,7 @@ static class Preview
         Theme.Panel = theme;
         panel.ApplyTheme();
         Save(panel, path);
-        Theme.Panel = PanelTheme.Graphite;
+        Theme.Panel = PanelTheme.Black;
         panel.ApplyTheme();
     }
 
@@ -117,7 +113,7 @@ static class Preview
             sheet.Save(path, ImageFormat.Png);
         }
         Theme.Colors = ColorTemplate.Blue;
-        Theme.Panel = PanelTheme.Graphite;
+        Theme.Panel = PanelTheme.Black;
         panel.ApplyTheme();
     }
 
@@ -164,7 +160,7 @@ static class Preview
         using (Bitmap sheet = new Bitmap(width, Size * 3 + Gap * 4))
         using (Graphics g = Graphics.FromImage(sheet))
         {
-            g.Clear(Color.FromArgb(20, 20, 20));
+            g.Clear(Color.FromArgb(10, 10, 10));
             for (int i = 0; i < samples.Length; i++)
             {
                 int x = Gap + i * (Size + Gap);

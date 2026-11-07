@@ -89,9 +89,13 @@ En **Appearance**:
 
 ### Mascota
 
-![Los estados de la mascota, con y sin el gorro navideño](docs/images/mascots.png)
+De forma predeterminada, el panel muestra la mascota **Classic** trabajando en su portátil:
 
-De forma predeterminada, el panel muestra la mascota **Classic** trabajando en su portátil. Elige **Pixel** o **Christmas** y reaccionará a tu uso. De izquierda a derecha:
+<img src="assets/mascots/default.gif" alt="La mascota Classic trabajando en su portátil" width="200">
+
+Elige **Pixel** o **Christmas** y reaccionará a tu uso. De izquierda a derecha:
+
+![Los estados de la mascota, con y sin el gorro navideño](docs/images/mascots.png)
 
 | Estado | Cuándo |
 |---|---|

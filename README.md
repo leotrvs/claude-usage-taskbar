@@ -88,9 +88,13 @@ Under **Appearance**:
 
 ### Mascot
 
-![The mascot's moods, with and without the Christmas hat](docs/images/mascots.png)
+By default, the panel shows the **Classic** mascot working on its laptop:
 
-By default, the panel shows the **Classic** mascot working on its laptop. Choose **Pixel** or **Christmas** and it reacts to your usage. From left to right:
+<img src="assets/mascots/default.gif" alt="The Classic mascot working on its laptop" width="200">
+
+Choose **Pixel** or **Christmas** and it reacts to your usage. From left to right:
+
+![The mascot's moods, with and without the Christmas hat](docs/images/mascots.png)
 
 | Mood | When |
 |---|---|

@@ -88,9 +88,13 @@ Em **Aparência**:
 
 ### Mascote
 
-![Os estados do mascote, com e sem o gorro de Natal](docs/images/mascots.png)
+Por padrão, o painel mostra o mascote **Clássico** trabalhando no notebook:
 
-Por padrão, o painel mostra o mascote **Clássico** trabalhando no notebook. Escolha **Pixel** ou **Natal** e ele reage ao seu uso. Da esquerda para a direita:
+<img src="assets/mascots/default.gif" alt="O mascote Clássico trabalhando no notebook" width="200">
+
+Escolha **Pixel** ou **Natal** e ele reage ao seu uso. Da esquerda para a direita:
+
+![Os estados do mascote, com e sem o gorro de Natal](docs/images/mascots.png)
 
 | Estado | Quando |
 |---|---|
