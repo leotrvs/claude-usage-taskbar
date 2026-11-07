@@ -14,7 +14,7 @@ The hooks stop commits and pushes that contain secrets or personal data. To add 
 
 ## Rules
 
-- **Never read Claude credentials or call Anthropic's private endpoints.** Usage data comes only from the official status line. Pull requests that change this will be declined.
+- **Never read Claude credentials or call Anthropic's private endpoints.** Usage data comes only from the official status line and Claude Code's `/usage` command. Pull requests that change this will be declined.
 - **Keep the app free of dependencies.** It must build with the compiler included in Windows, which supports C# 5.
 - **Add every user-visible text in both English and Portuguese** in `src\Localization.cs`.
 - **Do not use real screenshots.** Generate documentation images from sample data:
@@ -28,6 +28,7 @@ The hooks stop commits and pushes that contain secrets or personal data. To add 
 | Path | Purpose |
 |---|---|
 | `src\StatusLineBridge.cs` | Receives Claude Code data and keeps only the limits |
+| `src\UsageProbe.cs` | Reads the limits from Claude Code's `/usage` command |
 | `src\ClaudeCodeConnection.cs` | Changes the `statusLine` entry |
 | `src\UsagePanel.cs` | The panel |
 | `src\TrayIcon.cs` | Taskbar icons |

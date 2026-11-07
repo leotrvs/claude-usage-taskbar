@@ -1,6 +1,6 @@
 # Claude Usage Taskbar
 
-**English** | [Português (Brasil)](README.pt-BR.md)
+**English** | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md) | [Русский](README.ru.md)
 
 See your Claude Code usage limits in the Windows taskbar, without opening anything.
 
@@ -10,71 +10,132 @@ See your Claude Code usage limits in the Windows taskbar, without opening anythi
 
 ## Features
 
-- Taskbar icons with your **5-hour** and **weekly** usage percentages. Show both, or only one
-- Three icon styles: **Ring**, a circle that fills clockwise from the top, **Gauge**, a dial with the number inside, and **Needle**, a dial with a pointer
-- Colors by level: blue by default, or green or purple, changing at 70% and turning red at 90%
-- Icons with no background, and a graphite or black panel
-- A dark panel with reset times, a pace forecast and a 12-hour chart that shows details on hover
+- Taskbar icons with your **5-hour** and **weekly** usage. Show both, or only one
+- Three icon styles: **Ring**, **Gauge** and **Needle**
+- Three color templates and two panel themes
+- A panel with reset times, a pace forecast and a 12-hour chart
+- An animated mascot, with pixel versions that react to your usage
 - Optional alerts at 80% and 90% of a limit
 - English and Brazilian Portuguese, following your Windows language by default
 - Starts with Windows, with Desktop and Start menu shortcuts
 - Signed automatic updates
 - **Never reads your Claude login or token**
 
-![Icon styles](docs/images/icon-styles.png)
-
-## Requirements
-
-- Windows 10 or 11
-- [Claude Code](https://code.claude.com/docs) in a **terminal**, signed in with a Pro, Max or Ultra plan
-
-> **The Claude desktop app does not feed this widget.** In testing, its Code tab did not run the status line, so percentages appear only while you use Claude Code in a terminal.
-
 ## Install
 
-1. If you have not already, install Claude Code, run `claude` in a terminal and sign in.
-2. Download `ClaudeUsageTaskbar.exe` from the [latest release](https://github.com/ggleoo/claude-usage-taskbar/releases/latest).
-3. Run it. Windows may show a SmartScreen warning because the app has no paid code-signing certificate. Choose **More info**, then **Run anyway**. If you prefer, [check the file](SECURITY.md#verify-a-download) or [build it yourself](#build-from-source) first.
-4. Choose **Yes** to install. The app is installed for your Windows user only, and you can delete the downloaded file afterwards.
-5. Keep the icons visible: drag them from the **^** menu to the taskbar, or go to **Settings > Personalization > Taskbar > Other system tray icons**.
-6. Send one message in Claude Code in a terminal. The percentages appear right after the response.
+### Before you start
 
-The installer connects to Claude Code for you. See [how the connection works](#how-the-connection-works).
+You need:
+
+- Windows 10 or 11
+- [Claude Code](https://code.claude.com/docs) installed and signed in with a Pro, Max or Ultra plan. To sign in, run `claude` in a terminal once
+
+You do not need to keep a terminal open.
+
+### Step by step
+
+1. **Download** `ClaudeUsageTaskbar.exe` from the [latest release](https://github.com/ggleoo/claude-usage-taskbar/releases/latest).
+2. **Open the downloaded file.** Windows may show a SmartScreen warning because the app has no paid code-signing certificate. Choose **More info**, then **Run anyway**. If you prefer, [check the file](SECURITY.md#verify-a-download) or [build it yourself](#build-from-source) first.
+3. **Choose Yes** in the install window. The app is installed for your Windows user only and connects to Claude Code for you. You can delete the downloaded file afterwards.
+4. **Keep the icons visible.** Windows hides new tray icons. Drag them from the **^** menu to the taskbar, or go to **Settings > Personalization > Taskbar > Other system tray icons** and turn them on. There are two icons, one for each limit.
+5. **Wait a few seconds.** The percentages appear on the icons, which means it is working.
 
 ## Use
 
-- **Hover** over an icon to see the percentage and reset time.
-- **Click** an icon to open the panel. Choose the icon style there.
-- **Settings** in the panel holds the language, which icons appear, automatic updates, usage alerts, Start with Windows, the Claude Code connection and **Appearance**, for the color template and panel theme.
-- **Close widget** only closes this app. It does not sign you out of Claude. Open it again from the Start menu or Desktop.
+1. **Read the icons.** The 5-hour limit has a white number and the weekly limit has a colored number. The color changes at 70% and turns red at 90%.
+2. **Hover** over an icon to see the percentage and reset time.
+3. **Click** an icon to open the panel. Click outside it or press **Esc** to close it.
+4. **Choose an icon style** at the bottom of the panel.
+5. **Open Settings** in the panel for everything else, and **Appearance** inside it for colors and the mascot.
 
-On icons, the 5-hour limit has a white number and the weekly limit has a colored number.
+**Close widget** only closes this app. It does not sign you out of Claude. Open it again from the Start menu or Desktop.
+
+## What you can see and change
+
+### Icon styles
+
+![Icon styles](docs/images/icon-styles.png)
+
+From top to bottom:
+
+- **Gauge:** a dial with the number inside.
+- **Ring:** a circle that fills clockwise from the top. This is the default.
+- **Needle:** a dial with a pointer.
+
+### Usage chart
+
+![The chart with hover details](docs/images/chart-en.png)
+
+The chart shows your 5-hour usage over the last 12 hours. Hover over it to see the time, the percentage at that moment and how much it rose since the previous reading.
 
 ### Pace forecast
 
 - **5-hour limit:** the forecast blends your average for the whole window with your recent trend, so one burst does not dominate it. It appears after at least 5% usage and 15 minutes of data.
 - **Weekly limit:** it compares your usage with an even pace across the week. It shows a difference, not a prediction.
 
+### Colors and themes
+
+![Blue with graphite, green with black and purple with graphite](docs/images/themes-en.png)
+
+Under **Settings > Appearance**:
+
+- **Colors:** blue by default, or green or purple. They apply to the icons and the bars.
+- **Panel:** graphite or black.
+
 ### Mascot
 
-The panel shows an animated pixel mascot. It sleeps with no recent usage, rests, works on its laptop while your session percentage rises, gets tired from 90% and falls over at 100%. Under Appearance you can give it a Christmas hat or switch to the Classic animation.
+![The mascot's moods, with and without the Christmas hat](docs/images/mascots.png)
 
-![Mascot moods](docs/images/mascots.png)
+By default, the panel shows the **Classic** mascot working on its laptop. Choose **Pixel** or **Christmas** and it reacts to your usage. From left to right:
+
+| Mood | When |
+|---|---|
+| Sleeping | No usage for more than 45 minutes, or no data yet |
+| Resting | Your last usage was 10 to 45 minutes ago |
+| Working on its laptop | The session percentage rose in the last 10 minutes |
+| Tired and sweating | It is working and a limit is at 90% or more |
+| Fallen over | A limit reached 100% |
+
+Under **Settings > Appearance** you can choose the look:
+
+- **Classic:** the original animation, which does not react to usage. This is the default.
+- **Pixel:** the reactive mascot, shown on the top row.
+- **Christmas:** the same mascot with a Santa hat, shown on the bottom row.
 
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 
+### Settings
+
+<table>
+<tr>
+<td><img src="docs/images/settings-en.png" alt="Settings page" width="300"></td>
+<td><img src="docs/images/appearance-en.png" alt="Appearance page" width="300"></td>
+</tr>
+</table>
+
+| Option | What it does |
+|---|---|
+| Language | Automatic, English or Portuguese |
+| Icons shown | Both limits, only 5 hours or only weekly |
+| Start with Windows | Opens the app when you sign in to Windows |
+| Automatic updates | Installs signed updates by itself |
+| Usage alerts | Warns you at 80% and 90% of a limit |
+| Connected to Claude Code | Turns the connection on or off |
+| Check for updates | Looks for an update now. The icon turns while it checks and becomes a download icon when one is ready |
+| Appearance | Colors, panel theme and mascot |
+
 ## How the connection works
 
-Claude Code can send session data to a [status line](https://code.claude.com/docs/en/statusline) command, and that data includes your limit percentages. The app uses this official feature:
+The app reads your limits in two official ways:
 
-1. During install, it adds one `statusLine` entry to `~/.claude/settings.json`, and saves a backup of the file next to it.
-2. Claude Code runs the app in the background and sends it the session data.
-3. The app keeps only the 5-hour and weekly percentages and reset times in `%LOCALAPPDATA%\ClaudeUsageTaskbar`, and discards the rest.
-4. The widget reads that file.
+- **`/usage` command:** every 2 minutes it runs `claude -p /usage` in the background, the same numbers you see in Claude Code. It makes no model call and spends no tokens.
+- **[Status line](https://code.claude.com/docs/en/statusline):** during install, it adds one `statusLine` entry to `~/.claude/settings.json` and saves a backup next to it. Claude Code then sends it fresh numbers after each response in a terminal.
+
+In both cases the app keeps only the 5-hour and weekly percentages and reset times in `%LOCALAPPDATA%\ClaudeUsageTaskbar`, and discards the rest. The widget reads that file.
 
 Good to know:
 
-- **Percentages update only while Claude Code is running in a terminal.** They refresh after each response, so usage from other places, such as claude.ai or the desktop app, appears on your next terminal response.
+- **Usage from anywhere counts.** claude.ai, the desktop app and terminals all appear within 2 minutes.
 - **An existing status line is kept.** It keeps running and showing what it did before. Uninstalling restores it.
 - **To disconnect,** turn off **Connected to Claude Code** in Settings.
 
@@ -83,13 +144,9 @@ Good to know:
 - It does not read your login, token or credentials file.
 - It does not store your prompts, session data or project paths.
 - It has no analytics or telemetry, and no account.
-- Its only network access is checking GitHub for signed updates, which you can turn off.
+- Its own network access is only checking GitHub for signed updates, which you can turn off. The `/usage` command belongs to Claude Code, which uses your login without showing it to the app.
 
 Details are in [SECURITY.md](SECURITY.md).
-
-## Credits
-
-The panel uses [Inter](https://github.com/rsms/inter), licensed under the SIL Open Font License. See [assets/fonts/NOTICE.md](assets/fonts/NOTICE.md).
 
 ## Updates
 
@@ -103,11 +160,11 @@ Go to **Windows Settings > Apps > Installed apps > Claude Usage Taskbar > Uninst
 
 | Problem | What to do |
 |---|---|
-| "Waiting for Claude Code" | Send a message in Claude Code in a terminal. Limit data arrives after the first response. The desktop app does not provide it. |
-| Still no percentages | Check that **Connected to Claude Code** is on, then restart Claude Code. Data is available on Pro, Max and Ultra plans. |
-| Icons are hidden | Follow step 5 of [Install](#install). |
+| "Waiting for Claude Code" | Wait a few seconds. If it stays, run `claude` in a terminal to check that Claude Code is installed and signed in. |
+| Still no percentages | Check that **Connected to Claude Code** is on, then run `claude -p /usage` in a terminal. Data is available on Pro, Max and Ultra plans. |
+| Icons are hidden | Follow step 4 of the [install steps](#step-by-step). |
 | Connection could not be turned on | `~/.claude/settings.json` may have invalid JSON. Fix it and try again. |
-| A percentage looks old | It is the last value Claude Code reported. It refreshes on the next response. |
+| A percentage looks old | It is the last value that could be read. The app tries again every 2 minutes. |
 
 ## Build from source
 
@@ -122,6 +179,10 @@ pwsh -File scripts/build.ps1
 The app is written to `bin\ClaudeUsageTaskbar.exe`. Use `--portable` to run it without installing.
 
 Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Credits
+
+The panel uses [Inter](https://github.com/rsms/inter), licensed under the SIL Open Font License. See [assets/fonts/NOTICE.md](assets/fonts/NOTICE.md).
 
 ## License
 

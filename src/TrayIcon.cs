@@ -20,29 +20,29 @@ static class TrayIcon
     const string NumberFont = "Segoe UI";
     const int LargestPixelDigits = 20; // Below 125% scaling a font has too few pixels to stay readable.
 
-    // Drawn by hand for the taskbar. Rows are separated by a slash.
+    // Drawn by hand for the taskbar. Rows are separated by a slash. Three-pixel digits give every
+    // value an odd width, so the icon is drawn one pixel smaller to have a center pixel.
     static readonly string[] PixelDigits =
     {
-        ".##./#..#/#..#/#..#/#..#/.##.",
-        ".#./##./.#./.#./.#./###",
-        ".##./#..#/...#/..#./.#../####",
-        "###./...#/.##./...#/...#/###.",
-        "#..#/#..#/#..#/####/...#/...#",
-        "####/#.../###./...#/...#/###.",
-        ".##./#.../###./#..#/#..#/.##.",
-        "####/...#/..#./.#../.#../.#..",
-        ".##./#..#/.##./#..#/#..#/.##.",
-        ".##./#..#/#..#/.###/...#/.##."
+        "###/#.#/#.#/#.#/###",
+        ".#./##./.#./.#./###",
+        "###/..#/###/#../###",
+        "###/..#/.##/..#/###",
+        "#.#/#.#/###/..#/..#",
+        "###/#../###/..#/###",
+        "###/#../###/#.#/###",
+        "###/..#/..#/.#./.#.",
+        "###/#.#/###/#.#/###",
+        "###/#.#/###/..#/###"
     };
-    const string PixelUnknown = ".##./#..#/..#./.#../..../.#..";
-    // 100 has no room at the full height, so it uses narrower digits.
-    const string NarrowOne = ".#/##/.#/.#/.#";
-    const string NarrowZero = "###/#.#/#.#/#.#/###";
+    const string PixelUnknown = "###/..#/.##/.../.#.";
+    const string NarrowOne = "#/#/#/#/#"; // Keeps 100 clear of the arc.
 
     // primary = 5-hour limit (white number); the weekly icon colors its number by level.
     public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size, bool onLight)
     {
         Bitmap bitmap = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+        int box = size <= LargestPixelDigits ? size - 1 : size;
         using (Graphics g = Graphics.FromImage(bitmap))
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -51,15 +51,15 @@ static class TrayIcon
 
             Color color = Theme.ForPercent(percent, stale);
             float progress = percent.HasValue ? Math.Max(0, Math.Min(100, percent.Value)) / 100f : 0;
-            float stroke = style == IconStyle.Gauge ? Math.Max(1.5f, size * 0.1f) : Math.Max(2f, size * 0.12f);
+            float stroke = style == IconStyle.Gauge ? Math.Max(1.75f, box * 0.1f) : Math.Max(2f, box * 0.12f);
 
-            if (style == IconStyle.Ring) DrawArc(g, size, stroke, RingStart, RingSweep, progress, color);
-            else if (style == IconStyle.Gauge) DrawArc(g, size, stroke, GaugeStart, GaugeSweep, progress, color);
-            else DrawArc(g, size, stroke, DialStart, DialSweep, progress, color);
+            if (style == IconStyle.Ring) DrawArc(g, box, stroke, RingStart, RingSweep, progress, color);
+            else if (style == IconStyle.Gauge) DrawArc(g, box, stroke, GaugeStart, GaugeSweep, progress, color);
+            else DrawArc(g, box, stroke, DialStart, DialSweep, progress, color);
 
             Color foreground = primary && !stale ? (onLight ? DarkForeground : Theme.Text) : color;
-            if (style == IconStyle.Needle && percent.HasValue) DrawNeedle(g, size, progress, foreground);
-            else if (style == IconStyle.Gauge || !percent.HasValue) DrawNumber(g, percent, foreground, size);
+            if (style == IconStyle.Needle && percent.HasValue) DrawNeedle(g, box, progress, foreground);
+            else if (style == IconStyle.Gauge || !percent.HasValue) DrawNumber(g, percent, foreground, box);
         }
         return bitmap;
     }
@@ -160,7 +160,7 @@ static class TrayIcon
     {
         if (!percent.HasValue) return new[] { PixelUnknown };
         int value = Math.Max(0, Math.Min(100, percent.Value));
-        if (value == 100) return new[] { NarrowOne, NarrowZero, NarrowZero };
+        if (value == 100) return new[] { NarrowOne, PixelDigits[0], PixelDigits[0] };
         if (value < 10) return new[] { PixelDigits[value] };
         return new[] { PixelDigits[value / 10], PixelDigits[value % 10] };
     }

@@ -58,9 +58,13 @@ static class Preview
 
         using (UsagePanel panel = new UsagePanel(new PanelCallbacks()))
         {
-            panel.ChangeMascot(MascotStyle.Pixel);
+            panel.ChangeMascot(MascotStyle.Classic);
             panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
             Save(panel, Path.Combine(directory, "panel-" + suffix + ".png"));
+            panel.ShowChartDetails();
+            SaveChart(panel, Path.Combine(directory, "chart-" + suffix + ".png"));
+            panel.ShowMainPage();
+            RenderThemes(panel, Path.Combine(directory, "themes-" + suffix + ".png"));
             panel.ShowSettingsPage();
             Save(panel, Path.Combine(directory, "settings-" + suffix + ".png"));
             panel.ShowAppearancePage();
@@ -76,6 +80,44 @@ static class Preview
             panel.ApplyTheme();
             Save(panel, Path.Combine(directory, "black-" + suffix + ".png"));
             Theme.Panel = PanelTheme.Graphite;
+        }
+    }
+
+    static void RenderThemes(UsagePanel panel, string path)
+    {
+        ColorTemplate[] colors = { ColorTemplate.Blue, ColorTemplate.Green, ColorTemplate.Purple };
+        PanelTheme[] themes = { PanelTheme.Graphite, PanelTheme.Black, PanelTheme.Graphite };
+        const int Gap = 16;
+        using (Bitmap sheet = new Bitmap(colors.Length * (panel.Width + Gap) + Gap, panel.Height + Gap * 2))
+        using (Graphics g = Graphics.FromImage(sheet))
+        {
+            g.Clear(Color.FromArgb(16, 16, 16));
+            for (int i = 0; i < colors.Length; i++)
+            {
+                Theme.Colors = colors[i];
+                Theme.Panel = themes[i];
+                panel.ApplyTheme();
+                using (Bitmap shot = new Bitmap(panel.Width, panel.Height))
+                {
+                    panel.DrawToBitmap(shot, new Rectangle(Point.Empty, panel.Size));
+                    g.DrawImageUnscaled(shot, Gap + i * (panel.Width + Gap), Gap);
+                }
+            }
+            sheet.Save(path, ImageFormat.Png);
+        }
+        Theme.Colors = ColorTemplate.Blue;
+        Theme.Panel = PanelTheme.Graphite;
+        panel.ApplyTheme();
+    }
+
+    static void SaveChart(UsagePanel panel, string path)
+    {
+        int unit = panel.Width / 300;
+        using (Bitmap bitmap = new Bitmap(panel.Width, panel.Height))
+        {
+            panel.DrawToBitmap(bitmap, new Rectangle(Point.Empty, panel.Size));
+            using (Bitmap chart = bitmap.Clone(new Rectangle(0, 206 * unit, panel.Width, 72 * unit), bitmap.PixelFormat))
+                chart.Save(path, ImageFormat.Png);
         }
     }
 

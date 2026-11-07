@@ -8,6 +8,7 @@
 |---|---|---|
 | `~/.claude/settings.json` | Reads and changes only the `statusLine` entry, after your consent | Connects to Claude Code. A `.bak` copy is saved beside it. |
 | Status line data from Claude Code | Reads it in memory | Keeps only limit percentages and reset times |
+| Claude Code's `/usage` command | Runs it every 2 minutes while connected | Keeps only limit percentages and reset times. It makes no model call and spends no tokens. |
 | `%LOCALAPPDATA%\ClaudeUsageTaskbar` | Reads and writes | Stores `usage.json`, `history.csv` (24 hours of times and 5-hour percentages), and your earlier status line if you had one |
 | `%LOCALAPPDATA%\Programs\ClaudeUsageTaskbar` | Reads and writes | Holds the installed app |
 | `HKCU\Software\ClaudeUsageTaskbar` | Reads and writes | Stores preferences |
@@ -23,7 +24,9 @@
 
 ## Network access
 
-The app makes one kind of connection: every 6 hours it downloads release files from this repository on GitHub, unless you turn off automatic updates, and it does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude data is sent.
+The app itself makes one kind of connection: every 6 hours it downloads release files from this repository on GitHub, unless you turn off automatic updates, and it does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude data is sent.
+
+The `/usage` command is part of Claude Code, which connects to Anthropic with your own login. The app never sees that login.
 
 ## Automatic update protection
 

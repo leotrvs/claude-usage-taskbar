@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.1
+
+- Usage is now read from Claude Code's `/usage` command every 2 minutes, so it updates with no terminal open
+- Taskbar numbers are now exactly centered, with a new digit design that stays clear of the line
+- At 100% and 125% display scaling, icons are one pixel smaller, so the circle has a center pixel
+- Classic is the default mascot again, and comes first in the selector
+- The README is now also in Spanish and Russian, with clearer steps and more pictures
+
 ## 1.5.0
 
 - Taskbar numbers are drawn pixel by pixel, so they stay sharp at 16 pixels

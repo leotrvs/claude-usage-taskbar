@@ -66,7 +66,7 @@ static class Settings
         get
         {
             MascotStyle style;
-            return Enum.TryParse(Read("MascotStyle") as string, out style) ? style : MascotStyle.Pixel;
+            return Enum.TryParse(Read("MascotStyle") as string, out style) ? style : MascotStyle.Classic;
         }
         set { Write("MascotStyle", value.ToString()); }
     }

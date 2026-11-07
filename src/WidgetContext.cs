@@ -11,6 +11,8 @@ class WidgetContext : ApplicationContext
     const int MinuteInTicks = 12; // File checks per minute, to roll countdowns and passed resets forward.
     const int FirstUpdateCheckMs = 60 * 1000;
     const int UpdateCheckIntervalMs = 6 * 60 * 60 * 1000;
+    const int FirstProbeMs = 3 * 1000;
+    const int ProbeIntervalMs = 2 * 60 * 1000;
     const int MinimumManualCheckMs = 900; // Long enough to see the icon turn on a fast connection.
 
     readonly UsagePanel panel;
@@ -18,6 +20,7 @@ class WidgetContext : ApplicationContext
     readonly TraySlot weeklySlot;
     readonly System.Windows.Forms.Timer fileTimer = new System.Windows.Forms.Timer();
     readonly System.Windows.Forms.Timer updateTimer = new System.Windows.Forms.Timer();
+    readonly System.Windows.Forms.Timer probeTimer = new System.Windows.Forms.Timer();
     readonly RegisteredWaitHandle showWait;
     PanelState current = new PanelState();
     IconStyle iconStyle = Settings.IconStyle;
@@ -25,6 +28,7 @@ class WidgetContext : ApplicationContext
     int ticksSinceRender;
     UpdateInfo availableUpdate;
     bool updateBusy;
+    int probing;
 
     public WidgetContext(WaitHandle showEvent, bool showPanelNow)
     {
@@ -61,6 +65,10 @@ class WidgetContext : ApplicationContext
         updateTimer.Tick += delegate { OnUpdateTimer(); };
         updateTimer.Start();
 
+        probeTimer.Interval = FirstProbeMs;
+        probeTimer.Tick += delegate { OnProbeTimer(); };
+        probeTimer.Start();
+
         showWait = ThreadPool.RegisterWaitForSingleObject(showEvent, delegate
         {
             panel.BeginInvoke(new Action(panel.ShowPanel));
@@ -72,6 +80,19 @@ class WidgetContext : ApplicationContext
     void OnTrayMouseUp(object sender, MouseEventArgs e)
     {
         if (e.Button == MouseButtons.Right || e.Button == MouseButtons.Left) panel.Toggle();
+    }
+
+    // The result lands in the usage file, which the file timer picks up.
+    void OnProbeTimer()
+    {
+        probeTimer.Interval = ProbeIntervalMs;
+        if (!ClaudeCodeConnection.IsConnected) return;
+        if (Interlocked.CompareExchange(ref probing, 1, 0) != 0) return;
+        ThreadPool.QueueUserWorkItem(delegate
+        {
+            UsageProbe.Run();
+            Interlocked.Exchange(ref probing, 0);
+        });
     }
 
     void CheckFile()
@@ -263,6 +284,7 @@ class WidgetContext : ApplicationContext
     {
         fileTimer.Dispose();
         updateTimer.Dispose();
+        probeTimer.Dispose();
         showWait.Unregister(null);
         sessionSlot.Dispose();
         weeklySlot.Dispose();

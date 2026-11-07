@@ -183,9 +183,9 @@ class UsagePanel : Form
         AddColorChip(ColorTemplate.Purple, "colorPurple", 2, callbacks);
         AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 0, callbacks);
         AddPanelThemeChip(PanelTheme.Black, "panelBlack", 1, callbacks);
-        AddMascotChip(MascotStyle.Pixel, "mascotPixel", 0, callbacks);
-        AddMascotChip(MascotStyle.Santa, "mascotSanta", 1, callbacks);
-        AddMascotChip(MascotStyle.Classic, "mascotClassic", 2, callbacks);
+        AddMascotChip(MascotStyle.Classic, "mascotClassic", 0, callbacks);
+        AddMascotChip(MascotStyle.Pixel, "mascotPixel", 1, callbacks);
+        AddMascotChip(MascotStyle.Santa, "mascotSanta", 2, callbacks);
     }
 
     void AddMascotChip(MascotStyle value, string labelKey, int column, PanelCallbacks callbacks)
@@ -333,6 +333,13 @@ class UsagePanel : Form
     void RefreshSpin()
     {
         spinTimer.Enabled = Visible && UpdateIsSpinning;
+    }
+
+    // Shows the hover details without a mouse, for the documentation images.
+    public void ShowChartDetails()
+    {
+        chartHoverX = ChartArea.Left + ChartArea.Width * 3 / 4;
+        Invalidate();
     }
 
     public void ShowMainPage()

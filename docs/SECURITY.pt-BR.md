@@ -8,6 +8,7 @@
 |---|---|---|
 | `~/.claude/settings.json` | Lê e altera só a entrada `statusLine`, com seu consentimento | Conecta ao Claude Code. Uma cópia `.bak` fica ao lado do arquivo. |
 | Dados de status line do Claude Code | Lê em memória | Guarda só percentuais e horários de reinício dos limites |
+| Comando `/usage` do Claude Code | Roda a cada 2 minutos enquanto conectado | Guarda só percentuais e horários de reinício dos limites. Não chama o modelo nem gasta tokens. |
 | `%LOCALAPPDATA%\ClaudeUsageTaskbar` | Lê e grava | Guarda o `usage.json`, o `history.csv` (24 horas de horários e percentuais de 5 horas) e sua status line anterior, se houver |
 | `%LOCALAPPDATA%\Programs\ClaudeUsageTaskbar` | Lê e grava | Guarda o app instalado |
 | `HKCU\Software\ClaudeUsageTaskbar` | Lê e grava | Guarda as preferências |
