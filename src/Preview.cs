@@ -53,14 +53,14 @@ static class Preview
 
     static void RenderDemoFrames(string directory, Language language)
     {
-        const int Width = 420;
-        const int Height = 408;
+        const int Width = 324;
+        const int Height = 396;
         const int TaskbarHeight = 44;
-        const int PanelLeft = 108;
-        const int PanelTop = 20;
-        const int FirstRise = 18;
+        const int PanelLeft = 12;
+        const int PanelTop = 12;
         const int LastRise = 78;
         const int LastFrame = 100;
+        IconStyle[] styles = { IconStyle.Ring, IconStyle.Gauge, IconStyle.Needle };
         Directory.CreateDirectory(directory);
         Localization.Apply(language);
 
@@ -76,14 +76,15 @@ static class Preview
             panel.ChangeMascot(MascotStyle.Classic);
             for (int frame = 0; frame <= LastFrame; frame++)
             {
-                float rise = Math.Max(0, Math.Min(1, (frame - FirstRise) / (float)(LastRise - FirstRise)));
+                float rise = Math.Min(1, frame / (float)LastRise);
+                IconStyle style = styles[frame * styles.Length / (LastFrame + 1)];
                 int session = 42 + (int)(54 * rise);
                 state.Session.Percent = session;
                 state.Weekly.Percent = 61 + (int)(16 * rise);
                 state.SessionPace = session >= 80 ? Localization.T("paceLimit", "16:05") : Localization.T("paceReset", session + 29);
                 state.WeeklyPace = Localization.T("paceAhead", 8 + (int)(9 * rise));
                 state.History[state.History.Count - 1].Session = session;
-                panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
+                panel.SetState(state, style, language, IconsShown.Session);
                 if (frame % 2 == 0) panel.StepMascot();
 
                 using (Bitmap canvas = new Bitmap(Width, Height))
@@ -91,54 +92,22 @@ static class Preview
                 using (Bitmap shot = new Bitmap(panel.Width, panel.Height))
                 {
                     g.Clear(Color.FromArgb(22, 22, 28));
-                    float opening = Math.Min(1, Math.Max(0, (frame - 12) / 5f));
                     panel.DrawToBitmap(shot, new Rectangle(Point.Empty, panel.Size));
-                    DrawFaded(g, shot, PanelLeft, PanelTop + (int)(12 * (1 - opening)), opening);
-                    DrawDemoTaskbar(g, Width, Height, TaskbarHeight, state);
-                    DrawDemoCursor(g, frame, Width, Height);
+                    g.DrawImageUnscaled(shot, PanelLeft, PanelTop);
+                    DrawDemoTaskbar(g, Width, Height, TaskbarHeight, state, style);
                     canvas.Save(Path.Combine(directory, frame.ToString("000") + ".png"), ImageFormat.Png);
                 }
             }
         }
     }
 
-    static void DrawFaded(Graphics g, Bitmap image, int x, int y, float opacity)
-    {
-        if (opacity <= 0) return;
-        ColorMatrix matrix = new ColorMatrix();
-        matrix.Matrix33 = opacity;
-        using (ImageAttributes attributes = new ImageAttributes())
-        {
-            attributes.SetColorMatrix(matrix);
-            g.DrawImage(image, new Rectangle(x, y, image.Width, image.Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, attributes);
-        }
-    }
-
-    static void DrawDemoTaskbar(Graphics g, int width, int height, int taskbarHeight, PanelState state)
+    static void DrawDemoTaskbar(Graphics g, int width, int height, int taskbarHeight, PanelState state, IconStyle style)
     {
         const int Icon = 32;
         using (Brush bar = new SolidBrush(Color.FromArgb(32, 32, 34)))
             g.FillRectangle(bar, 0, height - taskbarHeight, width, taskbarHeight);
-        using (Bitmap session = TrayIcon.Draw(IconStyle.Ring, state.Session.Percent, true, false, Icon, false))
-            g.DrawImageUnscaled(session, width - 96, height - taskbarHeight + (taskbarHeight - Icon) / 2);
-        using (Bitmap weekly = TrayIcon.Draw(IconStyle.Ring, state.Weekly.Percent, false, false, Icon, false))
-            g.DrawImageUnscaled(weekly, width - 52, height - taskbarHeight + (taskbarHeight - Icon) / 2);
-    }
-
-    static void DrawDemoCursor(Graphics g, int frame, int width, int height)
-    {
-        float travel = Math.Min(1, frame / 11f);
-        float x = 60 + (width - 140) * travel * travel * (3 - 2 * travel);
-        float y = 90 + (height - 120) * travel * travel * (3 - 2 * travel);
-        if (frame > 20) return;
-        PointF[] arrow =
-        {
-            new PointF(x, y), new PointF(x, y + 17), new PointF(x + 4.5f, y + 13),
-            new PointF(x + 8, y + 20), new PointF(x + 11, y + 19), new PointF(x + 7.5f, y + 12), new PointF(x + 13, y + 12)
-        };
-        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-        g.FillPolygon(Brushes.White, arrow);
-        g.DrawPolygon(Pens.Black, arrow);
+        using (Bitmap icon = TrayIcon.Draw(style, state.Session.Percent, true, false, Icon, false))
+            g.DrawImageUnscaled(icon, width - 60, height - taskbarHeight + (taskbarHeight - Icon) / 2);
     }
 
     static void RenderPanels(string directory, Language language, string suffix)
