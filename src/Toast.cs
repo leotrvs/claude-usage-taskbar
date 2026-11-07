@@ -11,7 +11,8 @@ class Toast : Form
     const int Slide = 14;
     const int OpenMs = 180;
     const int CloseMs = 130;
-    const int VisibleMs = 7000;
+    const int VisibleMs = 5000; // Closes after this long when the cursor is not over it.
+    const int MaxVisibleMs = 12000; // Closes after this long even with the cursor over it.
     const int TickMs = 15;
     const int MascotPixelSize = 2;
     const string CloseGlyph = "";
@@ -111,7 +112,7 @@ class Toast : Form
         float opening = Math.Min(1f, age / (float)OpenMs);
         Opacity = Ease(opening);
         Top = restingTop + (int)(Px(Slide) * (1 - Ease(opening)));
-        if (age >= VisibleMs && !Bounds.Contains(Cursor.Position)) Dismiss();
+        if (age >= MaxVisibleMs || (age >= VisibleMs && !Bounds.Contains(Cursor.Position))) Dismiss();
     }
 
     void AdvanceMascot()
