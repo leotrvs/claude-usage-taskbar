@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0
+
+- Taskbar numbers are drawn pixel by pixel, so they stay sharp at 16 pixels
+- The update row turns while checking and shows a download icon when an update is ready
+- New pixel mascot drawn by the app, which sleeps, rests, works, gets tired and falls over with your usage
+- Mascot selector in Appearance, with a Christmas hat and the Classic animation
+
 ## 1.4.2
 
 - Blue is now the default color template, and Ring the default icon style

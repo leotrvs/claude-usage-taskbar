@@ -57,7 +57,11 @@ Nos ícones, o limite de 5 horas tem número branco, e o semanal tem número col
 
 ### Mascote
 
-O painel mostra um mascote animado mexendo no notebook. Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
+O painel mostra um mascote animado em pixels. Ele dorme quando não há uso recente, descansa, trabalha no notebook enquanto a porcentagem da sessão sobe, fica cansado a partir de 90% e cai em 100%. Em Aparência você pode colocar um gorro de Natal ou voltar para a animação Clássica.
+
+![Estados do mascote](docs/images/mascots.png)
+
+Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 
 ## Como a conexão funciona
 

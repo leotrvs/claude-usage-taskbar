@@ -6,8 +6,8 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
 
-// The animated character in the panel, built into the app as a GIF with a transparent background.
-class Mascot : IDisposable
+// The Classic character, built into the app as a GIF with a transparent background.
+class Mascot : IMascot
 {
     const string ResourceName = "mascot.default.gif";
     const int DefaultDelayMs = 100;

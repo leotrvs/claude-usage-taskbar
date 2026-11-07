@@ -61,6 +61,16 @@ static class Settings
         set { Write("PanelTheme", value.ToString()); }
     }
 
+    public static MascotStyle MascotStyle
+    {
+        get
+        {
+            MascotStyle style;
+            return Enum.TryParse(Read("MascotStyle") as string, out style) ? style : MascotStyle.Pixel;
+        }
+        set { Write("MascotStyle", value.ToString()); }
+    }
+
     // The icons have no background, so they follow the color of the taskbar behind them.
     public static bool LightTaskbar
     {

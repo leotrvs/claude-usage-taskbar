@@ -15,6 +15,31 @@ static class Preview
         RenderPanels(directory, Language.English, "en");
         RenderPanels(directory, Language.Portuguese, "pt-BR");
         RenderIconStyles(Path.Combine(directory, "icon-styles.png"));
+        RenderMascots(Path.Combine(directory, "mascots.png"));
+    }
+
+    static void RenderMascots(string path)
+    {
+        MascotMood[] moods = { MascotMood.Sleep, MascotMood.Idle, MascotMood.Work, MascotMood.Tired, MascotMood.Down };
+        MascotStyle[] styles = { MascotStyle.Pixel, MascotStyle.Santa };
+        const int Pixel = 4;
+        const int Width = 128;
+        const int Height = 88;
+        const int Gap = 16;
+        using (Bitmap sheet = new Bitmap(moods.Length * (Width + Gap) + Gap, styles.Length * (Height + Gap) + Gap))
+        using (Graphics g = Graphics.FromImage(sheet))
+        {
+            g.Clear(Color.FromArgb(32, 32, 32));
+            for (int row = 0; row < styles.Length; row++)
+            {
+                for (int column = 0; column < moods.Length; column++)
+                {
+                    using (Bitmap frame = PixelMascot.Render(styles[row], moods[column], 3, Pixel))
+                        g.DrawImageUnscaled(frame, Gap + column * (Width + Gap), Gap + row * (Height + Gap));
+                }
+            }
+            sheet.Save(path, ImageFormat.Png);
+        }
     }
 
     static void RenderPanels(string directory, Language language, string suffix)
@@ -33,13 +58,16 @@ static class Preview
 
         using (UsagePanel panel = new UsagePanel(new PanelCallbacks()))
         {
-            panel.LoadMascot();
+            panel.ChangeMascot(MascotStyle.Pixel);
             panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
             Save(panel, Path.Combine(directory, "panel-" + suffix + ".png"));
             panel.ShowSettingsPage();
             Save(panel, Path.Combine(directory, "settings-" + suffix + ".png"));
             panel.ShowAppearancePage();
             Save(panel, Path.Combine(directory, "appearance-" + suffix + ".png"));
+            panel.ShowSettingsPage();
+            panel.SetUpdate(UpdatePhase.Checking, null);
+            Save(panel, Path.Combine(directory, "update-checking-" + suffix + ".png"));
             panel.SetUpdate(UpdatePhase.Available, "1.1.0");
             Save(panel, Path.Combine(directory, "update-settings-" + suffix + ".png"));
             panel.ShowMainPage();

@@ -18,6 +18,26 @@ static class TrayIcon
     const float RingSweep = 360;
     const float MinimumProgress = 0.09f; // Keeps a low value visible at 16 pixels.
     const string NumberFont = "Segoe UI";
+    const int LargestPixelDigits = 20; // Below 125% scaling a font has too few pixels to stay readable.
+
+    // Drawn by hand for the taskbar. Rows are separated by a slash.
+    static readonly string[] PixelDigits =
+    {
+        ".##./#..#/#..#/#..#/#..#/.##.",
+        ".#./##./.#./.#./.#./###",
+        ".##./#..#/...#/..#./.#../####",
+        "###./...#/.##./...#/...#/###.",
+        "#..#/#..#/#..#/####/...#/...#",
+        "####/#.../###./...#/...#/###.",
+        ".##./#.../###./#..#/#..#/.##.",
+        "####/...#/..#./.#../.#../.#..",
+        ".##./#..#/.##./#..#/#..#/.##.",
+        ".##./#..#/#..#/.###/...#/.##."
+    };
+    const string PixelUnknown = ".##./#..#/..#./.#../..../.#..";
+    // 100 has no room at the full height, so it uses narrower digits.
+    const string NarrowOne = ".#/##/.#/.#/.#";
+    const string NarrowZero = "###/#.#/#.#/#.#/###";
 
     // primary = 5-hour limit (white number); the weekly icon colors its number by level.
     public static Bitmap Draw(IconStyle style, int? percent, bool primary, bool stale, int size, bool onLight)
@@ -80,6 +100,11 @@ static class TrayIcon
     {
         string text = percent.HasValue ? percent.Value.ToString(CultureInfo.InvariantCulture) : "?";
         g.PixelOffsetMode = PixelOffsetMode.Default; // The half-pixel shift would blur hinted digits.
+        if (size <= LargestPixelDigits)
+        {
+            DrawPixelNumber(g, percent, color, size);
+            return;
+        }
         // Inside the dial, leaving a clear gap to the arc on both sides.
         float width = size * (text.Length > 2 ? 0.7f : 0.56f); // 100 needs the extra room to stay readable.
         RectangleF area = new RectangleF((size - width) / 2, size * 0.3f, width, size * 0.42f);
@@ -106,6 +131,38 @@ static class TrayIcon
                 return;
             }
         }
+    }
+
+    static void DrawPixelNumber(Graphics g, int? percent, Color color, int size)
+    {
+        string[] glyphs = PixelGlyphs(percent);
+        int width = glyphs.Length - 1;
+        foreach (string glyph in glyphs) width += glyph.IndexOf('/');
+        int height = glyphs[0].Split('/').Length;
+
+        g.SmoothingMode = SmoothingMode.None;
+        using (Brush brush = new SolidBrush(color))
+        {
+            int x = (size - width) / 2;
+            int top = (size - height) / 2;
+            foreach (string glyph in glyphs)
+            {
+                string[] rows = glyph.Split('/');
+                for (int y = 0; y < rows.Length; y++)
+                    for (int column = 0; column < rows[y].Length; column++)
+                        if (rows[y][column] == '#') g.FillRectangle(brush, x + column, top + y, 1, 1);
+                x += rows[0].Length + 1;
+            }
+        }
+    }
+
+    static string[] PixelGlyphs(int? percent)
+    {
+        if (!percent.HasValue) return new[] { PixelUnknown };
+        int value = Math.Max(0, Math.Min(100, percent.Value));
+        if (value == 100) return new[] { NarrowOne, NarrowZero, NarrowZero };
+        if (value < 10) return new[] { PixelDigits[value] };
+        return new[] { PixelDigits[value / 10], PixelDigits[value % 10] };
     }
 
     // Hinting moves digits away from their measured outline, so centering uses the real pixels.

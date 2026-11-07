@@ -24,6 +24,7 @@ class PanelCallbacks
     public Action<Language> ChangeLanguage = delegate { };
     public Action<ColorTemplate> ChangeColors = delegate { };
     public Action<PanelTheme> ChangePanelTheme = delegate { };
+    public Action<MascotStyle> ChangeMascot = delegate { };
     public Action<IconsShown> ChangeIconsShown = delegate { };
     public Action ToggleNotifications = delegate { };
     public Action ToggleStartWithWindows = delegate { };
@@ -46,6 +47,7 @@ class PanelTarget
     public Func<bool> Toggle;
     public Func<bool> Selected; // For chips that are not tied to one of the fields above.
     public Color? Swatch;
+    public Bitmap Picture;
 
     public string Label
     {
@@ -60,6 +62,9 @@ class UsagePanel : Form
     const int ChipTop = 300;
     const int ActionsTop = 364;
     const int MascotHeight = 42;
+    const int SpinTickMs = 40;
+    const string RefreshGlyph = "\uE72C";
+    const string DownloadGlyph = "\uE896";
     const double ChartHours = 12;
     const int ReopenGuardMilliseconds = 300;
     const int OpenAnimationMs = 160;
@@ -79,7 +84,9 @@ class UsagePanel : Form
     readonly float scale;
     readonly System.Windows.Forms.Timer mascotTimer = new System.Windows.Forms.Timer();
     readonly System.Windows.Forms.Timer animationTimer = new System.Windows.Forms.Timer();
-    Mascot mascot;
+    readonly System.Windows.Forms.Timer spinTimer = new System.Windows.Forms.Timer();
+    IMascot mascot;
+    MascotStyle mascotStyle = Settings.MascotStyle;
     readonly Font titleFont, labelFont, smallFont, tinyFont, percentFont, glyphFont;
     List<PanelTarget> targets;
     PanelState state = new PanelState();
@@ -124,6 +131,8 @@ class UsagePanel : Form
         mascotTimer.Tick += delegate { AdvanceMascot(); };
         animationTimer.Interval = AnimationTickMs;
         animationTimer.Tick += delegate { AdvanceAnimation(); };
+        spinTimer.Interval = SpinTickMs;
+        spinTimer.Tick += delegate { if (targets == settingsTargets) Invalidate(updateRow.Bounds); };
     }
 
     void BuildMainPage(PanelCallbacks callbacks)
@@ -161,7 +170,7 @@ class UsagePanel : Form
         settingsTargets.Add(NewToggle("autoUpdate", 226, delegate { return Settings.AutoUpdate; }, callbacks.ToggleAutoUpdate));
         settingsTargets.Add(NewToggle("notifications", 260, delegate { return Settings.Notifications; }, callbacks.ToggleNotifications));
         settingsTargets.Add(NewToggle("claudeCodeConnected", 294, delegate { return ClaudeCodeConnection.IsConnected; }, callbacks.ToggleConnection));
-        updateRow = NewRow("\uE72C", "checkUpdates", 330, callbacks.CheckOrInstallUpdate);
+        updateRow = NewRow(RefreshGlyph, "checkUpdates", 330, callbacks.CheckOrInstallUpdate);
         settingsTargets.Add(updateRow);
         settingsTargets.Add(NewRow("\uE790", "appearance", 362, delegate { ShowPage(appearanceTargets); }));
     }
@@ -174,6 +183,32 @@ class UsagePanel : Form
         AddColorChip(ColorTemplate.Purple, "colorPurple", 2, callbacks);
         AddPanelThemeChip(PanelTheme.Graphite, "panelGraphite", 0, callbacks);
         AddPanelThemeChip(PanelTheme.Black, "panelBlack", 1, callbacks);
+        AddMascotChip(MascotStyle.Pixel, "mascotPixel", 0, callbacks);
+        AddMascotChip(MascotStyle.Santa, "mascotSanta", 1, callbacks);
+        AddMascotChip(MascotStyle.Classic, "mascotClassic", 2, callbacks);
+    }
+
+    void AddMascotChip(MascotStyle value, string labelKey, int column, PanelCallbacks callbacks)
+    {
+        PanelTarget chip = new PanelTarget();
+        chip.LabelKey = labelKey;
+        chip.Picture = MascotPicture(value);
+        chip.Bounds = ChipBounds(column, 3, 212, 72);
+        chip.Selected = delegate { return mascotStyle == value; };
+        chip.Run = delegate { callbacks.ChangeMascot(value); };
+        appearanceTargets.Add(chip);
+    }
+
+    Bitmap MascotPicture(MascotStyle style)
+    {
+        if (style != MascotStyle.Classic) return PixelMascot.Render(style, MascotMood.Idle, 1, MascotPixel);
+        using (Mascot classic = Mascot.Load(Px(MascotHeight)))
+            return classic != null ? new Bitmap(classic.CurrentFrame) : null;
+    }
+
+    int MascotPixel
+    {
+        get { return Math.Max(1, (int)(2 * scale)); } // A whole number keeps the blocks square.
     }
 
     void AddColorChip(ColorTemplate value, string labelKey, int column, PanelCallbacks callbacks)
@@ -255,7 +290,25 @@ class UsagePanel : Form
         iconStyle = style;
         language = selectedLanguage;
         iconsShown = shown;
+        ApplyMascotMood();
         if (Visible) Invalidate();
+    }
+
+    void ApplyMascotMood()
+    {
+        PixelMascot pixelMascot = mascot as PixelMascot;
+        if (pixelMascot != null) pixelMascot.Mood = PixelMascot.MoodFor(state, DateTime.Now);
+    }
+
+    public void ChangeMascot(MascotStyle style)
+    {
+        mascotStyle = style;
+        mascotTimer.Stop();
+        if (mascot != null) mascot.Dispose();
+        mascot = null;
+        LoadMascot();
+        if (Visible) StartMascot();
+        Invalidate();
     }
 
     // A known version shows the install link until it succeeds.
@@ -264,10 +317,22 @@ class UsagePanel : Form
         updatePhase = phase;
         updateVersion = version;
         updateRow.LabelKey = version != null ? "installUpdate" : "checkUpdates";
+        updateRow.Glyph = version != null && phase != UpdatePhase.Installing ? DownloadGlyph : RefreshGlyph;
         mainTargets.Remove(updateLink);
         if (version != null) mainTargets.Add(updateLink);
         hovered = -1;
+        RefreshSpin();
         if (Visible) Invalidate();
+    }
+
+    bool UpdateIsSpinning
+    {
+        get { return updatePhase == UpdatePhase.Checking || updatePhase == UpdatePhase.Installing; }
+    }
+
+    void RefreshSpin()
+    {
+        spinTimer.Enabled = Visible && UpdateIsSpinning;
     }
 
     public void ShowMainPage()
@@ -400,22 +465,29 @@ class UsagePanel : Form
     protected override void OnVisibleChanged(EventArgs e)
     {
         base.OnVisibleChanged(e);
+        RefreshSpin();
         if (!Visible)
         {
             mascotTimer.Stop();
             return;
         }
         LoadMascot();
-        if (mascot != null)
-        {
-            mascotTimer.Interval = mascot.CurrentDelayMs;
-            mascotTimer.Start();
-        }
+        StartMascot();
+    }
+
+    void StartMascot()
+    {
+        if (mascot == null) return;
+        mascotTimer.Interval = mascot.CurrentDelayMs;
+        mascotTimer.Start();
     }
 
     public void LoadMascot()
     {
-        if (mascot == null) mascot = Mascot.Load(Px(MascotHeight));
+        if (mascot != null) return;
+        if (mascotStyle == MascotStyle.Classic) mascot = Mascot.Load(Px(MascotHeight));
+        else mascot = new PixelMascot(mascotStyle, MascotPixel);
+        ApplyMascotMood();
     }
 
     void AdvanceMascot()
@@ -590,6 +662,7 @@ class UsagePanel : Form
         DrawDivider(g, Px(44));
         Draw(g, Localization.T("colors"), tinyFont, Theme.Muted, left, Px(52), right - left, TextFormatFlags.Left);
         Draw(g, Localization.T("panelTheme"), tinyFont, Theme.Muted, left, Px(122), right - left, TextFormatFlags.Left);
+        Draw(g, Localization.T("mascot"), tinyFont, Theme.Muted, left, Px(192), right - left, TextFormatFlags.Left);
     }
 
     string UpdateStatus()
@@ -679,6 +752,15 @@ class UsagePanel : Form
             using (Brush brush = new SolidBrush(chip.Swatch.Value))
                 g.FillEllipse(brush, chip.Bounds.X + Px(9), chip.Bounds.Y + (chip.Bounds.Height - dot) / 2, dot, dot);
         }
+        if (chip.Picture != null)
+        {
+            int pictureX = chip.Bounds.X + (chip.Bounds.Width - chip.Picture.Width) / 2;
+            g.DrawImageUnscaled(chip.Picture, pictureX, chip.Bounds.Y + Px(4));
+            Rectangle caption = new Rectangle(chip.Bounds.X, chip.Bounds.Bottom - Px(20), chip.Bounds.Width, Px(18));
+            TextRenderer.DrawText(g, chip.Label, tinyFont, caption, textColor,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
+            return;
+        }
         if (!chip.Style.HasValue)
         {
             TextRenderer.DrawText(g, chip.Label, tinyFont, chip.Bounds, textColor,
@@ -710,8 +792,26 @@ class UsagePanel : Form
         Rectangle glyph = new Rectangle(row.Bounds.X + Px(12), row.Bounds.Y, Px(18), row.Bounds.Height);
         Rectangle label = new Rectangle(glyph.Right + Px(10), row.Bounds.Y, row.Bounds.Right - glyph.Right - Px(10), row.Bounds.Height);
         TextFormatFlags flags = TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding;
-        TextRenderer.DrawText(g, row.Glyph, glyphFont, glyph, Theme.Accent, flags | TextFormatFlags.HorizontalCenter);
+        if (row == updateRow && UpdateIsSpinning) DrawSpinningGlyph(g, row.Glyph, glyph);
+        else TextRenderer.DrawText(g, row.Glyph, glyphFont, glyph, Theme.Accent, flags | TextFormatFlags.HorizontalCenter);
         TextRenderer.DrawText(g, row.Label, labelFont, label, Theme.Text, flags | TextFormatFlags.Left);
+    }
+
+    // TextRenderer ignores rotation, so the glyph is drawn as a shape turning around its own center.
+    void DrawSpinningGlyph(Graphics g, string text, Rectangle area)
+    {
+        using (GraphicsPath path = new GraphicsPath())
+        using (Brush brush = new SolidBrush(Theme.Accent))
+        {
+            path.AddString(text, glyphFont.FontFamily, 0, glyphFont.Size, PointF.Empty, StringFormat.GenericTypographic);
+            RectangleF bounds = path.GetBounds();
+            GraphicsState saved = g.Save();
+            g.TranslateTransform(area.X + area.Width / 2f, area.Y + area.Height / 2f);
+            g.RotateTransform(Environment.TickCount % 1000 * 0.36f);
+            g.TranslateTransform(-(bounds.X + bounds.Width / 2), -(bounds.Y + bounds.Height / 2));
+            g.FillPath(brush, path);
+            g.Restore(saved);
+        }
     }
 
     void DrawToggle(Graphics g, PanelTarget toggle, bool isHovered)

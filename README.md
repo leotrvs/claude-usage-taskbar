@@ -57,7 +57,11 @@ On icons, the 5-hour limit has a white number and the weekly limit has a colored
 
 ### Mascot
 
-The panel shows an animated mascot working on its laptop. This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
+The panel shows an animated pixel mascot. It sleeps with no recent usage, rests, works on its laptop while your session percentage rises, gets tired from 90% and falls over at 100%. Under Appearance you can give it a Christmas hat or switch to the Classic animation.
+
+![Mascot moods](docs/images/mascots.png)
+
+This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 
 ## How the connection works
 

@@ -11,6 +11,7 @@ class WidgetContext : ApplicationContext
     const int MinuteInTicks = 12; // File checks per minute, to roll countdowns and passed resets forward.
     const int FirstUpdateCheckMs = 60 * 1000;
     const int UpdateCheckIntervalMs = 6 * 60 * 60 * 1000;
+    const int MinimumManualCheckMs = 900; // Long enough to see the icon turn on a fast connection.
 
     readonly UsagePanel panel;
     readonly TraySlot sessionSlot;
@@ -35,6 +36,7 @@ class WidgetContext : ApplicationContext
         callbacks.ChangeLanguage = ChangeLanguage;
         callbacks.ChangeColors = ChangeColors;
         callbacks.ChangePanelTheme = ChangePanelTheme;
+        callbacks.ChangeMascot = ChangeMascot;
         callbacks.ToggleStartWithWindows = delegate { Settings.StartWithWindows = !Settings.StartWithWindows; };
         callbacks.ToggleAutoUpdate = delegate { Settings.AutoUpdate = !Settings.AutoUpdate; };
         callbacks.ToggleConnection = ToggleConnection;
@@ -162,6 +164,12 @@ class WidgetContext : ApplicationContext
         panel.ApplyTheme();
     }
 
+    void ChangeMascot(MascotStyle style)
+    {
+        Settings.MascotStyle = style;
+        panel.ChangeMascot(style);
+    }
+
     void ChangeIconsShown(IconsShown shown)
     {
         Settings.IconsShown = shown;
@@ -206,8 +214,11 @@ class WidgetContext : ApplicationContext
         updateBusy = true;
         ThreadPool.QueueUserWorkItem(delegate
         {
+            int started = Environment.TickCount;
             UpdateInfo latest;
             UpdateResult result = Updater.Check(out latest);
+            int remaining = MinimumManualCheckMs - (Environment.TickCount - started);
+            if (manual && remaining > 0) Thread.Sleep(remaining);
             bool ready = install && result == UpdateResult.Available && Updater.DownloadVerified(latest);
             panel.BeginInvoke(new Action(delegate
             {
