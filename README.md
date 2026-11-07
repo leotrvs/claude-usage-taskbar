@@ -77,7 +77,9 @@ Choose one under **Appearance**. From top to bottom:
 
 The chart shows your 5-hour usage over the last 12 hours. Hover over it to see the time, the percentage at that moment and how much it rose since the previous reading.
 
-The small **12h**, **24h** and **7d** switch above the chart changes the range. The 7-day view follows your weekly limit. Below the chart, **Today** shows how much of a 5-hour session you have used since midnight.
+The small **12h**, **24h** and **7d** switch above the chart changes the range. The 7-day view follows your weekly limit. Dotted lines mark where a limit started over. Below the chart, **Today** shows how much of a 5-hour session you have used since midnight.
+
+![The 7-day chart, following the weekly limit](docs/images/chart-week-en.png)
 
 ### Pace forecast
 
@@ -143,6 +145,12 @@ When panicking, it now and then runs back and forth across the header:
 The Racer goes out in style: a checkered flag waves, a Formula 1 car arrives, and the driver climbs in, races down the header and back:
 
 ![The Racer driving a Formula 1 car](docs/images/mascot-racer-drive.png)
+
+Most outfits have a walk of their own. Santa rides a sleigh, the Headphones and Carnival outfits dance, the Chef carries a covered tray, the Scientist runs an experiment that goes off at the end, Winter skates and Halloween flies on a broom:
+
+![Santa, Headphones, Chef and Scientist on their walks](docs/images/mascot-acts-1.png)
+
+![Winter, Halloween and Carnival on their walks](docs/images/mascot-acts-2.png)
 
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 

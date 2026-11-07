@@ -77,7 +77,9 @@ Escolha em **Aparência**. De cima para baixo:
 
 O gráfico mostra o uso de 5 horas nas últimas 12 horas. Passe o mouse sobre ele para ver o horário, o percentual naquele momento e quanto subiu desde a leitura anterior.
 
-O seletor **12h**, **24h** e **7d** acima do gráfico muda o período. A visão de 7 dias acompanha o limite semanal. Abaixo do gráfico, **Hoje** mostra quanto de uma sessão de 5 horas você usou desde a meia-noite.
+O seletor **12h**, **24h** e **7d** acima do gráfico muda o período. A visão de 7 dias acompanha o limite semanal. Linhas pontilhadas marcam onde um limite recomeçou. Abaixo do gráfico, **Hoje** mostra quanto de uma sessão de 5 horas você usou desde a meia-noite.
+
+![O gráfico de 7 dias, acompanhando o limite semanal](docs/images/chart-week-pt-BR.png)
 
 ### Previsão de ritmo
 
@@ -143,6 +145,12 @@ Em pânico, ele de vez em quando corre de um lado para o outro do cabeçalho:
 O Piloto sai com estilo: uma bandeira quadriculada balança, um carro de Fórmula 1 chega, e ele monta, corre pelo cabeçalho e volta:
 
 ![O Piloto dirigindo um carro de Fórmula 1](docs/images/mascot-racer-drive.png)
+
+A maioria dos outfits tem uma caminhada própria. O Natal anda de trenó, o Fone e o Carnaval dançam, o Chef leva uma bandeja coberta, o Cientista faz um experimento que explode no fim, o Inverno patina e o Halloween voa de vassoura:
+
+![Natal, Fone, Chef e Cientista nas suas caminhadas](docs/images/mascot-acts-1.png)
+
+![Inverno, Halloween e Carnaval nas suas caminhadas](docs/images/mascot-acts-2.png)
 
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 

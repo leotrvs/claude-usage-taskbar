@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.0
+
+- Dotted lines on the chart mark where a limit started over
+- More outfit reactions: the Scientist pushes the goggles up to sleep and the flask overflows to celebrate, the Detective pulls the hat over the eyes asleep and tosses it to celebrate, Winter's pompom droops and its breath shows in a panic, the Racer checks a stopwatch while waiting and the Carnival mask slides up to sleep
+- Walks of their own: Santa rides a sleigh, Headphones and Carnival dance, the Chef carries a covered tray, the Scientist runs an experiment that goes off, Winter skates and Halloween flies on a broom
+
 ## 1.8.0
 
 - The chart can show 12 hours, 24 hours or 7 days, and the 7-day view follows the weekly limit

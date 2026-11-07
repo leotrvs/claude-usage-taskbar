@@ -94,6 +94,7 @@ class UsagePanel : Form
     const string DownloadGlyph = "\uE896";
     const int LoveClicks = 5; // This many clicks within the window make the mascot melt.
     const int LoveWindowMs = 4000;
+    const double ResetDropPoints = 20; // A fall this big between two readings is a limit starting over.
     const int RangeChipWidth = 34;
     const int RangeChipHeight = 18;
     const int ReopenGuardMilliseconds = 300;
@@ -793,13 +794,14 @@ class UsagePanel : Form
     }
 
     // Starts a walk right away, for the documentation images.
-    public void StartMascotWalk()
+    public void StartMascotWalk(bool special)
     {
         IReactiveMascot reactive = mascot as IReactiveMascot;
         if (reactive == null) return;
         UpdateWalkRoom();
         PixelMascot walker = mascot as PixelMascot;
         if (walker == null) walker = ((ClassicMascot)mascot).Pixel;
+        walker.AlwaysSpecial = special;
         walker.BeginWalk();
     }
 
@@ -1037,6 +1039,13 @@ class UsagePanel : Form
             return;
         }
 
+        using (Pen mark = new Pen(Color.FromArgb(120, Theme.Muted)))
+        {
+            mark.DashStyle = DashStyle.Dot;
+            for (int i = 1; i < shown.Count; i++)
+                if (IsReset(shown[i - 1], shown[i])) g.DrawLine(mark, points[i].X, area.Top, points[i].X, area.Bottom);
+        }
+
         using (GraphicsPath fill = new GraphicsPath())
         using (Brush brush = new SolidBrush(Color.FromArgb(50, Theme.Accent)))
         using (Pen line = new Pen(Theme.Accent, Px(2)))
@@ -1049,6 +1058,11 @@ class UsagePanel : Form
             g.DrawLines(line, points.ToArray());
         }
         if (chartHoverX >= 0) DrawChartHover(g, area, points, shown);
+    }
+
+    bool IsReset(UsageSample before, UsageSample after)
+    {
+        return ChartValue(before).Value - ChartValue(after).Value >= ResetDropPoints;
     }
 
     // The history holds only time and percentage, which is all the status line reports.
@@ -1072,6 +1086,7 @@ class UsagePanel : Form
         {
             int change = percent - (int)Math.Round(ChartValue(samples[nearest - 1]).Value);
             if (change > 0) text += " · +" + change + "%";
+            if (IsReset(samples[nearest - 1], samples[nearest])) text += " · " + Localization.T("chartReset");
         }
         Draw(g, text, tinyFont, Theme.Text, area.Left, Px(HistoryTop), area.Width, TextFormatFlags.Right);
     }

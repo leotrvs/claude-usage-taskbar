@@ -70,6 +70,7 @@ class PixelMascot : IReactiveMascot
     const int FlagTicks = 14; // The checkered flag waves, then the car arrives and the driver gets in.
     const int BoardTicks = 5;
     const int ParkTicks = 6;
+    const int BoomAt = 6; // Ticks into the experiment's pause when the flask goes off.
 
     static readonly Color Body = Color.FromArgb(208, 106, 75);
     static readonly Color Eye = Color.FromArgb(20, 20, 22);
@@ -165,6 +166,7 @@ class PixelMascot : IReactiveMascot
     static readonly string[] HappyEye = { ".#.", "#.#" };
 
     enum WalkStep { None, Out, Look, Search, Back, Flag, Board, Park, Alight }
+    enum WalkAct { Walk, Dance, Tray, Skate, Broom, Experiment }
 
     // What the idle character is doing while it walks around the header.
     class WalkPose
@@ -175,6 +177,11 @@ class PixelMascot : IReactiveMascot
         public bool Searching;
         public bool Down; // Looking down at the usage bars.
         public bool Sweat;
+        public WalkAct Act;
+        public bool AtEnd; // At the far end of the walk, doing the act's finale.
+        public bool Returning;
+        public bool Sooty;
+        public int Boom = -1; // Ticks since the experiment went off, or -1.
         public bool Racing; // The Racer drives instead of walking.
         public bool Flag;
         public bool Car;
@@ -195,6 +202,7 @@ class PixelMascot : IReactiveMascot
     bool walkPatrol;
     bool walkPanic;
     bool walkRace;
+    WalkAct walkAct;
     bool walkGlance;
     bool walkCursor;
     int walkLegs;
@@ -215,6 +223,7 @@ class PixelMascot : IReactiveMascot
 
     public int WalkOffset { get; private set; }
     public int WalkRoom { get; set; }
+    public bool AlwaysSpecial { get; set; } // For the documentation images: every walk is the outfit's special one.
     public int UsagePercent { get; set; }
     public int? WalkGoal { get; set; }
 
@@ -279,7 +288,7 @@ class PixelMascot : IReactiveMascot
             BeginWalk();
         }
         walkTick++;
-        int speed = walkRace ? RaceSpeed : walkPanic ? PanicSpeed : 1;
+        int speed = walkRace ? RaceSpeed : walkPanic ? PanicSpeed : (walkAct == WalkAct.Skate || walkAct == WalkAct.Broom ? 2 : 1);
         switch (walkStep)
         {
             case WalkStep.Flag:
@@ -355,14 +364,29 @@ class PixelMascot : IReactiveMascot
             }
             WalkGoal = null;
         }
-        walkRace = style == MascotStyle.Racer && !walkPanic;
+        walkAct = WalkAct.Walk;
+        if (!walkPanic && !walkPatrol && !walkGlance && !walkCursor && (AlwaysSpecial || Chance.Next(5) < 3))
+        {
+            switch (style)
+            {
+                case MascotStyle.Headphones:
+                case MascotStyle.Carnival: walkAct = WalkAct.Dance; break;
+                case MascotStyle.Chef: walkAct = WalkAct.Tray; break;
+                case MascotStyle.Scientist: walkAct = WalkAct.Experiment; break;
+                case MascotStyle.Winter: walkAct = WalkAct.Skate; break;
+                case MascotStyle.Halloween: walkAct = WalkAct.Broom; break;
+            }
+        }
+        // The Racer drives its car; Santa sometimes takes the sleigh.
+        walkRace = !walkPanic && (style == MascotStyle.Racer || (style == MascotStyle.Santa && (AlwaysSpecial || Chance.Next(2) == 0)));
         if (walkRace)
         {
             walkGlance = false;
             walkCursor = false;
+            walkAct = WalkAct.Walk;
             walkTarget = room;
-            walkStep = WalkStep.Flag;
-            walkWait = FlagTicks;
+            walkStep = style == MascotStyle.Racer ? WalkStep.Flag : WalkStep.Board;
+            walkWait = style == MascotStyle.Racer ? FlagTicks : BoardTicks;
             return;
         }
         walkStep = WalkStep.Out;
@@ -397,6 +421,16 @@ class PixelMascot : IReactiveMascot
         pose.Sweat = pose.Down && UsagePercent >= SweatPercent;
         if (pose.Down) pose.Look = 0;
         else if (walkStep == WalkStep.Look && walkCursor) pose.Look = walkTick % 8 < 4 ? -1 : 1;
+        pose.Act = walkAct;
+        pose.AtEnd = walkStep == WalkStep.Look;
+        pose.Returning = walkStep == WalkStep.Back;
+        if (walkAct == WalkAct.Experiment)
+        {
+            int age = WalkLookTicks - walkWait;
+            bool boomed = walkStep == WalkStep.Look && age >= BoomAt;
+            pose.Boom = boomed ? age - BoomAt : -1;
+            pose.Sooty = boomed || walkStep == WalkStep.Back;
+        }
         if (walkRace)
         {
             pose.Racing = true;
@@ -474,6 +508,7 @@ class PixelMascot : IReactiveMascot
             canvas.Style = style;
             canvas.Tick = tick;
             canvas.Mood = action.HasValue ? (MascotMood?)null : mood;
+            canvas.Action = action;
             canvas.Glint = (walk != null && walk.Searching) || (!action.HasValue && mood == MascotMood.Waiting && tick % 4 < 2);
             if (style == MascotStyle.Santa || style == MascotStyle.Winter) DrawSnow(canvas, tick);
             if (style == MascotStyle.Halloween) DrawBats(canvas, tick);
@@ -530,13 +565,7 @@ class PixelMascot : IReactiveMascot
         }
         if (walk != null)
         {
-            int stride = walk.Moving ? walk.Step / 2 % 2 : 0;
-            int lift = walk.Searching ? -2 : 0;
-            DrawFigure(canvas, BodyTop, walk.Moving ? (stride == 0 ? -1 : 0) : 0, walk.Moving ? (stride == 0 ? 0 : -1) : lift, stride);
-            if (tick % 24 == 0) DrawClosedEyes(canvas, BodyTop);
-            else DrawOpenEyes(canvas, BodyTop, walk.Look, walk.Down ? 2 : 0, walk.Down ? 3 : 4);
-            DrawOutfit(canvas, style, BodyTop);
-            if (walk.Sweat) canvas.Fill(BodyLeft + 23, BodyTop + walk.Step % 8, 2, 3, Sweat);
+            DrawWalking(canvas, style, tick, walk);
             return;
         }
         int crouch = tick % 64 == 40 ? 2 : 0;
@@ -546,6 +575,133 @@ class PixelMascot : IReactiveMascot
         if (tick % 24 == 0) DrawClosedEyes(canvas, BodyTop + crouch);
         else DrawOpenEyes(canvas, BodyTop + crouch, look, 0, 4);
         DrawOutfit(canvas, style, BodyTop + crouch);
+    }
+
+    // The idle walk, with the little acts some outfits put on: dancing, a tray, skating, a broom, an experiment.
+    static void DrawWalking(Canvas canvas, MascotStyle style, int tick, WalkPose walk)
+    {
+        int stride = walk.Moving ? walk.Step / 2 % 2 : 0;
+        int top = BodyTop;
+        int leftArm = walk.Moving ? (stride == 0 ? -1 : 0) : 0;
+        int rightArm = walk.Moving ? (stride == 0 ? 0 : -1) : (walk.Searching ? -2 : 0);
+        int legShift = stride;
+        bool happy = false;
+        switch (walk.Act)
+        {
+            case WalkAct.Dance:
+                bool beat = walk.Step % 2 == 0;
+                top = BodyTop + (beat ? 0 : 1);
+                leftArm = beat ? -3 : 0;
+                rightArm = beat ? 0 : -3;
+                legShift = beat ? 0 : 1;
+                happy = walk.AtEnd;
+                break;
+            case WalkAct.Tray:
+                rightArm = -4;
+                break;
+            case WalkAct.Skate:
+                legShift = 0;
+                leftArm = stride == 0 ? -2 : 0;
+                rightArm = stride == 0 ? 0 : -2;
+                if (walk.AtEnd) top = BodyTop + walk.Step / 2 % 2; // A little pirouette hop at the end.
+                break;
+            case WalkAct.Broom:
+                legShift = walk.Step / 3 % 2;
+                leftArm = -1;
+                rightArm = -1;
+                break;
+            case WalkAct.Experiment:
+                rightArm = -2;
+                break;
+        }
+        canvas.Mirror = walk.Returning && (walk.Act == WalkAct.Skate || walk.Act == WalkAct.Broom);
+        DrawFigure(canvas, top, leftArm, rightArm, legShift);
+        bool sooty = walk.Act == WalkAct.Experiment && walk.Sooty;
+        if (sooty) canvas.Fill(BodyLeft + 4, top, 16, 12, Color.FromArgb(110, 30, 30, 34));
+        if (happy) DrawHappyEyes(canvas, top);
+        else if (tick % 24 == 0) DrawClosedEyes(canvas, top);
+        else DrawOpenEyes(canvas, top, walk.Look, walk.Down ? 2 : 0, walk.Down ? 3 : (sooty ? 5 : 4));
+        DrawOutfit(canvas, style, top);
+        switch (walk.Act)
+        {
+            case WalkAct.Dance:
+                if (style == MascotStyle.Carnival) DrawConfetti(canvas, tick, walk.AtEnd ? 30 : 16);
+                else DrawNotes(canvas, tick);
+                break;
+            case WalkAct.Tray: DrawTray(canvas, top, walk.AtEnd, tick); break;
+            case WalkAct.Skate: DrawSkates(canvas, top, walk.Step, walk.Moving); break;
+            case WalkAct.Broom: DrawBroom(canvas, top, walk.Step); break;
+            case WalkAct.Experiment:
+                DrawFlask(canvas, tick, false);
+                if (walk.Boom >= 0) DrawBoom(canvas, walk.Boom);
+                break;
+        }
+        canvas.Mirror = false;
+        if (walk.Sweat) canvas.Fill(BodyLeft + 23, BodyTop + walk.Step % 8, 2, 3, Sweat);
+    }
+
+    static readonly string[] Note = { "..#", "..#", "##.", "##." };
+
+    // Music notes drifting up on both sides of the head while the headphones dance.
+    static void DrawNotes(Canvas canvas, int tick)
+    {
+        Color[] colors = { Color.FromArgb(120, 200, 250), Color.FromArgb(250, 200, 60), Color.FromArgb(244, 94, 124) };
+        for (int i = 0; i < 3; i++)
+        {
+            int rise = (tick + i * 5) % 14;
+            int x = (i % 2 == 0 ? 0 : 28) + (tick / 4 + i) % 2;
+            canvas.Art(Note, 1, x, 16 - rise, colors[i]);
+        }
+    }
+
+    // A serving tray with a dome in the raised hand; at the far end the dome lifts and steam rises.
+    static void DrawTray(Canvas canvas, int top, bool lifted, int tick)
+    {
+        Color steel = Color.FromArgb(205, 205, 212);
+        int y = top + 1;
+        int lift = lifted ? 3 : 0;
+        canvas.Fill(23, y, 8, 1, steel);
+        canvas.Fill(25, y - 3 - lift, 4, 3, steel);
+        canvas.Fill(26, y - 4 - lift, 2, 1, steel);
+        if (!lifted) return;
+        for (int puff = 0; puff < 3; puff++)
+            canvas.Fill(25 + puff * 2, y - 1 - (tick + puff * 2) % 5, 1, 1, Color.FromArgb(200, 240, 240, 245));
+    }
+
+    static void DrawSkates(Canvas canvas, int top, int step, bool moving)
+    {
+        Color blade = Color.FromArgb(200, 210, 225);
+        foreach (int leg in new[] { 4, 8, 14, 18 })
+            canvas.Fill(BodyLeft + leg - 1, top + 15, 4, 1, blade);
+        if (!moving) return;
+        Color snow = Color.FromArgb(190, 235, 240, 248);
+        canvas.Fill(BodyLeft + 25 + step % 3, top + 13 - step % 2, 2, 1, snow);
+        canvas.Fill(BodyLeft + 27 + (step + 1) % 3, top + 14, 1, 1, snow);
+        canvas.Fill(BodyLeft + 26 + (step + 2) % 3, top + 15, 2, 1, snow);
+    }
+
+    static void DrawBroom(Canvas canvas, int top, int step)
+    {
+        int bob = step / 3 % 2;
+        Color wood = Color.FromArgb(139, 94, 52);
+        Color straw = Color.FromArgb(214, 170, 70);
+        canvas.Fill(BodyLeft - 2, top + 12 + bob, 26, 2, wood);
+        canvas.Fill(28, top + 10 + bob, 4, 6, straw);
+        canvas.Fill(BodyLeft + 23, top + 12 + bob, 1, 2, Boot);
+    }
+
+    // A puff of fire and smoke around the flask, with a bright flash at first.
+    static void DrawBoom(Canvas canvas, int age)
+    {
+        int radius = Math.Min(age + 1, 5);
+        Color[] flame = { Color.FromArgb(255, 220, 80), Color.FromArgb(250, 140, 40), Color.FromArgb(170, 170, 176) };
+        for (int i = 0; i < 8; i++)
+        {
+            int dx = (int)Math.Round(Math.Cos(i * Math.PI / 4) * radius * 1.6);
+            int dy = (int)Math.Round(Math.Sin(i * Math.PI / 4) * radius * 1.2);
+            canvas.Fill(28 + dx, 13 + dy, 2, 2, flame[(i + age) % flame.Length]);
+        }
+        if (age < 3) canvas.Fill(26, 11, 5, 5, Color.FromArgb(240, 255, 245, 160));
     }
 
     static readonly Color CarRed = Color.FromArgb(214, 48, 49);
@@ -560,8 +716,8 @@ class PixelMascot : IReactiveMascot
         if (walk.Seated)
         {
             // Only the head shows above the cockpit, so the body, arms and legs are left out.
-            canvas.Fill(BodyLeft + 4, top, 16, 6, Body);
-            canvas.Fill(BodyLeft + 4, top + 7, 16, 1, Suit);
+            canvas.Fill(BodyLeft + 4, top, 16, 7, Body);
+            canvas.Fill(BodyLeft + 4, top + 7, 16, 1, style == MascotStyle.Santa ? CarRed : Suit);
         }
         else DrawFigure(canvas, top, 0, walk.Flag ? -3 : 0, 0);
         if (tick % 24 == 0) DrawClosedEyes(canvas, top);
@@ -571,7 +727,8 @@ class PixelMascot : IReactiveMascot
         if (walk.Car)
         {
             canvas.ShiftX = walk.Slide;
-            DrawCar(canvas, walk.Step, walk.Moving);
+            if (style == MascotStyle.Santa) DrawSleigh(canvas, walk.Step, walk.Moving);
+            else DrawCar(canvas, walk.Step, walk.Moving);
             canvas.ShiftX = 0;
         }
         canvas.Mirror = false;
@@ -593,6 +750,51 @@ class PixelMascot : IReactiveMascot
         "NWWWWWWWW......................."
     };
     const int CarTop = 12;
+
+    // Santa's sleigh, nose to the left, with two presents on the back.
+    static readonly string[] SleighArt =
+    {
+        "...........................GGG..",
+        "...........................GWG..",
+        "......................UUUUUGGG..",
+        "...........DDDDDDDDDDDUWWWU.....",
+        "....RR.....RRRRRRRRRRRRRRRRRRR..",
+        "...RRR.....RRRRRRRRRRRRRRRRRRRR.",
+        "..RRRRRYYYYYYYYYYYYYYYYYYYRRRR..",
+        "..RRRRRRRRRRRRRRRRRRRRRRRRRRR...",
+        ".KKKKKKKKKKKKKKKKKKKKKKKKKKKK...",
+        "KK.........................KK..."
+    };
+    const int SleighTop = 12;
+
+    static Color SleighColor(char letter)
+    {
+        switch (letter)
+        {
+            case 'R': return Color.FromArgb(200, 40, 45);
+            case 'D': return Color.FromArgb(120, 30, 30);
+            case 'Y': return Gold;
+            case 'G': return Color.FromArgb(40, 160, 80);
+            case 'W': return Coat;
+            case 'U': return Wool;
+            case 'K': return Color.FromArgb(190, 195, 205);
+            default: return Color.Empty;
+        }
+    }
+
+    static void DrawSleigh(Canvas canvas, int step, bool moving)
+    {
+        for (int row = 0; row < SleighArt.Length; row++)
+            for (int column = 0; column < SleighArt[row].Length && column < Columns; column++)
+            {
+                Color color = SleighColor(SleighArt[row][column]);
+                if (!color.IsEmpty) canvas.Fill(column, SleighTop + row, 1, 1, color);
+            }
+        if (!moving) return;
+        Color snow = Color.FromArgb(190, 235, 240, 248);
+        canvas.Fill(29 + step % 3, 21 - step % 2, 2, 1, snow);
+        canvas.Fill(30 + (step + 1) % 2, 19 + step % 3, 1, 1, snow);
+    }
 
     static void DrawCar(Canvas canvas, int step, bool moving)
     {
@@ -791,7 +993,12 @@ class PixelMascot : IReactiveMascot
 
     static void DrawConfetti(Canvas canvas, int tick)
     {
-        for (int piece = 0; piece < 14; piece++)
+        DrawConfetti(canvas, tick, 14);
+    }
+
+    static void DrawConfetti(Canvas canvas, int tick, int count)
+    {
+        for (int piece = 0; piece < count; piece++)
         {
             int sway = (tick + piece * 3) / 5 % 2;
             canvas.Fill((piece * 7 + 1 + sway) % Columns, (tick + piece * 4) % Rows, 1, 2, Bright[piece % Bright.Length]);
@@ -976,61 +1183,91 @@ class PixelMascot : IReactiveMascot
         }
     }
 
+    static bool Asleep(Canvas canvas)
+    {
+        return canvas.Mood == MascotMood.Sleep || canvas.Mood == MascotMood.Night;
+    }
+
+    static bool Celebrating(Canvas canvas)
+    {
+        return canvas.Action == MascotAction.Celebrate;
+    }
+
+    // Hats ride the head: pulled down over the eyes asleep, bouncing in a panic, tossed in the air to celebrate.
+    static int HatShift(Canvas canvas)
+    {
+        if (Asleep(canvas)) return 3;
+        if (canvas.Mood == MascotMood.Panic) return -(canvas.Tick % 2);
+        return Celebrating(canvas) ? -(canvas.Tick * 2 % 14) : 0;
+    }
+
     // Hats, goggles and the magnifying glass sit over the face.
     static void DrawAccessories(Canvas canvas, MascotStyle style, int top)
     {
         int left = BodyLeft;
+        int hat = HatShift(canvas);
         switch (style)
         {
             case MascotStyle.Scientist:
-                Goggle(canvas, left + 5, top);
-                Goggle(canvas, left + 15, top);
-                canvas.Fill(left + 10, top + 3, 5, 1, Frame);
+                int goggles = Asleep(canvas) ? -4 : 0; // Pushed up onto the forehead to sleep.
+                Goggle(canvas, left + 5, top + goggles);
+                Goggle(canvas, left + 15, top + goggles);
+                if (goggles == 0) canvas.Fill(left + 10, top + 3, 5, 1, Frame);
                 if (canvas.Mood == MascotMood.Panic && canvas.Tick % 2 == 0)
                 {
                     canvas.Fill(left + 6, top + 2, 3, 4, Color.FromArgb(170, 255, 60, 60));
                     canvas.Fill(left + 16, top + 2, 3, 4, Color.FromArgb(170, 255, 60, 60));
                 }
-                if (canvas.Mood == MascotMood.Work || canvas.Mood == MascotMood.Tired || canvas.Mood == MascotMood.Juggle) DrawFlask(canvas, canvas.Tick);
+                bool stirring = canvas.Mood == MascotMood.Work || canvas.Mood == MascotMood.Tired
+                    || canvas.Mood == MascotMood.Juggle || canvas.Mood == MascotMood.Waiting;
+                if (stirring || Celebrating(canvas)) DrawFlask(canvas, canvas.Tick, Celebrating(canvas));
                 break;
             case MascotStyle.Detective:
-                canvas.Fill(left + 2, top - 1, 20, 2, Brown);
-                canvas.Fill(left + 5, top - 5, 14, 4, Color.FromArgb(141, 98, 56));
-                canvas.Fill(left + 5, top - 2, 14, 1, Color.FromArgb(59, 42, 26));
-                canvas.Fill(left + 11, top - 6, 2, 1, Color.FromArgb(59, 42, 26));
+                canvas.Fill(left + 2, top - 1 + hat, 20, 2, Brown);
+                canvas.Fill(left + 5, top - 5 + hat, 14, 4, Color.FromArgb(141, 98, 56));
+                canvas.Fill(left + 5, top - 2 + hat, 14, 1, Color.FromArgb(59, 42, 26));
+                canvas.Fill(left + 11, top - 6 + hat, 2, 1, Color.FromArgb(59, 42, 26));
                 DrawLens(canvas, top + 6 + canvas.RightArm);
                 break;
             case MascotStyle.Winter:
-                canvas.Fill(left + 10, top - 6, 4, 3, Coat);
+                if (Asleep(canvas)) canvas.Fill(left + 3, top - 2, 3, 3, Coat); // The pompom droops asleep.
+                else canvas.Fill(left + 10, top - 6, 4, 3, Coat);
                 canvas.Fill(left + 6, top - 3, 12, 3, Wool);
                 canvas.Fill(left + 8, top - 3, 2, 2, Ice);
                 canvas.Fill(left + 14, top - 3, 2, 2, Ice);
                 canvas.Fill(left + 4, top - 1, 16, 2, Ice);
                 foreach (int rib in new[] { 6, 10, 14, 18 })
                     canvas.Fill(left + rib, top - 1, 1, 2, Color.FromArgb(195, 205, 230));
+                if (canvas.Mood == MascotMood.Panic)
+                {
+                    Color breath = Color.FromArgb(200, 235, 240, 248);
+                    canvas.Fill(left + 21 + canvas.Tick % 3, top + 5, 2, 1, breath);
+                    canvas.Fill(left + 23 + canvas.Tick % 2, top + 3 - canvas.Tick % 2, 1, 1, breath);
+                }
                 break;
             case MascotStyle.Halloween:
-                canvas.Fill(left + 2, top - 1, 20, 2, Violet);
+                canvas.Fill(left + 2, top - 1 + hat, 20, 2, Violet);
                 for (int row = 0; row < 5; row++)
                 {
                     int width = 12 - row * 2;
-                    canvas.Fill(left + 12 - width / 2, top - 2 - row, width, 1, Violet);
+                    canvas.Fill(left + 12 - width / 2, top - 2 - row + hat, width, 1, Violet);
                 }
-                canvas.Fill(left + 6, top - 2, 12, 1, Pumpkin);
-                canvas.Fill(left + 11, top - 2, 2, 1, Gold);
+                canvas.Fill(left + 6, top - 2 + hat, 12, 1, Pumpkin);
+                canvas.Fill(left + 11, top - 2 + hat, 2, 1, Gold);
                 break;
             case MascotStyle.Carnival:
+                int mask = Asleep(canvas) ? -5 : 0; // Pushed up onto the forehead to sleep.
                 canvas.Fill(left + 4, top, 16, 1, Gold);
                 canvas.Fill(left + 2, top - 3, 2, 3, Pink);
                 canvas.Fill(left + 1, top - 5, 2, 2, Pink);
                 canvas.Fill(left + 6, top - 5, 2, 5, Color.FromArgb(250, 204, 21));
                 canvas.Fill(left + 10, top - 4, 2, 4, Teal);
                 canvas.Fill(left + 11, top - 6, 2, 2, Teal);
-                canvas.Fill(left + 4, top + 1, 16, 1, Gold);
-                canvas.Fill(left + 4, top + 6, 16, 1, Violet);
-                canvas.Fill(left + 4, top + 2, 2, 4, Violet);
-                canvas.Fill(left + 10, top + 2, 4, 4, Violet);
-                canvas.Fill(left + 18, top + 2, 2, 4, Violet);
+                canvas.Fill(left + 4, top + 1 + mask, 16, 1, Gold);
+                canvas.Fill(left + 4, top + 6 + mask, 16, 1, Violet);
+                canvas.Fill(left + 4, top + 2 + mask, 2, 4, Violet);
+                canvas.Fill(left + 10, top + 2 + mask, 4, 4, Violet);
+                canvas.Fill(left + 18, top + 2 + mask, 2, 4, Violet);
                 break;
             case MascotStyle.Racer:
                 if (canvas.Mood == MascotMood.Panic && canvas.Tick % 2 == 0)
@@ -1043,12 +1280,28 @@ class PixelMascot : IReactiveMascot
                 canvas.Fill(left + 19, top + 1, 1, 5, Scarf);
                 canvas.Fill(left + 4, top + 6, 16, 1, Scarf);
                 canvas.Fill(left + 5, top + 1, 3, 1, Color.FromArgb(89, 255, 255, 255));
+                if (canvas.Mood == MascotMood.Waiting) DrawStopwatch(canvas, canvas.Tick);
                 break;
         }
     }
 
-    // A bubbling flask the Scientist holds while working.
-    static void DrawFlask(Canvas canvas, int tick)
+    // The Racer checks a stopwatch while it waits for you.
+    static void DrawStopwatch(Canvas canvas, int tick)
+    {
+        Color ring = Color.FromArgb(205, 205, 212);
+        canvas.Fill(3, 7, 2, 1, ring);
+        canvas.Fill(2, 8, 4, 1, ring);
+        canvas.Fill(1, 9, 1, 4, ring);
+        canvas.Fill(6, 9, 1, 4, ring);
+        canvas.Fill(2, 13, 4, 1, ring);
+        canvas.Fill(2, 9, 4, 4, Color.FromArgb(40, 40, 46));
+        int[,] hand = { { 3, 9 }, { 5, 10 }, { 3, 12 }, { 2, 10 } };
+        int position = tick / 2 % 4;
+        canvas.Fill(hand[position, 0], hand[position, 1], 1, 2, Color.FromArgb(250, 204, 21));
+    }
+
+    // A bubbling flask the Scientist holds while working; it overflows to celebrate.
+    static void DrawFlask(Canvas canvas, int tick, bool burst)
     {
         Color glass = Color.FromArgb(190, 200, 230, 245);
         Color liquid = Color.FromArgb(70, 210, 120);
@@ -1056,8 +1309,8 @@ class PixelMascot : IReactiveMascot
         canvas.Fill(26, 16, 4, 1, glass);
         canvas.Fill(25, 17, 6, 4, glass);
         canvas.Fill(26, 18, 4, 3, liquid);
-        for (int bubble = 0; bubble < 2; bubble++)
-            canvas.Fill(27 + (tick / 3 + bubble) % 2, 12 - (tick + bubble * 3) % 5, 1, 1, liquid);
+        for (int bubble = 0; bubble < (burst ? 6 : 2); bubble++)
+            canvas.Fill(26 + (tick / 3 + bubble) % 4, 12 - (tick * (burst ? 2 : 1) + bubble * 3) % (burst ? 11 : 5), 1, 1, bubble % 2 == 0 ? liquid : Color.White);
     }
 
     static void Goggle(Canvas canvas, int x, int top)
@@ -1121,6 +1374,7 @@ class PixelMascot : IReactiveMascot
         public bool Mirror;
         public int Tick;
         public MascotMood? Mood;
+        public MascotAction? Action;
 
         public Canvas(Graphics graphics, int pixel)
         {

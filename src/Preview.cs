@@ -18,9 +18,10 @@ static class Preview
         RenderMascots(Path.Combine(directory, "mascots.png"));
         RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
         RenderReactions(Path.Combine(directory, "mascot-reactions.png"));
-        RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective, false);
-        RenderWalk(Path.Combine(directory, "mascot-panic-walk.png"), MascotStyle.Pixel, true);
-        RenderWalk(Path.Combine(directory, "mascot-racer-drive.png"), MascotStyle.Racer, false);
+        RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective, false, new[] { 0, 14, 26, 40, 54, 68 }, false);
+        RenderWalk(Path.Combine(directory, "mascot-panic-walk.png"), MascotStyle.Pixel, true, new[] { 0, 3, 6, 9, 12, 15, 18 }, false);
+        RenderWalk(Path.Combine(directory, "mascot-racer-drive.png"), MascotStyle.Racer, false, new[] { 4, 13, 17, 21, 25, 32, 40, 48 }, false);
+        RenderActs(directory);
     }
 
     static void RenderMascots(string path)
@@ -57,6 +58,21 @@ static class Preview
         }
     }
 
+    // Each outfit's own walk: the ones that dance, skate, ride or carry something.
+    static void RenderActs(string directory)
+    {
+        int[] slow = { 3, 14, 26, 34, 40, 46, 58, 72 };
+        int[] fast = { 3, 8, 14, 20, 28, 36, 42, 47 };
+        int[] ride = { 2, 5, 9, 14, 19, 26, 33, 36 };
+        RenderWalk(Path.Combine(directory, "mascot-act-santa.png"), MascotStyle.Santa, false, ride, true);
+        RenderWalk(Path.Combine(directory, "mascot-act-headphones.png"), MascotStyle.Headphones, false, slow, true);
+        RenderWalk(Path.Combine(directory, "mascot-act-chef.png"), MascotStyle.Chef, false, slow, true);
+        RenderWalk(Path.Combine(directory, "mascot-act-scientist.png"), MascotStyle.Scientist, false, slow, true);
+        RenderWalk(Path.Combine(directory, "mascot-act-winter.png"), MascotStyle.Winter, false, fast, true);
+        RenderWalk(Path.Combine(directory, "mascot-act-halloween.png"), MascotStyle.Halloween, false, fast, true);
+        RenderWalk(Path.Combine(directory, "mascot-act-carnival.png"), MascotStyle.Carnival, false, slow, true);
+    }
+
     // Reactions that belong to one outfit, and the melting after many clicks.
     static void RenderReactions(string path)
     {
@@ -74,7 +90,15 @@ static class Preview
             delegate { return PixelMascot.Render(MascotStyle.Racer, MascotMood.Panic, 0, Pixel); },
             delegate { return PixelMascot.Render(MascotStyle.Racer, MascotMood.Idle, 3, Pixel, MascotAction.Celebrate, 3); },
             delegate { return PixelMascot.Render(MascotStyle.Pixel, MascotMood.Idle, 3, Pixel, MascotAction.Love, 10); },
-            delegate { return PixelMascot.Render(MascotStyle.Pixel, MascotMood.Idle, 3, Pixel, MascotAction.Love, 17); }
+            delegate { return PixelMascot.Render(MascotStyle.Pixel, MascotMood.Idle, 3, Pixel, MascotAction.Love, 17); },
+            delegate { return PixelMascot.Render(MascotStyle.Scientist, MascotMood.Idle, 5, Pixel, MascotAction.Celebrate, 5); },
+            delegate { return PixelMascot.Render(MascotStyle.Scientist, MascotMood.Sleep, 2, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Detective, MascotMood.Sleep, 2, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Detective, MascotMood.Idle, 6, Pixel, MascotAction.Celebrate, 4); },
+            delegate { return PixelMascot.Render(MascotStyle.Winter, MascotMood.Sleep, 2, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Winter, MascotMood.Panic, 1, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Racer, MascotMood.Waiting, 2, Pixel); },
+            delegate { return PixelMascot.Render(MascotStyle.Carnival, MascotMood.Sleep, 2, Pixel); }
         };
         int rows = (cells.Length + Columns - 1) / Columns;
         using (Bitmap sheet = new Bitmap(Columns * (Width + Gap) + Gap, rows * (Height + Gap) + Gap))
@@ -89,13 +113,13 @@ static class Preview
     }
 
     // The idle character walking across the empty part of the panel header, as snapshots of one walk.
-    static void RenderWalk(string path, MascotStyle style, bool panic)
+    // 'at' lists the ticks of the walk to photograph; 'special' makes the outfit do its own act.
+    static void RenderWalk(string path, MascotStyle style, bool panic, int[] at, bool special)
     {
         const int HeaderHeight = 64;
         const int Gap = 8;
-        int[] steps = panic ? new[] { 0, 3, 3, 3, 3, 3, 3 }
-            : style == MascotStyle.Racer ? new[] { 4, 9, 4, 4, 4, 7, 8, 8 }
-            : new[] { 0, 14, 12, 14, 14, 14 };
+        int[] steps = new int[at.Length];
+        for (int i = 0; i < at.Length; i++) steps[i] = at[i] - (i > 0 ? at[i - 1] : 0);
         Localization.Apply(Language.English);
         PanelState state = new PanelState();
         state.Stale = false;
@@ -110,7 +134,7 @@ static class Preview
         {
             panel.ChangeMascot(style);
             panel.SetState(state, IconStyle.Ring, Language.English, IconsShown.Both);
-            panel.StartMascotWalk();
+            panel.StartMascotWalk(special);
             int height = HeaderHeight * steps.Length + Gap * (steps.Length + 1);
             using (Bitmap sheet = new Bitmap(panel.Width + Gap * 2, height))
             using (Graphics g = Graphics.FromImage(sheet))
@@ -339,7 +363,6 @@ static class Preview
 
     static List<UsageSample> SampleHistory()
     {
-        double[] values = { 2, 8, 15, 21, 30, 38, 2, 6, 14, 22, 29, 36, 42 };
         List<UsageSample> samples = new List<UsageSample>();
 
         // Six earlier days of the week, a few readings per day, so the week chart has a shape.
@@ -348,18 +371,29 @@ static class Preview
             for (int part = 0; part < 4; part++)
             {
                 UsageSample earlier = new UsageSample();
-                earlier.Time = DateTime.Now.AddDays(-day).AddHours(part * 5);
+                earlier.Time = DateTime.Now.AddDays(-day).AddHours(part * 3);
                 earlier.Session = 20 + (day * 7 + part * 13) % 60;
                 earlier.Weekly = week[(6 - day) * 10 / 7 + part % 2] ;
                 samples.Add(earlier);
             }
 
-        for (int i = 0; i < values.Length; i++)
+        // The last 12 hours, one reading every 15 minutes. Usage comes in bursts with pauses between them,
+        // and one session ends five hours ago (28 readings in the first, 21 in the second).
+        int[] rises =
         {
+            2, 3, 4, 3, 0, 0, 0, 0, 1, 3, 4, 3, 0, 0, 0, 0, 0, 1, 3, 3, 2, 0, 0, 0, 2, 3, 2, 1,
+            0, 1, 3, 6, 5, 0, 0, 0, 0, 2, 4, 6, 3, 0, 0, 0, 1, 3, 5, 2, 1
+        };
+        const int FirstSession = 28;
+        double value = 0;
+        for (int i = 0; i < rises.Length; i++)
+        {
+            if (i == FirstSession) value = 0;
+            value += rises[i];
             UsageSample sample = new UsageSample();
-            sample.Time = DateTime.Now.AddHours(i - values.Length + 1);
-            sample.Session = values[i];
-            sample.Weekly = 55 + i * 1.0;
+            sample.Time = DateTime.Now.AddMinutes((i - (rises.Length - 1)) * 15);
+            sample.Session = value;
+            sample.Weekly = 55 + i * 12.0 / (rises.Length - 1);
             samples.Add(sample);
         }
         return samples;
