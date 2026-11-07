@@ -83,7 +83,7 @@ static class Preview
                 state.SessionPace = session >= 80 ? Localization.T("paceLimit", "16:05") : Localization.T("paceReset", session + 29);
                 state.WeeklyPace = Localization.T("paceAhead", 8 + (int)(9 * rise));
                 state.History[state.History.Count - 1].Session = session;
-                panel.SetState(state, IconStyle.Gauge, language, IconsShown.Both);
+                panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
                 if (frame % 2 == 0) panel.StepMascot();
 
                 using (Bitmap canvas = new Bitmap(Width, Height))
@@ -119,9 +119,9 @@ static class Preview
         const int Icon = 32;
         using (Brush bar = new SolidBrush(Color.FromArgb(32, 32, 34)))
             g.FillRectangle(bar, 0, height - taskbarHeight, width, taskbarHeight);
-        using (Bitmap session = TrayIcon.Draw(IconStyle.Gauge, state.Session.Percent, true, false, Icon, false))
+        using (Bitmap session = TrayIcon.Draw(IconStyle.Ring, state.Session.Percent, true, false, Icon, false))
             g.DrawImageUnscaled(session, width - 96, height - taskbarHeight + (taskbarHeight - Icon) / 2);
-        using (Bitmap weekly = TrayIcon.Draw(IconStyle.Gauge, state.Weekly.Percent, false, false, Icon, false))
+        using (Bitmap weekly = TrayIcon.Draw(IconStyle.Ring, state.Weekly.Percent, false, false, Icon, false))
             g.DrawImageUnscaled(weekly, width - 52, height - taskbarHeight + (taskbarHeight - Icon) / 2);
     }
 
