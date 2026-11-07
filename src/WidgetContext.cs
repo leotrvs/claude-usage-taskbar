@@ -329,7 +329,7 @@ class WidgetContext : ApplicationContext
         bool updated = last != null ? last != App.Version : UsageStore.LastWriteUtc != DateTime.MinValue;
         if (!updated || !Settings.Notifications) return;
         TraySlot slot = sessionSlot.IsShown ? sessionSlot : weeklySlot;
-        Notify(slot, Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, App.Version), false, MascotMood.Idle, MascotAction.Celebrate);
+        Notify(slot, Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, App.Version), false, MascotMood.Idle, MascotAction.Rear);
     }
 
     // Windows' own notification is used when it should stay in charge of what appears, such as during Do Not Disturb.

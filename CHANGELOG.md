@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.10.0
+
+- A look closer to the original character: small square eyes, longer legs with knees that bend as it walks, and smoother motion
+- Walks now glide instead of stepping
+- When a limit renews, a checkered flag is planted and waves in the wind, with confetti falling
+- When an update finishes, the mascot pops up and squashes flat in a burst of confetti
+- A little hop now and then while resting, and sometimes when you hover over it
+- With three or more sessions working, it sometimes lifts weights instead of juggling
+- At 100%, it sometimes lies flat and dizzy instead of on its back
+- The plain mascot walks with a checkered flag on its back
+
 ## 1.9.1
 
 - The "Today" line is now simply the highest your 5-hour session reached since midnight

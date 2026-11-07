@@ -118,7 +118,9 @@ The mascot reacts to your usage. Laptop uses this animation while working and th
 | Drinking coffee | It has been working for over 2 hours |
 | Juggling | Three or more sessions are working at once |
 
-It also celebrates when a limit renews, waves when you hover over it and reacts when you click it.
+It also reacts to what happens. When a limit renews it plants a checkered flag that waves in the wind, with confetti falling around it. When an update finishes it pops up and squashes flat in a burst of confetti. It waves or hops when you hover over it, gives a little hop now and then while resting, and reacts when you click it. With three or more sessions working it sometimes lifts weights, and at 100% it sometimes lies flat and dizzy.
+
+![The new moves: hop, popping up, flag, weights and lying flat](docs/images/mascot-moves.png)
 
 Under **Appearance** you can choose the look:
 
@@ -146,7 +148,7 @@ The Racer goes out in style: a checkered flag waves, a Formula 1 car arrives, an
 
 ![The Racer driving a Formula 1 car](docs/images/mascot-racer-drive.png)
 
-Most outfits have a walk of their own. Santa rides a sleigh, the Headphones and Carnival outfits dance, the Chef carries a covered tray, the Scientist runs an experiment that goes off at the end, Winter skates and Halloween flies on a broom:
+The plain mascot walks with a checkered flag on its back, and most outfits have a walk of their own. Santa rides a sleigh, the Headphones and Carnival outfits dance, the Chef carries a covered tray, the Scientist runs an experiment that goes off at the end, Winter skates and Halloween flies on a broom:
 
 ![Santa, Headphones, Chef and Scientist on their walks](docs/images/mascot-acts-1.png)
 

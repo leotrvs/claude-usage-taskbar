@@ -119,7 +119,9 @@ La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los
 | Tomando café | Lleva más de 2 horas trabajando |
 | Haciendo malabares | Tres o más sesiones trabajando a la vez |
 
-También celebra cuando un límite se renueva, saluda al pasar el ratón y reacciona al hacer clic.
+También reacciona a lo que ocurre. Cuando un límite se renueva, clava una bandera de cuadros que ondea con el viento, con confeti cayendo alrededor. Cuando termina una actualización, salta y se aplasta en una lluvia de confeti. Saluda o da un salto al pasar el ratón, da un saltito de vez en cuando mientras descansa y reacciona al hacer clic. Con tres o más sesiones trabajando, a veces levanta pesas, y al 100% a veces queda aplastada y mareada.
+
+![Los movimientos nuevos: salto, brinco, bandera, pesas y aplastada](docs/images/mascot-moves.png)
 
 En **Appearance** puedes elegir el aspecto:
 
@@ -147,7 +149,7 @@ El Racer sale con estilo: ondea una bandera de cuadros, llega un coche de Fórmu
 
 ![El Racer conduciendo un coche de Fórmula 1](docs/images/mascot-racer-drive.png)
 
-La mayoría de los atuendos tienen su propio paseo. Christmas va en trineo, Headphones y Carnival bailan, el Chef lleva una bandeja cubierta, el Scientist hace un experimento que estalla al final, Winter patina y Halloween vuela en escoba:
+La mascota sin atuendo pasea con una bandera de cuadros a la espalda, y la mayoría de los atuendos tienen su propio paseo. Christmas va en trineo, Headphones y Carnival bailan, el Chef lleva una bandeja cubierta, el Scientist hace un experimento que estalla al final, Winter patina y Halloween vuela en escoba:
 
 ![Christmas, Headphones, Chef y Scientist en sus paseos](docs/images/mascot-acts-1.png)
 

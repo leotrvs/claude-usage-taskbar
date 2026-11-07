@@ -3,20 +3,21 @@ using System.Drawing;
 using System.Drawing.Imaging;
 
 enum MascotStyle { Pixel, Santa, Classic, Headphones, Chef, Scientist, Detective, Winter, Racer, Halloween, Carnival }
-enum MascotMood { Sleep, Idle, Work, Tired, Down, Waiting, Panic, Coffee, Juggle, Night }
-enum MascotAction { Celebrate, Wave, Pet, Love }
+enum MascotMood { Sleep, Idle, Work, Tired, Down, Waiting, Panic, Coffee, Juggle, Night, Lift, Flat }
+enum MascotAction { Celebrate, Wave, Pet, Love, Hop, Rear }
 
 interface IMascot : IDisposable
 {
     Bitmap CurrentFrame { get; }
     int CurrentDelayMs { get; }
     void Advance();
+    void Advance(int ms); // Moves the animation forward by a known time, for the documentation images.
 }
 
 interface IReactiveMascot : IMascot
 {
     MascotMood Mood { get; set; }
-    int WalkOffset { get; } // Columns the character has moved left of its resting spot.
+    double WalkOffset { get; } // Columns the character has moved left of its resting spot.
     int WalkRoom { set; } // Columns it may move left without covering the panel's text.
     int UsagePercent { set; } // The highest limit, so it can glance at the bars when close to it.
     int? WalkGoal { set; } // Where the cursor last was in the header, in columns left of the resting spot.
@@ -27,7 +28,11 @@ interface IReactiveMascot : IMascot
 class PixelMascot : IReactiveMascot
 {
     const int Columns = 32;
-    const int Rows = 22;
+    const int Rows = 24;
+    const int FrameMs = 50; // The animation redraws this often, so motion is smooth.
+    const int SleepFrameMs = 420;
+    const int LegLength = 6;
+    const int GaitMs = 110;
     const int BodyLeft = 4;
     const int BodyTop = 6;
     const int WorkingMinutes = 10;
@@ -70,6 +75,11 @@ class PixelMascot : IReactiveMascot
     const int FlagTicks = 14; // The checkered flag waves, then the car arrives and the driver gets in.
     const int BoardTicks = 5;
     const int ParkTicks = 6;
+    const int HopMs = 800;
+    const int RearCycleMs = 900;
+    const int LiftCycleMs = 1800;
+    const int MinHopWaitMs = 25000;
+    const int MaxHopWaitMs = 45000;
     const int BoomAt = 6; // Ticks into the experiment's pause when the flask goes off.
 
     static readonly Color Body = Color.FromArgb(208, 106, 75);
@@ -166,13 +176,14 @@ class PixelMascot : IReactiveMascot
     static readonly string[] HappyEye = { ".#.", "#.#" };
 
     enum WalkStep { None, Out, Look, Search, Back, Flag, Board, Park, Alight }
-    enum WalkAct { Walk, Dance, Tray, Skate, Broom, Experiment }
+    enum WalkAct { Walk, Dance, Tray, Skate, Broom, Experiment, Flag }
 
     // What the idle character is doing while it walks around the header.
     class WalkPose
     {
         public bool Moving;
         public int Step;
+        public double Ms; // Milliseconds since the walk began.
         public int Look;
         public bool Searching;
         public bool Down; // Looking down at the usage bars.
@@ -198,6 +209,13 @@ class PixelMascot : IReactiveMascot
     int walkTarget;
     int walkWait;
     int walkTick;
+    int walkPos; // Whole columns moved so far; the exact position adds the part of the current step.
+    int walkAcc;
+    int walkMs;
+    double clock;
+    double actionClock;
+    int lastAdvance;
+    int nextHop;
     int walkStops;
     bool walkPatrol;
     bool walkPanic;
@@ -218,10 +236,22 @@ class PixelMascot : IReactiveMascot
         this.style = style;
         this.pixel = pixel;
         ScheduleWalk();
+        ScheduleHop();
         Redraw();
     }
 
-    public int WalkOffset { get; private set; }
+    // Columns left of the resting spot, to a fraction so the walk glides instead of stepping.
+    public double WalkOffset
+    {
+        get
+        {
+            double fraction = walkAcc / (double)WalkPeriod;
+            if (walkStep == WalkStep.Out) return Math.Min(Math.Min(walkTarget, WalkRoom), walkPos + WalkSpeed * fraction);
+            if (walkStep == WalkStep.Back) return Math.Max(0, walkPos - WalkSpeed * fraction);
+            return walkPos;
+        }
+    }
+
     public int WalkRoom { get; set; }
     public bool AlwaysSpecial { get; set; } // For the documentation images: every walk is the outfit's special one.
     public int UsagePercent { get; set; }
@@ -234,19 +264,25 @@ class PixelMascot : IReactiveMascot
     {
         get
         {
-            if (action.HasValue) return ActionDelayMs;
-            if (walkStep != WalkStep.None) return walkPanic || walkRace ? PanicTickMs : WalkTickMs;
-            switch (mood)
-            {
-                case MascotMood.Sleep:
-                case MascotMood.Night: return 420;
-                case MascotMood.Tired: return 110;
-                case MascotMood.Panic: return 90;
-                case MascotMood.Work:
-                case MascotMood.Coffee:
-                case MascotMood.Juggle: return 170;
-                default: return 200;
-            }
+            if (action.HasValue || walkStep != WalkStep.None) return FrameMs;
+            return mood == MascotMood.Sleep || mood == MascotMood.Night ? SleepFrameMs : FrameMs;
+        }
+    }
+
+    // How long one beat of each mood's older animations lasts.
+    static int LegacyMs(MascotMood value)
+    {
+        switch (value)
+        {
+            case MascotMood.Sleep:
+            case MascotMood.Night: return 420;
+            case MascotMood.Tired: return 110;
+            case MascotMood.Panic: return 90;
+            case MascotMood.Work:
+            case MascotMood.Coffee:
+            case MascotMood.Lift:
+            case MascotMood.Juggle: return 170;
+            default: return 200;
         }
     }
 
@@ -258,6 +294,7 @@ class PixelMascot : IReactiveMascot
             if (value == mood) return;
             mood = value;
             tick = 0;
+            clock = 0;
             EndWalk();
             Redraw();
         }
@@ -268,27 +305,61 @@ class PixelMascot : IReactiveMascot
         if (action.HasValue && action.Value == MascotAction.Love && value != MascotAction.Love) return; // Let it finish melting.
         action = value;
         actionTick = 0;
+        actionClock = 0;
         Redraw();
     }
 
     public void Advance()
     {
-        tick++;
-        if (action.HasValue && ++actionTick >= FramesOf(action.Value)) action = null;
-        if (!action.HasValue) AdvanceWalk();
+        int now = Environment.TickCount;
+        int elapsed = lastAdvance == 0 ? FrameMs : Math.Max(1, Math.Min(250, now - lastAdvance));
+        lastAdvance = now;
+        Advance(elapsed);
+    }
+
+    public void Advance(int ms)
+    {
+        clock += ms;
+        tick = (int)(clock / LegacyMs(mood));
+        if (action.HasValue)
+        {
+            actionClock += ms;
+            actionTick = (int)(actionClock / ActionDelayMs);
+            if (actionTick >= FramesOf(action.Value)) action = null;
+        }
+        if (!action.HasValue) AdvanceWalk(ms);
+        if (!action.HasValue && walkStep == WalkStep.None) MaybeHop();
         Redraw();
     }
 
     // Walks only while idle and only now and then, so it stays a surprise.
-    void AdvanceWalk()
+    void AdvanceWalk(int ms)
     {
         if (walkStep == WalkStep.None)
         {
             if (!CanWalk || WalkRoom < MinWalkRoom || Environment.TickCount - nextWalk < 0) return;
             BeginWalk();
         }
+        walkMs += ms;
+        walkAcc += ms;
+        while (walkStep != WalkStep.None && walkAcc >= WalkPeriod)
+        {
+            walkAcc -= WalkPeriod;
+            StepWalk();
+        }
+    }
+
+    int WalkPeriod { get { return walkPanic || walkRace ? PanicTickMs : WalkTickMs; } }
+
+    int WalkSpeed
+    {
+        get { return walkRace ? RaceSpeed : walkPanic ? PanicSpeed : (walkAct == WalkAct.Skate || walkAct == WalkAct.Broom ? 2 : 1); }
+    }
+
+    void StepWalk()
+    {
         walkTick++;
-        int speed = walkRace ? RaceSpeed : walkPanic ? PanicSpeed : (walkAct == WalkAct.Skate || walkAct == WalkAct.Broom ? 2 : 1);
+        int speed = WalkSpeed;
         switch (walkStep)
         {
             case WalkStep.Flag:
@@ -304,16 +375,16 @@ class PixelMascot : IReactiveMascot
                 if (--walkWait <= 0) EndWalk();
                 break;
             case WalkStep.Out:
-                WalkOffset = Math.Min(walkTarget, WalkOffset + speed);
-                if (WalkOffset >= Math.Min(walkTarget, WalkRoom))
+                walkPos = Math.Min(walkTarget, walkPos + speed);
+                if (walkPos >= Math.Min(walkTarget, WalkRoom))
                 {
                     if (walkRace) { walkStep = WalkStep.Park; walkWait = ParkTicks; }
                     else if (walkPanic) walkStep = WalkStep.Back;
                     else { walkStep = WalkStep.Look; walkWait = WalkLookTicks; }
                 }
-                else if (walkPatrol && WalkOffset % PatrolStride == 0 && WalkOffset / PatrolStride > walkStops)
+                else if (walkPatrol && walkPos % PatrolStride == 0 && walkPos / PatrolStride > walkStops)
                 {
-                    walkStops = WalkOffset / PatrolStride;
+                    walkStops = walkPos / PatrolStride;
                     walkStep = WalkStep.Search;
                     walkWait = PatrolStopTicks;
                 }
@@ -325,8 +396,8 @@ class PixelMascot : IReactiveMascot
                 if (--walkWait <= 0) walkStep = WalkStep.Back;
                 break;
             case WalkStep.Back:
-                WalkOffset = Math.Max(0, WalkOffset - speed);
-                if (WalkOffset > 0) break;
+                walkPos = Math.Max(0, walkPos - speed);
+                if (walkPos > 0) break;
                 if (walkRace) { walkStep = WalkStep.Alight; walkWait = BoardTicks; }
                 else if (walkPanic && --walkLegs > 0) walkStep = WalkStep.Out;
                 else EndWalk();
@@ -348,6 +419,9 @@ class PixelMascot : IReactiveMascot
         walkTarget = peek ? room / 2 : room;
         walkStops = 0;
         walkTick = 0;
+        walkPos = 0;
+        walkAcc = 0;
+        walkMs = 0;
         walkGlance = false;
         walkCursor = false;
         if (!walkPanic && !walkPatrol)
@@ -375,6 +449,7 @@ class PixelMascot : IReactiveMascot
                 case MascotStyle.Scientist: walkAct = WalkAct.Experiment; break;
                 case MascotStyle.Winter: walkAct = WalkAct.Skate; break;
                 case MascotStyle.Halloween: walkAct = WalkAct.Broom; break;
+                case MascotStyle.Pixel: walkAct = WalkAct.Flag; break;
             }
         }
         // The Racer drives its car; Santa sometimes takes the sleigh.
@@ -395,8 +470,22 @@ class PixelMascot : IReactiveMascot
     void EndWalk()
     {
         walkStep = WalkStep.None;
-        WalkOffset = 0;
+        walkPos = 0;
+        walkAcc = 0;
         ScheduleWalk();
+    }
+
+    // Now and then the resting character gives a little hop, so it never sits perfectly still.
+    void MaybeHop()
+    {
+        if (mood != MascotMood.Idle || Environment.TickCount - nextHop < 0) return;
+        ScheduleHop();
+        Play(MascotAction.Hop);
+    }
+
+    void ScheduleHop()
+    {
+        nextHop = Environment.TickCount + Chance.Next(MinHopWaitMs, MaxHopWaitMs);
     }
 
     void ScheduleWalk()
@@ -411,6 +500,7 @@ class PixelMascot : IReactiveMascot
         WalkPose pose = new WalkPose();
         pose.Moving = walkStep == WalkStep.Out || walkStep == WalkStep.Back;
         pose.Step = walkTick;
+        pose.Ms = walkMs;
         pose.Searching = walkStep == WalkStep.Search;
         if (walkStep == WalkStep.Back) pose.Look = 1;
         else if (walkStep == WalkStep.Out && walkPanic) pose.Look = -1;
@@ -447,13 +537,20 @@ class PixelMascot : IReactiveMascot
 
     static int FramesOf(MascotAction value)
     {
-        return value == MascotAction.Celebrate ? CelebrateFrames : value == MascotAction.Wave ? WaveFrames
-            : value == MascotAction.Love ? LoveFrames : PetFrames;
+        switch (value)
+        {
+            case MascotAction.Celebrate: return CelebrateFrames;
+            case MascotAction.Wave: return WaveFrames;
+            case MascotAction.Love: return LoveFrames;
+            case MascotAction.Hop: return 8;
+            case MascotAction.Rear: return 25;
+            default: return PetFrames;
+        }
     }
 
     void Redraw()
     {
-        Bitmap next = Render(style, mood, tick, pixel, action, actionTick, CurrentWalkPose());
+        Bitmap next = Render(style, mood, tick, pixel, action, actionTick, CurrentWalkPose(), action.HasValue ? actionClock : clock);
         if (frame != null) frame.Dispose();
         frame = next;
     }
@@ -463,7 +560,8 @@ class PixelMascot : IReactiveMascot
     {
         if (state.Stale) return RestingMood(now);
         int highest = Math.Max(state.Session.Percent ?? 0, state.Weekly.Percent ?? 0);
-        if (highest >= FullPercent) return MascotMood.Down;
+        bool alternate = (int)(now.TimeOfDay.TotalSeconds / 10) % 2 == 0; // Two looks, taking turns every few seconds.
+        if (highest >= FullPercent) return alternate ? MascotMood.Down : MascotMood.Flat;
         if (state.Sessions.Waiting > 0) return MascotMood.Waiting;
         if (state.MinutesToLimit.HasValue && state.MinutesToLimit.Value < PanicMinutes) return MascotMood.Panic;
 
@@ -475,7 +573,7 @@ class PixelMascot : IReactiveMascot
             break;
         }
 
-        if (state.Sessions.Busy >= JuggleSessions) return MascotMood.Juggle;
+        if (state.Sessions.Busy >= JuggleSessions) return alternate ? MascotMood.Juggle : MascotMood.Lift;
         if (state.Sessions.Busy > 0 || minutes <= WorkingMinutes)
         {
             if (highest >= TiredPercent) return MascotMood.Tired;
@@ -491,15 +589,22 @@ class PixelMascot : IReactiveMascot
 
     public static Bitmap Render(MascotStyle style, MascotMood mood, int tick, int pixel)
     {
-        return Render(style, mood, tick, pixel, null, 0, null);
+        return Render(style, mood, tick, pixel, null, 0, null, tick * LegacyMs(mood));
     }
 
     public static Bitmap Render(MascotStyle style, MascotMood mood, int tick, int pixel, MascotAction? action, int actionTick)
     {
-        return Render(style, mood, tick, pixel, action, actionTick, null);
+        return Render(style, mood, tick, pixel, action, actionTick, null, action.HasValue ? actionTick * (double)ActionDelayMs : tick * LegacyMs(mood));
     }
 
-    static Bitmap Render(MascotStyle style, MascotMood mood, int tick, int pixel, MascotAction? action, int actionTick, WalkPose walk)
+    // Renders one frame at an exact time in the action, for the documentation images.
+    public static Bitmap RenderAt(MascotStyle style, MascotMood mood, int pixel, MascotAction? action, double ms)
+    {
+        int tick = (int)(ms / LegacyMs(mood));
+        return Render(style, mood, tick, pixel, action, (int)(ms / ActionDelayMs), null, ms);
+    }
+
+    static Bitmap Render(MascotStyle style, MascotMood mood, int tick, int pixel, MascotAction? action, int actionTick, WalkPose walk, double ms)
     {
         Bitmap bitmap = new Bitmap(Columns * pixel, Rows * pixel, PixelFormat.Format32bppArgb);
         using (Graphics g = Graphics.FromImage(bitmap))
@@ -507,6 +612,7 @@ class PixelMascot : IReactiveMascot
             Canvas canvas = new Canvas(g, pixel);
             canvas.Style = style;
             canvas.Tick = tick;
+            canvas.Ms = ms;
             canvas.Mood = action.HasValue ? (MascotMood?)null : mood;
             canvas.Action = action;
             canvas.Glint = (walk != null && walk.Searching) || (!action.HasValue && mood == MascotMood.Waiting && tick % 4 < 2);
@@ -541,6 +647,8 @@ class PixelMascot : IReactiveMascot
             case MascotMood.Panic: DrawPanic(canvas, style, tick, walk); break;
             case MascotMood.Coffee: DrawCoffee(canvas, style, tick); break;
             case MascotMood.Juggle: DrawJuggle(canvas, style, tick); break;
+            case MascotMood.Lift: DrawLift(canvas, style); break;
+            case MascotMood.Flat: DrawFlat(canvas, tick); break;
             default: DrawIdle(canvas, style, tick, walk); break;
         }
     }
@@ -552,6 +660,8 @@ class PixelMascot : IReactiveMascot
             case MascotAction.Celebrate: DrawCelebrate(canvas, style, tick); break;
             case MascotAction.Wave: DrawWave(canvas, style, tick); break;
             case MascotAction.Love: DrawLove(canvas, style, tick); break;
+            case MascotAction.Hop: DrawHop(canvas, style); break;
+            case MascotAction.Rear: DrawRear(canvas, style); break;
             default: DrawPet(canvas, style, tick); break;
         }
     }
@@ -584,8 +694,10 @@ class PixelMascot : IReactiveMascot
         int top = BodyTop;
         int leftArm = walk.Moving ? (stride == 0 ? -1 : 0) : 0;
         int rightArm = walk.Moving ? (stride == 0 ? 0 : -1) : (walk.Searching ? -2 : 0);
-        int legShift = stride;
+        int legShift = 0;
         bool happy = false;
+        canvas.Gait = walk.Moving && walk.Act != WalkAct.Skate ? (int)(walk.Ms / GaitMs) : -1;
+        canvas.GaitDir = walk.Returning ? 1 : -1;
         switch (walk.Act)
         {
             case WalkAct.Dance:
@@ -606,7 +718,7 @@ class PixelMascot : IReactiveMascot
                 if (walk.AtEnd) top = BodyTop + walk.Step / 2 % 2; // A little pirouette hop at the end.
                 break;
             case WalkAct.Broom:
-                legShift = walk.Step / 3 % 2;
+                canvas.Gait = (int)(walk.Ms / 160); // The legs dangle and swing.
                 leftArm = -1;
                 rightArm = -1;
                 break;
@@ -614,7 +726,7 @@ class PixelMascot : IReactiveMascot
                 rightArm = -2;
                 break;
         }
-        canvas.Mirror = walk.Returning && (walk.Act == WalkAct.Skate || walk.Act == WalkAct.Broom);
+        canvas.Mirror = walk.Returning && (walk.Act == WalkAct.Skate || walk.Act == WalkAct.Broom || walk.Act == WalkAct.Flag);
         DrawFigure(canvas, top, leftArm, rightArm, legShift);
         bool sooty = walk.Act == WalkAct.Experiment && walk.Sooty;
         if (sooty) canvas.Fill(BodyLeft + 4, top, 16, 12, Color.FromArgb(110, 30, 30, 34));
@@ -631,6 +743,7 @@ class PixelMascot : IReactiveMascot
             case WalkAct.Tray: DrawTray(canvas, top, walk.AtEnd, tick); break;
             case WalkAct.Skate: DrawSkates(canvas, top, walk.Step, walk.Moving); break;
             case WalkAct.Broom: DrawBroom(canvas, top, walk.Step); break;
+            case WalkAct.Flag: DrawTrailFlag(canvas, top, walk.Ms); break;
             case WalkAct.Experiment:
                 DrawFlask(canvas, tick, false);
                 if (walk.Boom >= 0) DrawBoom(canvas, walk.Boom);
@@ -671,13 +784,13 @@ class PixelMascot : IReactiveMascot
     static void DrawSkates(Canvas canvas, int top, int step, bool moving)
     {
         Color blade = Color.FromArgb(200, 210, 225);
-        foreach (int leg in new[] { 4, 8, 14, 18 })
-            canvas.Fill(BodyLeft + leg - 1, top + 15, 4, 1, blade);
+        for (int i = 0; i < 4; i++)
+            canvas.Fill(canvas.FootX[i] - 1, canvas.FootY[i], 4, 1, blade);
         if (!moving) return;
         Color snow = Color.FromArgb(190, 235, 240, 248);
-        canvas.Fill(BodyLeft + 25 + step % 3, top + 13 - step % 2, 2, 1, snow);
-        canvas.Fill(BodyLeft + 27 + (step + 1) % 3, top + 14, 1, 1, snow);
-        canvas.Fill(BodyLeft + 26 + (step + 2) % 3, top + 15, 2, 1, snow);
+        canvas.Fill(BodyLeft + 25 + step % 3, top + 15 - step % 2, 2, 1, snow);
+        canvas.Fill(BodyLeft + 27 + (step + 1) % 3, top + 16, 1, 1, snow);
+        canvas.Fill(BodyLeft + 26 + (step + 2) % 3, top + 17, 2, 1, snow);
     }
 
     static void DrawBroom(Canvas canvas, int top, int step)
@@ -732,7 +845,7 @@ class PixelMascot : IReactiveMascot
             canvas.ShiftX = 0;
         }
         canvas.Mirror = false;
-        if (walk.Flag) DrawFlag(canvas, walk.Step);
+        if (walk.Flag) DrawFlag(canvas, walk.Ms);
     }
 
     // A Formula 1 car seen from the side, nose to the left. R red, W white, N navy, Y yellow.
@@ -825,18 +938,6 @@ class PixelMascot : IReactiveMascot
         canvas.Fill(30 + step % 2, 20 - step % 2, 1, 1, puff);
     }
 
-    // A pole at the left edge with a checkered cloth that flutters.
-    static void DrawFlag(Canvas canvas, int step)
-    {
-        canvas.Fill(1, 3, 1, 17, Color.FromArgb(150, 150, 156));
-        for (int column = 0; column < 3; column++)
-        {
-            int dip = (step / 2 + column) % 2;
-            for (int row = 0; row < 2; row++)
-                canvas.Fill(2 + column * 2, 3 + row * 2 + dip, 2, 2, (column + row) % 2 == 0 ? Boot : Coat);
-        }
-    }
-
     static void DrawWork(Canvas canvas, MascotStyle style, int tick, bool tired)
     {
         DrawTyping(canvas, tick, tired);
@@ -866,14 +967,14 @@ class PixelMascot : IReactiveMascot
 
     static void DrawLaptop(Canvas canvas, int lidHeight)
     {
-        canvas.Fill(BodyLeft + 6, BodyTop + 15 - lidHeight, 12, lidHeight, Lid);
-        if (lidHeight == OpenLidHeight) canvas.Fill(BodyLeft + 11, BodyTop + 10, 2, 2, LidMark);
-        canvas.Fill(BodyLeft + 3, BodyTop + 15, 18, 1, Base);
+        canvas.Fill(BodyLeft + 6, BodyTop + 17 - lidHeight, 12, lidHeight, Lid);
+        if (lidHeight == OpenLidHeight) canvas.Fill(BodyLeft + 11, BodyTop + 12, 2, 2, LidMark);
+        canvas.Fill(BodyLeft + 3, BodyTop + 17, 18, 1, Base);
     }
 
     static void DrawSleep(Canvas canvas, MascotStyle style, int tick, bool night)
     {
-        int top = BodyTop + 4;
+        int top = BodyTop + 6;
         DrawFigure(canvas, top, 0, 0);
         DrawClosedEyes(canvas, top);
         if (night && !Dressed(style)) DrawArt(canvas, NightCap, top);
@@ -888,7 +989,7 @@ class PixelMascot : IReactiveMascot
     // On its back with its legs in the air; the outfit stays off because a hat would float below it.
     static void DrawDown(Canvas canvas, int tick)
     {
-        canvas.UpsideDownAround = BodyTop * 2 + 16;
+        canvas.UpsideDownAround = BodyTop * 2 + 18;
         DrawFigure(canvas, BodyTop, 0, 0, tick % 8 < 2 ? 1 : 0);
         DrawCrossEye(canvas, BodyLeft + 6, BodyTop + 2);
         DrawCrossEye(canvas, BodyLeft + 15, BodyTop + 2);
@@ -907,7 +1008,12 @@ class PixelMascot : IReactiveMascot
     {
         canvas.ShiftX = tick % 2 == 0 ? -1 : 1;
         bool up = tick % 4 < 2;
-        DrawFigure(canvas, BodyTop, up ? -4 : -2, up ? -2 : -4, walk != null && walk.Moving ? tick % 2 : 0);
+        if (walk != null && walk.Moving)
+        {
+            canvas.Gait = (int)(walk.Ms / 70);
+            canvas.GaitDir = walk.Returning ? 1 : -1;
+        }
+        DrawFigure(canvas, BodyTop, up ? -4 : -2, up ? -2 : -4);
         DrawOpenEyes(canvas, BodyTop, walk != null ? walk.Look : 0, 0, 5);
         DrawOutfit(canvas, style, BodyTop);
         canvas.ShiftX = 0;
@@ -1005,15 +1111,180 @@ class PixelMascot : IReactiveMascot
         }
     }
 
+    // A flag planted on its head waves in the wind, with confetti falling on both sides and a happy little bounce.
     static void DrawCelebrate(Canvas canvas, MascotStyle style, int tick)
     {
-        if (style == MascotStyle.Racer) DrawFlag(canvas, tick);
-        int top = BodyTop + (tick % 6 < 3 ? 0 : 2);
-        DrawFigure(canvas, top, -3, -3);
+        double ms = canvas.Ms;
+        int top = BodyTop + (int)Math.Round(0.5 + 0.5 * Math.Sin(ms / 110.0));
+        bool wiggle = (int)(ms / 260) % 2 == 0;
+        DrawFigure(canvas, top, wiggle ? -1 : 0, wiggle ? 0 : -1);
         DrawHappyEyes(canvas, top);
         DrawOutfit(canvas, style, top);
-        for (int piece = 0; piece < 12; piece++)
-            canvas.Fill((piece * 11 + 3) % Columns, (tick + piece * 5) % Rows, 2, 1, Bright[piece % Bright.Length]);
+        int pole = BodyLeft + 16;
+        canvas.Fill(pole, top - 6, 1, 6, FlagPole);
+        DrawFlagCloth(canvas, pole, top - 6, 4, ms, true, 1, 9);
+        DrawConfettiShower(canvas, ms, 22);
+    }
+
+    // The mascot pops up on its toes and squashes flat again, over and over, with confetti all around.
+    static void DrawRear(Canvas canvas, MascotStyle style)
+    {
+        double ms = canvas.Ms;
+        double tall = 0.5 - 0.5 * Math.Cos(2 * Math.PI * ms / RearCycleMs); // 0 squashed flat, 1 stretched tall
+        int top = BodyTop + (int)Math.Round((1 - tall) * 3);
+        int crouch = (int)Math.Round((1 - tall) * 2);
+        int arm = (int)Math.Round(-4 * tall + 2 * (1 - tall));
+        DrawFigure(canvas, top, arm, arm, crouch);
+        if (tall > 0.55) DrawHappyEyes(canvas, top);
+        else DrawOpenEyes(canvas, top, 0, 1, 3);
+        DrawOutfit(canvas, style, top);
+        DrawConfettiShower(canvas, ms, 26);
+    }
+
+    // A little jump: gets ready, pushes off, floats with its arms up, lands squashed and settles.
+    static void DrawHop(Canvas canvas, MascotStyle style)
+    {
+        double t = Math.Min(1.0, canvas.Ms / HopMs);
+        int maxLift = Dressed(style) ? 3 : 5; // Tall hats may leave the frame at the top of the jump.
+        int lift = 0, crouch = 0, arm = 0;
+        bool air = false;
+        if (t < 0.18) { crouch = 2; arm = 1; }
+        else if (t < 0.30) { lift = 1; arm = -3; }
+        else if (t < 0.72)
+        {
+            double u = (t - 0.30) / 0.42;
+            lift = (int)Math.Round(maxLift * Math.Sin(Math.PI * u));
+            crouch = 2;
+            arm = -4;
+            air = true;
+        }
+        else if (t < 0.84) { crouch = 2; }
+        else { crouch = 1; }
+        int top = BodyTop - lift + (air ? 0 : crouch);
+        DrawFigure(canvas, top, arm, arm, crouch);
+        if (air) DrawHappyEyes(canvas, top);
+        else DrawOpenEyes(canvas, top, 0, crouch > 0 ? 1 : 0, crouch > 0 ? 3 : 4);
+        DrawOutfit(canvas, style, top);
+        if (t >= 0.72 && t < 0.92)
+        {
+            int spread = (int)((t - 0.72) * 30);
+            Color dust = Color.FromArgb(150, 235, 235, 240);
+            canvas.Fill(BodyLeft + 1 - spread, Rows - 2, 2, 1, dust);
+            canvas.Fill(BodyLeft + 21 + spread, Rows - 2, 2, 1, dust);
+        }
+    }
+
+    static readonly Color Band = Color.FromArgb(60, 100, 220);
+    static readonly Color FlagDark = Color.FromArgb(78, 78, 88);
+    static readonly Color FlagPole = Color.FromArgb(150, 150, 158);
+    static readonly Color Iron = Color.FromArgb(88, 88, 96);
+
+    // Three or more sessions at once: a headband and a barbell, squatting with it held overhead.
+    static void DrawLift(Canvas canvas, MascotStyle style)
+    {
+        double ms = canvas.Ms;
+        double squat = 0.5 - 0.5 * Math.Cos(2 * Math.PI * ms / LiftCycleMs);
+        int dip = (int)Math.Round(squat * 2);
+        int top = BodyTop + dip;
+        int arm = -4 + dip;
+        DrawFigure(canvas, top, arm, arm, dip);
+        canvas.Fill(BodyLeft + 4, top + 2, 16, 1, Band);
+        canvas.Fill(BodyLeft + 20, top + 2, 2, 1, Band);
+        canvas.Fill(BodyLeft + 21, top + 3 + (int)(ms / 180 % 2), 1, 1, Band);
+        DrawOpenEyes(canvas, top, 0, 1, 3);
+        DrawOutfit(canvas, style, top);
+        int bar = top + 1;
+        canvas.Fill(2, bar, 28, 1, Color.FromArgb(150, 150, 156));
+        DrawPlate(canvas, 0, bar);
+        DrawPlate(canvas, 28, bar);
+        int drop = (int)(ms / 110 % 9);
+        canvas.Fill(BodyLeft + 2, top + 4 + drop, 1, 2, Sweat);
+        canvas.Fill(BodyLeft + 21, top + 4 + (drop + 4) % 9, 1, 2, Sweat);
+    }
+
+    static void DrawPlate(Canvas canvas, int x, int y)
+    {
+        canvas.Fill(x + 1, y - 2, 2, 4, Iron);
+        canvas.Fill(x, y - 1, 4, 2, Iron);
+    }
+
+    // At the limit it sometimes lies flat on the ground instead of on its back: squashed, dizzy, with stars around its head.
+    static void DrawFlat(Canvas canvas, int tick)
+    {
+        double ms = canvas.Ms;
+        int squash = (int)(ms / 500 % 2);
+        int body = 6 - squash;
+        int x = BodyLeft + 1;
+        int y = Rows - body;
+        canvas.Fill(x, y, 22, body, Body);
+        canvas.Fill(BodyLeft - 2, Rows - 4, 3, 4, Body);
+        canvas.Fill(BodyLeft + 23, Rows - 4, 3, 4, Body);
+        DrawCrossEye(canvas, BodyLeft + 6, y + 1);
+        DrawCrossEye(canvas, BodyLeft + 15, y + 1);
+        for (int star = 0; star < 3; star++)
+        {
+            double angle = ms / 260.0 + star * 2.1;
+            int sx = BodyLeft + 11 + (int)Math.Round(Math.Cos(angle) * 8);
+            int sy = y - 4 + (int)Math.Round(Math.Sin(angle) * 2);
+            canvas.Fill(sx, sy, 2, 2, Question);
+        }
+    }
+
+    // Small confetti drifting down on both sides of the character, each piece at its own pace.
+    static void DrawConfettiShower(Canvas canvas, double ms, int count)
+    {
+        Color[] colors =
+        {
+            Color.FromArgb(230, 90, 100), Color.FromArgb(100, 140, 225),
+            Color.FromArgb(240, 150, 60), Color.FromArgb(170, 100, 200)
+        };
+        int[] columns = { 2, 27, 6, 22, 10, 30, 4, 24, 1, 20, 8, 29, 3, 25, 11, 28, 5, 23, 9, 21, 7, 26 };
+        int[] pace = { 9, 7, 11, 8, 10, 6 }; // Milliseconds per 10 per row: smaller falls faster.
+        for (int piece = 0; piece < count && piece < columns.Length; piece++)
+        {
+            double fall = ms / (pace[piece % pace.Length] * 10.0) + piece * 3.7;
+            int y = (int)(fall % (Rows + 8)) - 6;
+            if (y < 0 || y >= Rows) continue;
+            int x = columns[piece] + (int)(Math.Sin(ms / 260.0 + piece) * 1.2);
+            canvas.Fill(x, y, piece % 3 == 0 ? 2 : 1, 1, colors[piece % colors.Length]);
+        }
+    }
+
+    // A checkered cloth on a pole. A turning flag swings around the pole and shows its edge now and then, like a real flag in the wind.
+    static void DrawFlagCloth(Canvas canvas, int poleX, int topY, int rows, double ms, bool turning, int side, int maxWidth)
+    {
+        double phase = ms / 170.0;
+        int width = maxWidth;
+        if (turning)
+        {
+            double turn = Math.Cos(phase * 0.6);
+            side = turn >= 0 ? 1 : -1;
+            width = 2 + (int)Math.Round(Math.Abs(turn) * (maxWidth - 2));
+        }
+        for (int column = 0; column < width; column++)
+        {
+            double along = column / (double)Math.Max(1, width - 1);
+            int ripple = (int)Math.Round(1 + Math.Sin(phase * 1.8 - column * 0.8) * along); // 0 to 2 rows down, never above the top.
+            for (int row = 0; row < rows; row++)
+                canvas.Fill(poleX + side * (column + 1), topY + row + ripple, 1, 1, (column + row) % 2 == 0 ? FlagDark : Coat);
+        }
+    }
+
+    // The Racer's starting flag at the left edge.
+    static void DrawFlag(Canvas canvas, double ms)
+    {
+        canvas.Fill(1, 3, 1, 17, FlagPole);
+        DrawFlagCloth(canvas, 1, 3, 5, ms, false, 1, 7);
+    }
+
+    // The plain mascot's walk: a flag on a slanted pole over its back, streaming behind as it goes.
+    static void DrawTrailFlag(Canvas canvas, int top, double ms)
+    {
+        int baseX = BodyLeft + 19;
+        int baseY = top + 6;
+        for (int i = 0; i <= 9; i++)
+            canvas.Fill(baseX + i / 3, baseY - i, 1, 1, FlagPole);
+        DrawFlagCloth(canvas, baseX + 3, baseY - 9, 4, ms, false, 1, 5);
     }
 
     static void DrawWave(Canvas canvas, MascotStyle style, int tick)
@@ -1043,16 +1314,49 @@ class PixelMascot : IReactiveMascot
         canvas.Fill(left + 4, top, 16, 12, Body);
         canvas.Fill(left, top + 6 + leftArm, 4, 4, Body);
         canvas.Fill(left + 20, top + 6 + rightArm, 4, 4, Body);
-        foreach (int leg in new[] { 4, 8, 14, 18 })
-            canvas.Fill(left + leg, top + 12, 2, 4 - legShift, Body);
+        DrawLegs(canvas, top, Math.Min(legShift, 2));
         canvas.RightArm = rightArm;
         DrawClothes(canvas, top, leftArm, rightArm, legShift);
     }
 
+    // Each leg is a thigh, a shin and a foot. Walking bends the knee and kicks the foot forward, diagonal legs together.
+    static void DrawLegs(Canvas canvas, int top, int crouch)
+    {
+        Color leg = canvas.Style == MascotStyle.Racer ? Suit : Body;
+        Color foot = canvas.Style == MascotStyle.Racer ? Boot : Body;
+        int[] columns = { 4, 8, 14, 18 };
+        for (int i = 0; i < columns.Length; i++)
+        {
+            int x = BodyLeft + columns[i];
+            int knee = 0, step = 0, lift = 0;
+            if (canvas.Gait >= 0)
+            {
+                int dir = canvas.GaitDir;
+                switch ((canvas.Gait + (i % 2) * 2) % 4)
+                {
+                    case 1: knee = dir; step = dir; lift = 1; break;
+                    case 2: knee = dir; step = dir * 2; lift = 2; break;
+                    case 3: step = dir; lift = 1; break;
+                }
+            }
+            int thigh = 2;
+            int shin = Math.Max(0, LegLength - 4 - crouch);
+            int y = top + 12;
+            canvas.Fill(x, y, 2, thigh, leg);
+            canvas.Fill(x + knee, y + thigh, 2, shin, leg);
+            int footTop = y + thigh + shin - lift;
+            canvas.Fill(x + step, footTop, 2, 2, foot);
+            canvas.FootX[i] = x + step;
+            canvas.FootY[i] = footTop + 1;
+        }
+    }
+
     static void DrawOpenEyes(Canvas canvas, int top, int look, int offset, int height)
     {
-        canvas.Fill(BodyLeft + 6 + look, top + 2 + offset, 2, height, Eye);
-        canvas.Fill(BodyLeft + 16 + look, top + 2 + offset, 2, height, Eye);
+        int eye = Math.Max(1, (height + 1) / 2); // Small square eyes, wider open for a bigger height.
+        int y = top + 2 + offset + (height - eye) / 2;
+        canvas.Fill(BodyLeft + 6 + look, y, 2, eye, Eye);
+        canvas.Fill(BodyLeft + 16 + look, y, 2, eye, Eye);
     }
 
     static void DrawClosedEyes(Canvas canvas, int top)
@@ -1161,12 +1465,6 @@ class PixelMascot : IReactiveMascot
                 canvas.Fill(left + 16, top + 8, 4, 2, Teal);
                 break;
             case MascotStyle.Racer:
-                foreach (int leg in new[] { 4, 8, 14, 18 })
-                {
-                    int height = 4 - legShift;
-                    canvas.Fill(left + leg, top + 12, 2, height - 1, Suit);
-                    canvas.Fill(left + leg, top + 11 + height, 2, 1, Boot);
-                }
                 canvas.Fill(left, top + 6 + leftArm, 4, 3, Suit);
                 canvas.Fill(left + 20, top + 6 + rightArm, 4, 3, Suit);
                 canvas.Fill(left, top + 9 + leftArm, 4, 1, Coat);
@@ -1373,6 +1671,11 @@ class PixelMascot : IReactiveMascot
         public bool Glint;
         public bool Mirror;
         public int Tick;
+        public double Ms; // Exact time in the mood or action, for motion that should not step.
+        public int Gait = -1; // Phase of the walking cycle, or -1 while the legs are planted.
+        public int GaitDir = -1;
+        public int[] FootX = new int[4];
+        public int[] FootY = new int[4];
         public MascotMood? Mood;
         public MascotAction? Action;
 

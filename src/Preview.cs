@@ -18,6 +18,7 @@ static class Preview
         RenderMascots(Path.Combine(directory, "mascots.png"));
         RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
         RenderReactions(Path.Combine(directory, "mascot-reactions.png"));
+        RenderMoves(Path.Combine(directory, "mascot-moves.png"));
         RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective, false, new[] { 0, 14, 26, 40, 54, 68 }, false);
         RenderWalk(Path.Combine(directory, "mascot-panic-walk.png"), MascotStyle.Pixel, true, new[] { 0, 3, 6, 9, 12, 15, 18 }, false);
         RenderWalk(Path.Combine(directory, "mascot-racer-drive.png"), MascotStyle.Racer, false, new[] { 4, 13, 17, 21, 25, 32, 40, 48 }, false);
@@ -44,7 +45,7 @@ static class Preview
         const int Columns = 4;
         const int Pixel = 4;
         const int Width = 128;
-        const int Height = 88;
+        const int Height = 96;
         const int Gap = 16;
         int rows = (styles.Length + Columns - 1) / Columns;
         using (Bitmap sheet = new Bitmap(Columns * (Width + Gap) + Gap, rows * (Height + Gap) + Gap))
@@ -65,6 +66,7 @@ static class Preview
         int[] fast = { 3, 8, 14, 20, 28, 36, 42, 47 };
         int[] ride = { 2, 5, 9, 14, 19, 26, 33, 36 };
         RenderWalk(Path.Combine(directory, "mascot-act-santa.png"), MascotStyle.Santa, false, ride, true);
+        RenderWalk(Path.Combine(directory, "mascot-act-pixel.png"), MascotStyle.Pixel, false, slow, true);
         RenderWalk(Path.Combine(directory, "mascot-act-headphones.png"), MascotStyle.Headphones, false, slow, true);
         RenderWalk(Path.Combine(directory, "mascot-act-chef.png"), MascotStyle.Chef, false, slow, true);
         RenderWalk(Path.Combine(directory, "mascot-act-scientist.png"), MascotStyle.Scientist, false, slow, true);
@@ -73,13 +75,47 @@ static class Preview
         RenderWalk(Path.Combine(directory, "mascot-act-carnival.png"), MascotStyle.Carnival, false, slow, true);
     }
 
+    // The new animations frame by frame: a hop, popping up and flattening, the flag, the workout and lying flat.
+    static void RenderMoves(string path)
+    {
+        const int Pixel = 4;
+        const int Width = 128;
+        const int Height = 96;
+        const int Gap = 12;
+        MascotStyle plain = MascotStyle.Pixel;
+        object[][] rows =
+        {
+            new object[] { plain, MascotMood.Idle, MascotAction.Hop, new[] { 0, 130, 230, 380, 520, 650, 740 } },
+            new object[] { plain, MascotMood.Idle, MascotAction.Rear, new[] { 0, 200, 450, 700, 900, 1100, 1350 } },
+            new object[] { plain, MascotMood.Idle, MascotAction.Celebrate, new[] { 0, 250, 500, 750, 1000, 1250, 1500 } },
+            new object[] { plain, MascotMood.Lift, null, new[] { 0, 300, 600, 900, 1200, 1500, 1750 } },
+            new object[] { plain, MascotMood.Flat, null, new[] { 0, 250, 500, 750, 1000, 1250, 1500 } },
+            new object[] { MascotStyle.Santa, MascotMood.Idle, MascotAction.Hop, new[] { 0, 130, 230, 380, 520, 650, 740 } },
+            new object[] { MascotStyle.Chef, MascotMood.Idle, MascotAction.Celebrate, new[] { 0, 250, 500, 750, 1000, 1250, 1500 } }
+        };
+        int columns = 7;
+        using (Bitmap sheet = new Bitmap(columns * (Width + Gap) + Gap, rows.Length * (Height + Gap) + Gap))
+        using (Graphics g = Graphics.FromImage(sheet))
+        {
+            g.Clear(Color.FromArgb(10, 10, 10));
+            for (int row = 0; row < rows.Length; row++)
+            {
+                int[] times = (int[])rows[row][3];
+                for (int i = 0; i < times.Length; i++)
+                    using (Bitmap frame = PixelMascot.RenderAt((MascotStyle)rows[row][0], (MascotMood)rows[row][1], Pixel, (MascotAction?)rows[row][2], times[i]))
+                        g.DrawImageUnscaled(frame, Gap + i * (Width + Gap), Gap + row * (Height + Gap));
+            }
+            sheet.Save(path, ImageFormat.Png);
+        }
+    }
+
     // Reactions that belong to one outfit, and the melting after many clicks.
     static void RenderReactions(string path)
     {
         const int Columns = 4;
         const int Pixel = 4;
         const int Width = 128;
-        const int Height = 88;
+        const int Height = 96;
         const int Gap = 16;
         Func<Bitmap>[] cells =
         {
@@ -159,7 +195,7 @@ static class Preview
     {
         const int Pixel = 4;
         const int Width = 128;
-        const int Height = 88;
+        const int Height = 96;
         const int Gap = 16;
         int rows = (moods.Length + columns - 1) / columns;
         using (Bitmap sheet = new Bitmap(columns * (Width + Gap) + Gap, rows * (Height + Gap) + Gap))
@@ -260,7 +296,7 @@ static class Preview
             panel.ChangeMascot(MascotStyle.Classic);
             RenderMenu(Path.Combine(directory, "menu-" + suffix + ".png"));
             RenderToast(Path.Combine(directory, "toast-update-" + suffix + ".png"),
-                Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, "1.6.1"), MascotMood.Idle, MascotAction.Celebrate);
+                Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, "1.6.1"), MascotMood.Idle, MascotAction.Rear);
             RenderToast(Path.Combine(directory, "toast-alert-" + suffix + ".png"),
                 Localization.T("alertTitle", Localization.T("session"), 90), Localization.T("alertBody", "sex 02:00"), MascotMood.Panic, null);
             RenderToast(Path.Combine(directory, "toast-renewed-" + suffix + ".png"),

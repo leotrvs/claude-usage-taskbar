@@ -118,7 +118,9 @@ O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e o
 | Tomando café | Está trabalhando há mais de 2 horas |
 | Fazendo malabarismo | Três ou mais sessões trabalhando ao mesmo tempo |
 
-Ele também comemora quando um limite renova, acena quando você passa o mouse e reage ao clique.
+Ele também reage ao que acontece. Quando um limite renova, finca uma bandeira quadriculada que balança ao vento, com confete caindo ao redor. Quando uma atualização termina, ele salta e se achata numa chuva de confete. Acena ou pula quando você passa o mouse, dá um pulinho de vez em quando enquanto descansa e reage ao clique. Com três ou mais sessões trabalhando, às vezes ele levanta pesos, e em 100% às vezes fica achatado e tonto.
+
+![Os movimentos novos: pulo, saltar, bandeira, pesos e achatado](docs/images/mascot-moves.png)
 
 Em **Aparência** você escolhe o visual:
 
@@ -146,7 +148,7 @@ O Piloto sai com estilo: uma bandeira quadriculada balança, um carro de Fórmul
 
 ![O Piloto dirigindo um carro de Fórmula 1](docs/images/mascot-racer-drive.png)
 
-A maioria dos outfits tem uma caminhada própria. O Natal anda de trenó, o Fone e o Carnaval dançam, o Chef leva uma bandeja coberta, o Cientista faz um experimento que explode no fim, o Inverno patina e o Halloween voa de vassoura:
+O mascote sem outfit anda com uma bandeira quadriculada nas costas, e a maioria dos outfits tem uma caminhada própria. O Natal anda de trenó, o Fone e o Carnaval dançam, o Chef leva uma bandeja coberta, o Cientista faz um experimento que explode no fim, o Inverno patina e o Halloween voa de vassoura:
 
 ![Natal, Fone, Chef e Cientista nas suas caminhadas](docs/images/mascot-acts-1.png)
 

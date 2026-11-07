@@ -22,7 +22,7 @@ class ClassicMascot : IReactiveMascot
         set { other.Mood = value; }
     }
 
-    public int WalkOffset { get { return other.WalkOffset; } }
+    public double WalkOffset { get { return other.WalkOffset; } }
 
     public int UsagePercent
     {
@@ -46,6 +46,12 @@ class ClassicMascot : IReactiveMascot
 
     public Bitmap CurrentFrame { get { return Active.CurrentFrame; } }
     public int CurrentDelayMs { get { return Active.CurrentDelayMs; } }
+
+    public void Advance(int ms)
+    {
+        Active.Advance(ms);
+        if (Active != other && other.IsPlaying) other.Advance(ms);
+    }
 
     public void Advance()
     {

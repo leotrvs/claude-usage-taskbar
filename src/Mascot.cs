@@ -28,6 +28,11 @@ class Mascot : IMascot
     public Bitmap CurrentFrame { get { return frames[index]; } }
     public Bitmap LaptopFrame { get { return frames[LaptopFrameIndex]; } } // Shows the character at work, for the selector.
 
+    public void Advance(int ms)
+    {
+        Advance();
+    }
+
     public void Advance()
     {
         index = (index + 1) % frames.Count;

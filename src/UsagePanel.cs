@@ -95,6 +95,7 @@ class UsagePanel : Form
     const int LoveClicks = 5; // This many clicks within the window make the mascot melt.
     const int LoveWindowMs = 4000;
     const double ResetDropPoints = 20; // A fall this big between two readings is a limit starting over.
+    const int StepMs = 100; // How long one step of the documentation animations lasts.
     const int RangeChipWidth = 34;
     const int RangeChipHeight = 18;
     const int ReopenGuardMilliseconds = 300;
@@ -146,6 +147,7 @@ class UsagePanel : Form
     MascotAction? pendingMascotAction;
     bool overMascot;
     readonly Queue<int> mascotClicks = new Queue<int>();
+    readonly Random playChance = new Random();
     MascotStyle shownStyle;
     DateTime updateCheckedAt;
 
@@ -790,7 +792,7 @@ class UsagePanel : Form
     {
         if (mascot == null) return;
         UpdateWalkRoom();
-        mascot.Advance();
+        mascot.Advance(StepMs);
     }
 
     // Starts a walk right away, for the documentation images.
@@ -818,7 +820,7 @@ class UsagePanel : Form
         get
         {
             IReactiveMascot reactive = mascot as IReactiveMascot;
-            return reactive == null ? 0 : reactive.WalkOffset * MascotPixel;
+            return reactive == null ? 0 : (int)Math.Round(reactive.WalkOffset * MascotPixel);
         }
     }
 
@@ -855,7 +857,7 @@ class UsagePanel : Form
     {
         base.OnMouseMove(e);
         bool onMascot = targets == mainTargets && MascotArea.Contains(e.Location);
-        if (onMascot && !overMascot) PlayMascot(MascotAction.Wave);
+        if (onMascot && !overMascot) PlayMascot(playChance.Next(3) == 0 ? MascotAction.Hop : MascotAction.Wave);
         overMascot = onMascot;
         RememberCursorInHeader(e);
 
