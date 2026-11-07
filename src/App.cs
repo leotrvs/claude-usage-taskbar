@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 static class App
 {
     public const string Name = "Claude Usage Taskbar";
-    public const string Version = "1.6.0";
+    public const string Version = "1.6.1";
     public const string Id = "ClaudeUsageTaskbar";
     public const string ExeName = Id + ".exe";
 
@@ -50,6 +50,20 @@ static class Native
 {
     [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
     [DllImport("user32.dll")] public static extern bool DestroyIcon(IntPtr handle);
+    const int AcceptsNotifications = 5;
+
+    [DllImport("shell32.dll")] static extern int SHQueryUserNotificationState(out int state);
+
+    // False during Do Not Disturb, full-screen apps and presentations, when only Windows should decide what appears.
+    public static bool CanShowOwnNotification
+    {
+        get
+        {
+            int state;
+            return SHQueryUserNotificationState(out state) == 0 && state == AcceptsNotifications;
+        }
+    }
+
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr handle);
     [DllImport("user32.dll")] public static extern bool AllowSetForegroundWindow(int processId);
     [DllImport("gdi32.dll")] public static extern IntPtr AddFontMemResourceEx(IntPtr font, uint size, IntPtr reserved, out uint fontsInstalled);

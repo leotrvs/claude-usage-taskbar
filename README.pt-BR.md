@@ -79,7 +79,7 @@ O gráfico mostra o uso de 5 horas nas últimas 12 horas. Passe o mouse sobre el
 
 ### Previsão de ritmo
 
-- **Limite de 5 horas:** a previsão combina a média de toda a janela com a tendência recente, para que um pico isolado não domine o resultado. Ela aparece a partir de 5% de uso e 15 minutos de dados.
+- **Limite de 5 horas:** a previsão combina a média de toda a janela com a tendência recente. Longe do limite, um pico isolado não domina o resultado; perto do limite, os últimos minutos pesam mais. Ela aparece a partir de 5% de uso e 15 minutos de dados.
 - **Limite semanal:** compara seu uso com um ritmo uniforme ao longo da semana. Mostra uma diferença, não uma previsão.
 
 ### Cores e temas

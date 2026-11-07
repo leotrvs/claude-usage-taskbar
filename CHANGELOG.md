@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1
+
+- The limit forecast reacts faster to bursts of usage, especially close to the limit
+- New notifications in the panel's style, with the mascot. During Do Not Disturb or full-screen apps, the app uses Windows notifications instead
+
 ## 1.6.0
 
 - New mascot reactions: waiting for you, panicking near the limit, drinking coffee on long work, juggling sessions and sleeping in a nightcap

@@ -80,7 +80,7 @@ El gráfico muestra tu uso de 5 horas durante las últimas 12 horas. Pasa el rat
 
 ### Previsión de ritmo
 
-- **Límite de 5 horas:** la previsión combina tu media de toda la ventana con la tendencia reciente, para que un pico aislado no la domine. Aparece a partir del 5% de uso y 15 minutos de datos.
+- **Límite de 5 horas:** la previsión combina tu media de toda la ventana con la tendencia reciente. Lejos del límite, un pico aislado no la domina; cerca del límite, los últimos minutos pesan más. Aparece a partir del 5% de uso y 15 minutos de datos.
 - **Límite semanal:** compara tu uso con un ritmo uniforme a lo largo de la semana. Muestra una diferencia, no una predicción.
 
 ### Colores y temas

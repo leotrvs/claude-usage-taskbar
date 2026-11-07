@@ -151,6 +151,12 @@ static class Preview
         {
             panel.ChangeMascot(MascotStyle.Classic);
             RenderMenu(Path.Combine(directory, "menu-" + suffix + ".png"));
+            RenderToast(Path.Combine(directory, "toast-update-" + suffix + ".png"),
+                Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, "1.6.1"), MascotMood.Idle, MascotAction.Celebrate);
+            RenderToast(Path.Combine(directory, "toast-alert-" + suffix + ".png"),
+                Localization.T("alertTitle", Localization.T("session"), 90), Localization.T("alertBody", "sex 02:00"), MascotMood.Panic, null);
+            RenderToast(Path.Combine(directory, "toast-renewed-" + suffix + ".png"),
+                Localization.T("renewedTitle", Localization.T("session")), Localization.T("renewedBody"), MascotMood.Idle, MascotAction.Celebrate);
             panel.SetState(state, IconStyle.Ring, language, IconsShown.Both);
             SaveTheme(panel, PanelTheme.Graphite, Path.Combine(directory, "panel-" + suffix + ".png"));
             SaveTheme(panel, PanelTheme.Black, Path.Combine(directory, "panel-black-" + suffix + ".png"));
@@ -170,6 +176,17 @@ static class Preview
             Save(panel, Path.Combine(directory, "update-settings-" + suffix + ".png"));
             panel.ShowMainPage();
             Save(panel, Path.Combine(directory, "update-" + suffix + ".png"));
+        }
+    }
+
+    static void RenderToast(string path, string title, string body, MascotMood mood, MascotAction? action)
+    {
+        using (Toast toast = new Toast(delegate { }))
+        using (Bitmap bitmap = new Bitmap(toast.Width, toast.Height))
+        {
+            toast.Prepare(title, body, mood, action);
+            toast.DrawToBitmap(bitmap, new Rectangle(Point.Empty, toast.Size));
+            bitmap.Save(path, ImageFormat.Png);
         }
     }
 

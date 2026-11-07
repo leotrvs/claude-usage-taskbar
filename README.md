@@ -79,7 +79,7 @@ The chart shows your 5-hour usage over the last 12 hours. Hover over it to see t
 
 ### Pace forecast
 
-- **5-hour limit:** the forecast blends your average for the whole window with your recent trend, so one burst does not dominate it. It appears after at least 5% usage and 15 minutes of data.
+- **5-hour limit:** the forecast blends your average for the whole window with your recent trend. Far from the limit, one burst does not dominate it; close to the limit, the last few minutes count the most. It appears after at least 5% usage and 15 minutes of data.
 - **Weekly limit:** it compares your usage with an even pace across the week. It shows a difference, not a prediction.
 
 ### Colors and themes

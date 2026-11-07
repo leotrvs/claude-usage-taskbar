@@ -41,6 +41,7 @@ class WidgetContext : ApplicationContext
     DateTime? busySince;
     DateTime lastBusy;
     readonly TrayMenu trayMenu;
+    readonly Toast toast;
 
     public WidgetContext(WaitHandle showEvent, bool showPanelNow)
     {
@@ -79,6 +80,7 @@ class WidgetContext : ApplicationContext
         menuActions.OpenSettings = delegate { LaterOnPanel(OpenSettings); };
         menuActions.Quit = ExitThread;
         trayMenu = new TrayMenu(menuActions);
+        toast = new Toast(delegate { LaterOnPanel(panel.ShowPanel); });
         sessionSlot = new TraySlot(true, OnTrayMouseUp);
         weeklySlot = new TraySlot(false, OnTrayMouseUp);
         Reload();
@@ -224,7 +226,7 @@ class WidgetContext : ApplicationContext
         if (!Settings.Notifications) return;
 
         TraySlot target = slot.IsShown ? slot : (sessionSlot.IsShown ? sessionSlot : weeklySlot);
-        target.NotifyInfo(Localization.T("renewedTitle", Localization.T(labelKey)), Localization.T("renewedBody"));
+        Notify(target, Localization.T("renewedTitle", Localization.T(labelKey)), Localization.T("renewedBody"), false, MascotMood.Idle, MascotAction.Celebrate);
     }
 
     // Alerts once per limit period at each level, on an icon that is visible.
@@ -242,9 +244,10 @@ class WidgetContext : ApplicationContext
         if (!Settings.Notifications) return;
 
         TraySlot target = slot.IsShown ? slot : (sessionSlot.IsShown ? sessionSlot : weeklySlot);
-        target.Notify(
+        Notify(target,
             Localization.T("alertTitle", Localization.T(labelKey), window.Percent.Value),
-            Localization.T("alertBody", window.ResetsAt.Value.ToString("ddd HH:mm", Localization.Culture)));
+            Localization.T("alertBody", window.ResetsAt.Value.ToString("ddd HH:mm", Localization.Culture)),
+            true, level >= CriticalPercent ? MascotMood.Panic : MascotMood.Tired, null);
     }
 
     void Render()
@@ -326,7 +329,15 @@ class WidgetContext : ApplicationContext
         bool updated = last != null ? last != App.Version : UsageStore.LastWriteUtc != DateTime.MinValue;
         if (!updated || !Settings.Notifications) return;
         TraySlot slot = sessionSlot.IsShown ? sessionSlot : weeklySlot;
-        slot.NotifyInfo(Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, App.Version));
+        Notify(slot, Localization.T("updatedTitle"), Localization.T("updatedBody", App.Name, App.Version), false, MascotMood.Idle, MascotAction.Celebrate);
+    }
+
+    // Windows' own notification is used when it should stay in charge of what appears, such as during Do Not Disturb.
+    void Notify(TraySlot slot, string title, string body, bool warning, MascotMood mood, MascotAction? action)
+    {
+        if (Native.CanShowOwnNotification) toast.Present(title, body, mood, action);
+        else if (warning) slot.Notify(title, body);
+        else slot.NotifyInfo(title, body);
     }
 
     // The first check installs at once. Later ones find the panel in use, so it is not closed under the cursor.
@@ -417,6 +428,7 @@ class WidgetContext : ApplicationContext
         probeTimer.Dispose();
         showWait.Unregister(null);
         trayMenu.Dispose();
+        toast.Dispose();
         sessionSlot.Dispose();
         weeklySlot.Dispose();
         panel.Dispose();
