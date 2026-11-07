@@ -17,7 +17,8 @@ static class Preview
         RenderIconStyles(Path.Combine(directory, "icon-styles.png"));
         RenderMascots(Path.Combine(directory, "mascots.png"));
         RenderOutfits(Path.Combine(directory, "mascot-outfits.png"));
-        RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective);
+        RenderWalk(Path.Combine(directory, "mascot-walk.png"), MascotStyle.Detective, false);
+        RenderWalk(Path.Combine(directory, "mascot-panic-walk.png"), MascotStyle.Pixel, true);
     }
 
     static void RenderMascots(string path)
@@ -55,18 +56,19 @@ static class Preview
     }
 
     // The idle character walking across the empty part of the panel header, as snapshots of one walk.
-    static void RenderWalk(string path, MascotStyle style)
+    static void RenderWalk(string path, MascotStyle style, bool panic)
     {
         const int HeaderHeight = 64;
         const int Gap = 8;
-        int[] steps = { 0, 14, 12, 14, 14, 14 };
+        int[] steps = panic ? new[] { 0, 3, 3, 3, 3, 3, 3 } : new[] { 0, 14, 12, 14, 14, 14 };
         Localization.Apply(Language.English);
         PanelState state = new PanelState();
         state.Stale = false;
         state.Status = Localization.T("updatedAt", "14:32");
         state.Sessions.Running = 1;
-        state.Session.Percent = 42;
+        state.Session.Percent = panic ? 91 : 42;
         state.Weekly.Percent = 67;
+        if (panic) state.MinutesToLimit = 12;
         state.History = new List<UsageSample>();
 
         using (UsagePanel panel = new UsagePanel(new PanelCallbacks()))

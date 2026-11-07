@@ -128,6 +128,10 @@ Quando está descansando, o mascote de vez em quando dá uma caminhada curta pel
 
 ![O mascote andando pelo cabeçalho](docs/images/mascot-walk.png)
 
+Em pânico, ele de vez em quando corre de um lado para o outro do cabeçalho:
+
+![O mascote correndo em pânico](docs/images/mascot-panic-walk.png)
+
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 
 ### Configurações

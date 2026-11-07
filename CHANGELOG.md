@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1
+
+- When it is panicking, the mascot now and then runs back and forth across the panel header
+
 ## 1.7.0
 
 - Four new outfits: Scientist, Detective, Winter and Racer

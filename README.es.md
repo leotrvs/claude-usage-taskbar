@@ -129,6 +129,10 @@ Cuando descansa, la mascota da de vez en cuando un paseo corto por la parte vac�
 
 ![La mascota paseando por la cabecera](docs/images/mascot-walk.png)
 
+En pánico, de vez en cuando corre de un lado a otro de la cabecera:
+
+![La mascota corriendo en pánico](docs/images/mascot-panic-walk.png)
+
 Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y el personaje pertenece a sus dueños. La licencia MIT no lo cubre.
 
 ### Configuración

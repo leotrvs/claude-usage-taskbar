@@ -128,6 +128,10 @@ When it is resting, the mascot now and then takes a short walk across the empty 
 
 ![The mascot walking across the header](docs/images/mascot-walk.png)
 
+When panicking, it now and then runs back and forth across the header:
+
+![The mascot running in a panic](docs/images/mascot-panic-walk.png)
+
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 
 ### Settings

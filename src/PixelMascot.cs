@@ -57,6 +57,10 @@ class PixelMascot : IReactiveMascot
     const int PatrolStopTicks = 12;
     const int MinWalkWaitMs = 120000;
     const int MaxWalkWaitMs = 240000;
+    const int MinPanicWaitMs = 25000;
+    const int MaxPanicWaitMs = 55000;
+    const int PanicSpeed = 2;
+    const int PanicTickMs = 70;
 
     static readonly Color Body = Color.FromArgb(208, 106, 75);
     static readonly Color Eye = Color.FromArgb(20, 20, 22);
@@ -172,6 +176,8 @@ class PixelMascot : IReactiveMascot
     int walkTick;
     int walkStops;
     bool walkPatrol;
+    bool walkPanic;
+    int walkLegs;
     int nextWalk;
     Bitmap frame;
     MascotMood mood = MascotMood.Idle;
@@ -198,7 +204,7 @@ class PixelMascot : IReactiveMascot
         get
         {
             if (action.HasValue) return ActionDelayMs;
-            if (walkStep != WalkStep.None) return WalkTickMs;
+            if (walkStep != WalkStep.None) return walkPanic ? PanicTickMs : WalkTickMs;
             switch (mood)
             {
                 case MascotMood.Sleep:
@@ -246,15 +252,20 @@ class PixelMascot : IReactiveMascot
     {
         if (walkStep == WalkStep.None)
         {
-            if (mood != MascotMood.Idle || WalkRoom < MinWalkRoom || Environment.TickCount - nextWalk < 0) return;
+            if (!CanWalk || WalkRoom < MinWalkRoom || Environment.TickCount - nextWalk < 0) return;
             BeginWalk();
         }
         walkTick++;
+        int speed = walkPanic ? PanicSpeed : 1;
         switch (walkStep)
         {
             case WalkStep.Out:
-                if (WalkOffset < walkTarget) WalkOffset++;
-                if (WalkOffset >= Math.Min(walkTarget, WalkRoom)) { walkStep = WalkStep.Look; walkWait = WalkLookTicks; }
+                WalkOffset = Math.Min(walkTarget, WalkOffset + speed);
+                if (WalkOffset >= Math.Min(walkTarget, WalkRoom))
+                {
+                    if (walkPanic) walkStep = WalkStep.Back;
+                    else { walkStep = WalkStep.Look; walkWait = WalkLookTicks; }
+                }
                 else if (walkPatrol && WalkOffset % PatrolStride == 0 && WalkOffset / PatrolStride > walkStops)
                 {
                     walkStops = WalkOffset / PatrolStride;
@@ -269,19 +280,25 @@ class PixelMascot : IReactiveMascot
                 if (--walkWait <= 0) walkStep = WalkStep.Back;
                 break;
             case WalkStep.Back:
-                if (WalkOffset > 0) WalkOffset--;
-                if (WalkOffset <= 0) EndWalk();
+                WalkOffset = Math.Max(0, WalkOffset - speed);
+                if (WalkOffset > 0) break;
+                if (walkPanic && --walkLegs > 0) walkStep = WalkStep.Out;
+                else EndWalk();
                 break;
         }
     }
+
+    bool CanWalk { get { return mood == MascotMood.Idle || mood == MascotMood.Panic; } }
 
     // Starts a walk now. The app waits a few minutes between walks; the documentation images call this directly.
     public void BeginWalk()
     {
         int room = Math.Min(WalkRoom, MaxWalkColumns);
         if (room < MinWalkRoom) return;
-        walkPatrol = style == MascotStyle.Detective && Chance.Next(2) == 0;
-        bool peek = !walkPatrol && Chance.Next(3) == 0;
+        walkPanic = mood == MascotMood.Panic;
+        walkLegs = Chance.Next(2, 4); // Panicking, it runs there and back a few times.
+        walkPatrol = !walkPanic && style == MascotStyle.Detective && Chance.Next(2) == 0;
+        bool peek = !walkPanic && !walkPatrol && Chance.Next(3) == 0;
         walkTarget = peek ? room / 2 : room;
         walkStops = 0;
         walkTick = 0;
@@ -297,17 +314,19 @@ class PixelMascot : IReactiveMascot
 
     void ScheduleWalk()
     {
-        nextWalk = Environment.TickCount + Chance.Next(MinWalkWaitMs, MaxWalkWaitMs);
+        bool panic = mood == MascotMood.Panic;
+        nextWalk = Environment.TickCount + (panic ? Chance.Next(MinPanicWaitMs, MaxPanicWaitMs) : Chance.Next(MinWalkWaitMs, MaxWalkWaitMs));
     }
 
     WalkPose CurrentWalkPose()
     {
-        if (walkStep == WalkStep.None || mood != MascotMood.Idle) return null;
+        if (walkStep == WalkStep.None || !CanWalk) return null;
         WalkPose pose = new WalkPose();
         pose.Moving = walkStep == WalkStep.Out || walkStep == WalkStep.Back;
         pose.Step = walkTick;
         pose.Searching = walkStep == WalkStep.Search;
         if (walkStep == WalkStep.Back) pose.Look = 1;
+        else if (walkStep == WalkStep.Out && walkPanic) pose.Look = -1;
         else if (walkStep == WalkStep.Look) pose.Look = walkTick % WalkLookTicks < WalkLookTicks / 2 ? 1 : -1;
         else if (walkStep == WalkStep.Search) pose.Look = walkTick / 3 % 2 == 0 ? -1 : 0;
         else pose.Look = -1;
@@ -401,7 +420,7 @@ class PixelMascot : IReactiveMascot
             case MascotMood.Tired: DrawWork(canvas, style, tick, true); break;
             case MascotMood.Down: DrawDown(canvas, tick); break;
             case MascotMood.Waiting: DrawWaiting(canvas, style, tick); break;
-            case MascotMood.Panic: DrawPanic(canvas, style, tick); break;
+            case MascotMood.Panic: DrawPanic(canvas, style, tick, walk); break;
             case MascotMood.Coffee: DrawCoffee(canvas, style, tick); break;
             case MascotMood.Juggle: DrawJuggle(canvas, style, tick); break;
             default: DrawIdle(canvas, style, tick, walk); break;
@@ -505,12 +524,12 @@ class PixelMascot : IReactiveMascot
         canvas.Art(QuestionMark, 1, 27, 1 + (tick % 4 < 2 ? 0 : 1), Question);
     }
 
-    static void DrawPanic(Canvas canvas, MascotStyle style, int tick)
+    static void DrawPanic(Canvas canvas, MascotStyle style, int tick, WalkPose walk)
     {
         canvas.ShiftX = tick % 2 == 0 ? -1 : 1;
         bool up = tick % 4 < 2;
-        DrawFigure(canvas, BodyTop, up ? -4 : -2, up ? -2 : -4);
-        DrawOpenEyes(canvas, BodyTop, 0, 0, 5);
+        DrawFigure(canvas, BodyTop, up ? -4 : -2, up ? -2 : -4, walk != null && walk.Moving ? tick % 2 : 0);
+        DrawOpenEyes(canvas, BodyTop, walk != null ? walk.Look : 0, 0, 5);
         DrawOutfit(canvas, style, BodyTop);
         canvas.ShiftX = 0;
         canvas.Fill(1, BodyTop + (tick * 2) % 10, 2, 3, Sweat);
