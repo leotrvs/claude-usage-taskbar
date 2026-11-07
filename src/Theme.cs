@@ -32,7 +32,7 @@ static class Theme
 
     public static Color NormalColor(ColorTemplate template)
     {
-        if (template == ColorTemplate.Blue) return Color.FromArgb(88, 166, 255);
+        if (template == ColorTemplate.Blue) return Color.FromArgb(72, 150, 245);
         if (template == ColorTemplate.Purple) return Color.FromArgb(167, 139, 250);
         return Color.FromArgb(74, 222, 128);
     }

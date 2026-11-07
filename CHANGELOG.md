@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- Slightly stronger blue in the Blue color template
+
 ## 1.4.0
 
 - Hovering the chart shows the time, the usage and how much it rose since the previous reading
