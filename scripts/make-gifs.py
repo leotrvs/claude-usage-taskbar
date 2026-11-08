@@ -20,8 +20,8 @@ GIFS = {
     'mascot-acts-1': (80, 1200, False),
     'mascot-acts-2': (80, 1200, False),
     'icon-styles': (70, 1400, False),
-    'chart': (110, 700, True),
-    'themes': (900, 900, True),
+    'chart': (90, 900, True),
+    'themes': (1300, 1300, True),
     'settings': (1600, 1600, True),
 }
 

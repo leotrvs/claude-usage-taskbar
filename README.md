@@ -59,7 +59,7 @@ You do not need to keep a terminal open.
 
 ![Icon styles](docs/images/icon-styles.gif)
 
-Choose one under **Appearance**. From left to right:
+Choose one under **Appearance**. From top to bottom:
 
 - **Gauge:** a dial with the number inside.
 - **Ring:** a circle that fills clockwise from the top. This is the default.
@@ -93,7 +93,7 @@ By default, the panel shows the **Laptop** mascot working on its laptop:
 
 <img src="assets/mascots/default.gif" alt="The Laptop mascot working on its laptop" width="200">
 
-The mascot reacts to your usage. Laptop uses this animation while working and the pixel drawings otherwise. From left to right:
+The mascot reacts to your usage. Laptop uses this animation while working and the pixel drawings otherwise. From top to bottom:
 
 ![The mascot's moods](docs/images/mascot-moods.gif)
 

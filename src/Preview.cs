@@ -254,7 +254,7 @@ static partial class Preview
         const int TaskbarHeight = 44;
         const int PanelLeft = 12;
         const int PanelTop = 12;
-        const int LastRise = 78;
+        const int LastRise = 70;
         const int LastFrame = 100;
         IconStyle[] styles = { IconStyle.Ring, IconStyle.Gauge, IconStyle.Needle };
         Directory.CreateDirectory(directory);
@@ -274,7 +274,7 @@ static partial class Preview
             {
                 float rise = Math.Min(1, frame / (float)LastRise);
                 IconStyle style = styles[frame * styles.Length / (LastFrame + 1)];
-                int session = 42 + (int)(54 * rise);
+                int session = 42 + (int)(58 * rise);
                 state.Session.Percent = session;
                 state.Weekly.Percent = 61 + (int)(16 * rise);
                 state.SessionPace = session >= 80 ? Localization.T("paceLimit", "16:05") : Localization.T("paceReset", session + 29);

@@ -59,7 +59,7 @@ Não é preciso deixar um terminal aberto.
 
 ![Estilos de ícone](docs/images/icon-styles.gif)
 
-Escolha em **Aparência**. Da esquerda para a direita:
+Escolha em **Aparência**. De cima para baixo:
 
 - **Velocímetro:** um mostrador com o número dentro.
 - **Círculo:** enche em sentido horário a partir do topo. É o padrão.
@@ -93,7 +93,7 @@ Por padrão, o painel mostra o mascote **Notebook** trabalhando no notebook:
 
 <img src="assets/mascots/default.gif" alt="O mascote Notebook trabalhando no notebook" width="200">
 
-O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e os desenhos em pixels nos outros estados. Da esquerda para a direita:
+O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e os desenhos em pixels nos outros estados. De cima para baixo:
 
 ![Os estados do mascote](docs/images/mascot-moods.gif)
 

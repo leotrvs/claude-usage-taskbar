@@ -199,17 +199,24 @@ static partial class Preview
     {
         const int Size = 64;
         const int Gap = 12;
-        const int Frames = 27;
+        const int Frames = 24;
+        ColorTemplate[] colors = { ColorTemplate.Blue, ColorTemplate.Green, ColorTemplate.Purple };
         IconStyle[] styles = { IconStyle.Gauge, IconStyle.Ring, IconStyle.Needle };
         for (int f = 0; f < Frames; f++)
-            using (Bitmap sheet = new Bitmap(styles.Length * (Size + Gap) + Gap, Size + Gap * 2))
+            using (Bitmap sheet = new Bitmap(colors.Length * (Size + Gap) + Gap, styles.Length * (Size + Gap) + Gap))
             using (Graphics g = Graphics.FromImage(sheet))
             {
                 g.Clear(Color.FromArgb(10, 10, 10));
-                int percent = Math.Min(100, f * 4);
-                for (int i = 0; i < styles.Length; i++) DrawIcon(g, styles[i], percent, Gap + i * (Size + Gap), Gap);
+                int percent = Math.Min(65, f * 3);
+                for (int c = 0; c < colors.Length; c++)
+                {
+                    Theme.Colors = colors[c];
+                    for (int i = 0; i < styles.Length; i++)
+                        DrawIcon(g, styles[i], percent, Gap + c * (Size + Gap), Gap + i * (Size + Gap));
+                }
                 SaveFrame(sheet, folder, f);
             }
+        Theme.Colors = ColorTemplate.Blue;
     }
 
     static PanelState SampleState(Language language)
@@ -246,32 +253,44 @@ static partial class Preview
 
             string chart = Path.Combine(Path.Combine(directory, "chart"), suffix);
             ChartRange[] ranges = { ChartRange.Hours12, ChartRange.Hours24, ChartRange.Days7 };
-            int index = 0;
+            const int ChartGap = 8;
+            const int ChartSteps = 22;
             int unit = panel.Width / 300;
-            foreach (ChartRange range in ranges)
-            {
-                panel.ShowChartRange(range);
-                for (int step = 0; step < 16; step++)
+            for (int step = 0; step < ChartSteps; step++)
+                using (Bitmap sheet = new Bitmap(ranges.Length * (panel.Width + ChartGap) + ChartGap, 66 * unit))
+                using (Graphics g = Graphics.FromImage(sheet))
                 {
-                    panel.ShowChartHover(0.04 + 0.92 * step / 15.0);
-                    using (Bitmap bitmap = Shot(panel))
-                    using (Bitmap crop = bitmap.Clone(new Rectangle(0, 197 * unit, panel.Width, 66 * unit), bitmap.PixelFormat))
-                        SaveFrame(crop, chart, index++);
+                    g.Clear(Color.FromArgb(10, 10, 10));
+                    for (int r = 0; r < ranges.Length; r++)
+                    {
+                        panel.ShowChartRange(ranges[r]);
+                        panel.ShowChartHover(0.04 + 0.92 * step / (ChartSteps - 1.0));
+                        using (Bitmap bitmap = Shot(panel))
+                            g.DrawImage(bitmap, new Rectangle(ChartGap + r * (panel.Width + ChartGap), 0, panel.Width, 66 * unit),
+                                new Rectangle(0, 197 * unit, panel.Width, 66 * unit), GraphicsUnit.Pixel);
+                    }
+                    SaveFrame(sheet, chart, step);
                 }
-            }
             panel.ShowChartRange(ChartRange.Hours12);
 
             string themes = Path.Combine(Path.Combine(directory, "themes"), suffix);
             ColorTemplate[] colors = { ColorTemplate.Blue, ColorTemplate.Green, ColorTemplate.Purple };
-            PanelTheme[] looks = { PanelTheme.Graphite, PanelTheme.Black, PanelTheme.Light };
-            index = 0;
-            for (int look = 0; look < looks.Length; look++)
-                for (int c = 0; c < colors.Length; c++)
+            PanelTheme[] looks = { PanelTheme.Black, PanelTheme.Graphite, PanelTheme.Light };
+            const int ThemeGap = 16;
+            for (int c = 0; c < colors.Length; c++)
+                using (Bitmap sheet = new Bitmap(looks.Length * (panel.Width + ThemeGap) + ThemeGap, panel.Height + ThemeGap * 2))
+                using (Graphics g = Graphics.FromImage(sheet))
                 {
-                    Theme.Colors = colors[look % 2 == 0 ? c : colors.Length - 1 - c];
-                    Theme.Panel = looks[look];
-                    panel.ApplyTheme();
-                    using (Bitmap bitmap = Shot(panel)) SaveFrame(bitmap, themes, index++);
+                    g.Clear(Color.FromArgb(16, 16, 16));
+                    for (int look = 0; look < looks.Length; look++)
+                    {
+                        Theme.Colors = colors[c];
+                        Theme.Panel = looks[look];
+                        panel.ApplyTheme();
+                        using (Bitmap bitmap = Shot(panel))
+                            g.DrawImageUnscaled(bitmap, ThemeGap + look * (panel.Width + ThemeGap), ThemeGap);
+                    }
+                    SaveFrame(sheet, themes, c);
                 }
             Theme.Colors = ColorTemplate.Blue;
             Theme.Panel = PanelTheme.Black;

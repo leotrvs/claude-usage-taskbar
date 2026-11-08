@@ -60,7 +60,7 @@ No hace falta dejar una terminal abierta.
 
 ![Estilos de icono](docs/images/icon-styles.gif)
 
-Elige uno en **Appearance**. De izquierda a derecha:
+Elige uno en **Appearance**. De arriba abajo:
 
 - **Gauge:** un indicador con el número dentro.
 - **Ring:** un círculo que se llena en sentido horario desde arriba. Es el estilo predeterminado.
@@ -94,7 +94,7 @@ De forma predeterminada, el panel muestra la mascota **Laptop** trabajando en su
 
 <img src="assets/mascots/default.gif" alt="La mascota Laptop trabajando en su portátil" width="200">
 
-La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los dibujos pixelados en los demás estados. De izquierda a derecha:
+La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los dibujos pixelados en los demás estados. De arriba abajo:
 
 ![Los estados de la mascota](docs/images/mascot-moods.gif)
 
