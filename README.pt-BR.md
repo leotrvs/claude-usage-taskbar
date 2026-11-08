@@ -8,12 +8,6 @@ Veja seus limites do Claude Code de relance na barra de tarefas do Windows e sai
 
 ![Os ícones e o painel acompanhando o uso enquanto ele sobe](docs/images/demo-pt-BR.gif)
 
-<p>
-<img src="docs/images/panel-pt-BR.png" alt="O painel de uso no tema grafite" width="270">
-<img src="docs/images/panel-black-pt-BR.png" alt="O painel de uso no tema preto" width="270">
-<img src="docs/images/panel-light-pt-BR.png" alt="O painel de uso no tema claro" width="270">
-</p>
-
 > Projeto não oficial da comunidade. Não tem vínculo, aprovação nem suporte da Anthropic. "Claude" é uma marca da Anthropic.
 
 ## Recursos
@@ -63,9 +57,9 @@ Não é preciso deixar um terminal aberto.
 
 ### Estilos de ícone
 
-![Estilos de ícone](docs/images/icon-styles.png)
+![Estilos de ícone](docs/images/icon-styles.gif)
 
-Escolha em **Aparência**. De cima para baixo:
+Escolha em **Aparência**. Da esquerda para a direita:
 
 - **Velocímetro:** um mostrador com o número dentro.
 - **Círculo:** enche em sentido horário a partir do topo. É o padrão.
@@ -73,13 +67,11 @@ Escolha em **Aparência**. De cima para baixo:
 
 ### Gráfico de uso
 
-![O gráfico com detalhes ao passar o mouse](docs/images/chart-pt-BR.png)
+![O gráfico com detalhes ao passar o mouse](docs/images/chart-pt-BR.gif)
 
 O gráfico mostra o uso de 5 horas nas últimas 12 horas. Passe o mouse sobre ele para ver o horário, o percentual naquele momento e quanto subiu desde a leitura anterior.
 
 O seletor **12h**, **24h** e **7d** acima do gráfico muda o período. A visão de 7 dias acompanha o limite semanal. Linhas pontilhadas marcam onde um limite recomeçou. Abaixo do gráfico, **Hoje** mostra o maior percentual que a sessão de 5 horas atingiu desde a meia-noite.
-
-![O gráfico de 7 dias, acompanhando o limite semanal](docs/images/chart-week-pt-BR.png)
 
 ### Previsão de ritmo
 
@@ -88,7 +80,7 @@ O seletor **12h**, **24h** e **7d** acima do gráfico muda o período. A visão 
 
 ### Cores e temas
 
-![Azul com grafite, verde com preto e roxo com claro](docs/images/themes-pt-BR.png)
+![Azul com grafite, verde com preto e roxo com claro](docs/images/themes-pt-BR.gif)
 
 Em **Aparência**:
 
@@ -103,7 +95,7 @@ Por padrão, o painel mostra o mascote **Notebook** trabalhando no notebook:
 
 O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e os desenhos em pixels nos outros estados. Da esquerda para a direita:
 
-![Os estados do mascote](docs/images/mascots.png)
+![Os estados do mascote](docs/images/mascot-moods.gif)
 
 | Estado | Quando |
 |---|---|
@@ -120,7 +112,9 @@ O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e o
 
 Ele também reage ao que acontece. Quando um limite renova, finca uma bandeira quadriculada que balança ao vento, com confete caindo ao redor. Quando uma atualização termina, ele salta e se achata numa chuva de confete. Acena ou pula quando você passa o mouse, dá um pulinho de vez em quando enquanto descansa e reage ao clique. Enquanto trabalha, ele também pensa, anota, lê e se espreguiça de vez em quando. Com duas ou mais sessões trabalhando, ele faz malabarismo e levanta pesos, mais vezes quanto mais sessões houver, e em 100% às vezes fica achatado e tonto.
 
-![Os movimentos novos: pulo, saltar, bandeira, pesos e achatado](docs/images/mascot-moves.png)
+![Os jeitos de trabalhar: o notebook, pensar, anotar, ler e se espreguiçar](docs/images/mascot-working.gif)
+
+![Os movimentos novos: pulo, saltar, bandeira, pesos e achatado](docs/images/mascot-moves.gif)
 
 Em **Aparência** você escolhe o visual:
 
@@ -128,42 +122,33 @@ Em **Aparência** você escolhe o visual:
 - **Clássico:** os desenhos em pixels o tempo todo.
 - **Natal**, **Fone**, **Chef**, **Cientista**, **Detetive**, **Inverno** e **Piloto:** o mesmo mascote com um outfit. O Chef diz `im cooking` enquanto trabalha, e o Detetive às vezes procura com a lupa.
 
-![Os outfits](docs/images/mascot-outfits.png)
+![Os outfits](docs/images/mascot-outfits.gif)
 
 Alguns outfits reagem: o Cientista mexe um frasco enquanto trabalha e os óculos piscam em vermelho no pânico, a lupa do Detetive brilha quando uma sessão espera por você, o cachecol do Inverno balança e o Piloto agita a bandeira quadriculada quando um limite renova. Clique no mascote cinco vezes seguidas e ele se derrete de amor.
 
-![As reações dos outfits e a animação de amor](docs/images/mascot-reactions.png)
+![As reações dos outfits e a animação de amor](docs/images/mascot-reactions.gif)
 
 Com **Fantasias de datas especiais** ligado, o mascote sem outfit se veste sozinho no Natal, no Halloween e no Carnaval. Quando anda, às vezes para para olhar as barras de uso se um limite está perto, ou vai procurar onde estava o seu cursor.
 
-Quando está descansando, o mascote de vez em quando dá uma caminhada curta pelo espaço vazio do cabeçalho do painel e volta antes de chegar ao texto:
+Quando está descansando, o mascote de vez em quando dá uma caminhada curta pelo espaço vazio do cabeçalho do painel e volta antes de chegar ao texto.
 
-![O mascote andando pelo cabeçalho](docs/images/mascot-walk.png)
+Em pânico, ele de vez em quando corre de um lado para o outro do cabeçalho.
 
-Em pânico, ele de vez em quando corre de um lado para o outro do cabeçalho:
+O Piloto sai com estilo: uma bandeira quadriculada balança, um carro de Fórmula 1 chega, e ele monta, corre pelo cabeçalho e volta.
 
-![O mascote correndo em pânico](docs/images/mascot-panic-walk.png)
-
-O Piloto sai com estilo: uma bandeira quadriculada balança, um carro de Fórmula 1 chega, e ele monta, corre pelo cabeçalho e volta:
-
-![O Piloto dirigindo um carro de Fórmula 1](docs/images/mascot-racer-drive.png)
+![O mascote andando pelo cabeçalho](docs/images/mascot-walks.gif)
 
 O mascote sem outfit anda com uma bandeira quadriculada nas costas, e a maioria dos outfits tem uma caminhada própria. O Natal anda de trenó, o Fone e o Carnaval dançam, o Chef leva uma bandeja coberta, o Cientista faz um experimento que explode no fim, o Inverno patina e o Halloween voa de vassoura:
 
-![Natal, Fone, Chef e Cientista nas suas caminhadas](docs/images/mascot-acts-1.png)
+![Natal, Fone, Chef e Cientista nas suas caminhadas](docs/images/mascot-acts-1.gif)
 
-![Inverno, Halloween e Carnaval nas suas caminhadas](docs/images/mascot-acts-2.png)
+![Inverno, Halloween e Carnaval nas suas caminhadas](docs/images/mascot-acts-2.gif)
 
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 
 ### Configurações
 
-<table>
-<tr>
-<td><img src="docs/images/settings-pt-BR.png" alt="Página de Configurações" width="300"></td>
-<td><img src="docs/images/appearance-pt-BR.png" alt="Página de Aparência" width="300"></td>
-</tr>
-</table>
+<img src="docs/images/settings-pt-BR.gif" alt="Página de Configurações / Página de Aparência" width="300">
 
 | Opção | O que faz |
 |---|---|

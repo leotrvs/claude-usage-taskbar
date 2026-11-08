@@ -8,12 +8,6 @@ See your Claude Code limits at a glance in the Windows taskbar, and know when th
 
 ![The icons and panel following usage as it rises](docs/images/demo-en.gif)
 
-<p>
-<img src="docs/images/panel-en.png" alt="The usage panel with the graphite theme" width="270">
-<img src="docs/images/panel-black-en.png" alt="The usage panel with the black theme" width="270">
-<img src="docs/images/panel-light-en.png" alt="The usage panel with the light theme" width="270">
-</p>
-
 > Unofficial community project. It is not affiliated with, endorsed by, or supported by Anthropic. "Claude" is a trademark of Anthropic.
 
 ## Features
@@ -63,9 +57,9 @@ You do not need to keep a terminal open.
 
 ### Icon styles
 
-![Icon styles](docs/images/icon-styles.png)
+![Icon styles](docs/images/icon-styles.gif)
 
-Choose one under **Appearance**. From top to bottom:
+Choose one under **Appearance**. From left to right:
 
 - **Gauge:** a dial with the number inside.
 - **Ring:** a circle that fills clockwise from the top. This is the default.
@@ -73,13 +67,11 @@ Choose one under **Appearance**. From top to bottom:
 
 ### Usage chart
 
-![The chart with hover details](docs/images/chart-en.png)
+![The chart with hover details](docs/images/chart-en.gif)
 
 The chart shows your 5-hour usage over the last 12 hours. Hover over it to see the time, the percentage at that moment and how much it rose since the previous reading.
 
 The small **12h**, **24h** and **7d** switch above the chart changes the range. The 7-day view follows your weekly limit. Dotted lines mark where a limit started over. Below the chart, **Today** shows the highest your 5-hour session reached since midnight.
-
-![The 7-day chart, following the weekly limit](docs/images/chart-week-en.png)
 
 ### Pace forecast
 
@@ -88,7 +80,7 @@ The small **12h**, **24h** and **7d** switch above the chart changes the range. 
 
 ### Colors and themes
 
-![Blue with graphite, green with black and purple with light](docs/images/themes-en.png)
+![Blue with graphite, green with black and purple with light](docs/images/themes-en.gif)
 
 Under **Appearance**:
 
@@ -103,7 +95,7 @@ By default, the panel shows the **Laptop** mascot working on its laptop:
 
 The mascot reacts to your usage. Laptop uses this animation while working and the pixel drawings otherwise. From left to right:
 
-![The mascot's moods](docs/images/mascots.png)
+![The mascot's moods](docs/images/mascot-moods.gif)
 
 | Mood | When |
 |---|---|
@@ -120,7 +112,9 @@ The mascot reacts to your usage. Laptop uses this animation while working and th
 
 It also reacts to what happens. When a limit renews it plants a checkered flag that waves in the wind, with confetti falling around it. When an update finishes it pops up and squashes flat in a burst of confetti. It waves or hops when you hover over it, gives a little hop now and then while resting, and reacts when you click it. While working it also thinks, takes notes, reads and stretches now and then. With two or more sessions working it juggles and lifts weights, more often the more sessions there are, and at 100% it sometimes lies flat and dizzy.
 
-![The new moves: hop, popping up, flag, weights and lying flat](docs/images/mascot-moves.png)
+![The ways of working: the laptop, thinking, taking notes, reading and stretching](docs/images/mascot-working.gif)
+
+![The new moves: hop, popping up, flag, weights and lying flat](docs/images/mascot-moves.gif)
 
 Under **Appearance** you can choose the look:
 
@@ -128,42 +122,33 @@ Under **Appearance** you can choose the look:
 - **Classic:** the pixel drawings all the time.
 - **Christmas**, **Headphones**, **Chef**, **Scientist**, **Detective**, **Winter** and **Racer:** the same mascot with an outfit. The Chef says `im cooking` while it works, and the Detective sometimes searches with a magnifying glass.
 
-![The outfits](docs/images/mascot-outfits.png)
+![The outfits](docs/images/mascot-outfits.gif)
 
 Some outfits react: the Scientist stirs a flask while working and its goggles flash red in a panic, the Detective's magnifying glass shines when a session waits for you, the Winter scarf flutters and the Racer waves the checkered flag when a limit renews. Click the mascot five times in a row and it melts with love.
 
-![The outfit reactions and the love animation](docs/images/mascot-reactions.png)
+![The outfit reactions and the love animation](docs/images/mascot-reactions.gif)
 
 With **Holiday outfits** on, a mascot with no outfit dresses up on its own for Christmas, Halloween and Carnival. When it walks, it sometimes stops to glance at the usage bars when a limit is close, or goes looking for where your cursor was.
 
-When it is resting, the mascot now and then takes a short walk across the empty part of the panel header, and turns back before it reaches the text:
+When it is resting, the mascot now and then takes a short walk across the empty part of the panel header, and turns back before it reaches the text.
 
-![The mascot walking across the header](docs/images/mascot-walk.png)
+When panicking, it now and then runs back and forth across the header.
 
-When panicking, it now and then runs back and forth across the header:
+The Racer goes out in style: a checkered flag waves, a Formula 1 car arrives, and the driver climbs in, races down the header and back.
 
-![The mascot running in a panic](docs/images/mascot-panic-walk.png)
-
-The Racer goes out in style: a checkered flag waves, a Formula 1 car arrives, and the driver climbs in, races down the header and back:
-
-![The Racer driving a Formula 1 car](docs/images/mascot-racer-drive.png)
+![The mascot walking across the header](docs/images/mascot-walks.gif)
 
 The plain mascot walks with a checkered flag on its back, and most outfits have a walk of their own. Santa rides a sleigh, the Headphones and Carnival outfits dance, the Chef carries a covered tray, the Scientist runs an experiment that goes off at the end, Winter skates and Halloween flies on a broom:
 
-![Santa, Headphones, Chef and Scientist on their walks](docs/images/mascot-acts-1.png)
+![Santa, Headphones, Chef and Scientist on their walks](docs/images/mascot-acts-1.gif)
 
-![Winter, Halloween and Carnival on their walks](docs/images/mascot-acts-2.png)
+![Winter, Halloween and Carnival on their walks](docs/images/mascot-acts-2.gif)
 
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 
 ### Settings
 
-<table>
-<tr>
-<td><img src="docs/images/settings-en.png" alt="Settings page" width="300"></td>
-<td><img src="docs/images/appearance-en.png" alt="Appearance page" width="300"></td>
-</tr>
-</table>
+<img src="docs/images/settings-en.gif" alt="Settings page / Appearance page" width="300">
 
 | Option | What it does |
 |---|---|

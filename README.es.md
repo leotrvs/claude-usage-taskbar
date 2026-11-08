@@ -10,12 +10,6 @@ Consulta de un vistazo tus límites de Claude Code en la barra de tareas de Wind
 
 > La aplicación está disponible en inglés y portugués. Las capturas de esta página están en inglés.
 
-<p>
-<img src="docs/images/panel-en.png" alt="El panel de uso con el tema grafito" width="270">
-<img src="docs/images/panel-black-en.png" alt="El panel de uso con el tema negro" width="270">
-<img src="docs/images/panel-light-en.png" alt="El panel de uso con el tema claro" width="270">
-</p>
-
 > Proyecto comunitario no oficial. No tiene relación con Anthropic, ni cuenta con su aprobación o soporte. "Claude" es una marca de Anthropic.
 
 ## Funciones
@@ -64,9 +58,9 @@ No hace falta dejar una terminal abierta.
 
 ### Estilos de icono
 
-![Estilos de icono](docs/images/icon-styles.png)
+![Estilos de icono](docs/images/icon-styles.gif)
 
-Elige uno en **Appearance**. De arriba abajo:
+Elige uno en **Appearance**. De izquierda a derecha:
 
 - **Gauge:** un indicador con el número dentro.
 - **Ring:** un círculo que se llena en sentido horario desde arriba. Es el estilo predeterminado.
@@ -74,13 +68,11 @@ Elige uno en **Appearance**. De arriba abajo:
 
 ### Gráfico de uso
 
-![El gráfico con detalles al pasar el ratón](docs/images/chart-en.png)
+![El gráfico con detalles al pasar el ratón](docs/images/chart-en.gif)
 
 El gráfico muestra tu uso de 5 horas durante las últimas 12 horas. Pasa el ratón por encima para ver la hora, el porcentaje en ese momento y cuánto subió desde la lectura anterior.
 
 El selector **12h**, **24h** y **7d** sobre el gráfico cambia el periodo. La vista de 7 días sigue tu límite semanal. Las líneas punteadas marcan dónde un límite volvió a empezar. Debajo del gráfico, **Today** muestra el porcentaje más alto que alcanzó tu sesión de 5 horas desde medianoche.
-
-![El gráfico de 7 días, siguiendo el límite semanal](docs/images/chart-week-en.png)
 
 ### Previsión de ritmo
 
@@ -89,7 +81,7 @@ El selector **12h**, **24h** y **7d** sobre el gráfico cambia el periodo. La vi
 
 ### Colores y temas
 
-![Azul con grafito, verde con negro y morado con claro](docs/images/themes-en.png)
+![Azul con grafito, verde con negro y morado con claro](docs/images/themes-en.gif)
 
 En **Appearance**:
 
@@ -104,7 +96,7 @@ De forma predeterminada, el panel muestra la mascota **Laptop** trabajando en su
 
 La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los dibujos pixelados en los demás estados. De izquierda a derecha:
 
-![Los estados de la mascota](docs/images/mascots.png)
+![Los estados de la mascota](docs/images/mascot-moods.gif)
 
 | Estado | Cuándo |
 |---|---|
@@ -121,7 +113,9 @@ La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los
 
 También reacciona a lo que ocurre. Cuando un límite se renueva, clava una bandera de cuadros que ondea con el viento, con confeti cayendo alrededor. Cuando termina una actualización, salta y se aplasta en una lluvia de confeti. Saluda o da un salto al pasar el ratón, da un saltito de vez en cuando mientras descansa y reacciona al hacer clic. Mientras trabaja, también piensa, toma notas, lee y se estira de vez en cuando. Con dos o más sesiones trabajando, hace malabares y levanta pesas, más a menudo cuantas más sesiones haya, y al 100% a veces queda aplastada y mareada.
 
-![Los movimientos nuevos: salto, brinco, bandera, pesas y aplastada](docs/images/mascot-moves.png)
+![Las formas de trabajar: el portátil, pensar, tomar notas, leer y estirarse](docs/images/mascot-working.gif)
+
+![Los movimientos nuevos: salto, brinco, bandera, pesas y aplastada](docs/images/mascot-moves.gif)
 
 En **Appearance** puedes elegir el aspecto:
 
@@ -129,42 +123,33 @@ En **Appearance** puedes elegir el aspecto:
 - **Classic:** los dibujos pixelados todo el tiempo.
 - **Christmas**, **Headphones**, **Chef**, **Scientist**, **Detective**, **Winter** y **Racer:** la misma mascota con un atuendo. El Chef dice `im cooking` mientras trabaja, y el Detective a veces busca con una lupa.
 
-![Los atuendos](docs/images/mascot-outfits.png)
+![Los atuendos](docs/images/mascot-outfits.gif)
 
 Algunos atuendos reaccionan: el Scientist remueve un frasco mientras trabaja y sus gafas parpadean en rojo en pánico, la lupa del Detective brilla cuando una sesión te espera, la bufanda del Winter ondea y el Racer agita la bandera de cuadros cuando se renueva un límite. Haz clic cinco veces seguidas en la mascota y se derrite de amor.
 
-![Las reacciones de los atuendos y la animación de amor](docs/images/mascot-reactions.png)
+![Las reacciones de los atuendos y la animación de amor](docs/images/mascot-reactions.gif)
 
 Con **Holiday outfits** activado, una mascota sin atuendo se disfraza sola en Navidad, Halloween y Carnaval. Al pasear, a veces se detiene a mirar las barras de uso si un límite está cerca, o va a buscar dónde estaba tu cursor.
 
-Cuando descansa, la mascota da de vez en cuando un paseo corto por la parte vacía de la cabecera del panel y vuelve antes de llegar al texto:
+Cuando descansa, la mascota da de vez en cuando un paseo corto por la parte vacía de la cabecera del panel y vuelve antes de llegar al texto.
 
-![La mascota paseando por la cabecera](docs/images/mascot-walk.png)
+En pánico, de vez en cuando corre de un lado a otro de la cabecera.
 
-En pánico, de vez en cuando corre de un lado a otro de la cabecera:
+El Racer sale con estilo: ondea una bandera de cuadros, llega un coche de Fórmula 1, y el piloto sube, corre por la cabecera y vuelve.
 
-![La mascota corriendo en pánico](docs/images/mascot-panic-walk.png)
-
-El Racer sale con estilo: ondea una bandera de cuadros, llega un coche de Fórmula 1, y el piloto sube, corre por la cabecera y vuelve:
-
-![El Racer conduciendo un coche de Fórmula 1](docs/images/mascot-racer-drive.png)
+![La mascota paseando por la cabecera](docs/images/mascot-walks.gif)
 
 La mascota sin atuendo pasea con una bandera de cuadros a la espalda, y la mayoría de los atuendos tienen su propio paseo. Christmas va en trineo, Headphones y Carnival bailan, el Chef lleva una bandeja cubierta, el Scientist hace un experimento que estalla al final, Winter patina y Halloween vuela en escoba:
 
-![Christmas, Headphones, Chef y Scientist en sus paseos](docs/images/mascot-acts-1.png)
+![Christmas, Headphones, Chef y Scientist en sus paseos](docs/images/mascot-acts-1.gif)
 
-![Winter, Halloween y Carnival en sus paseos](docs/images/mascot-acts-2.png)
+![Winter, Halloween y Carnival en sus paseos](docs/images/mascot-acts-2.gif)
 
 Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y el personaje pertenece a sus dueños. La licencia MIT no lo cubre.
 
 ### Configuración
 
-<table>
-<tr>
-<td><img src="docs/images/settings-en.png" alt="Página Settings" width="300"></td>
-<td><img src="docs/images/appearance-en.png" alt="Página Appearance" width="300"></td>
-</tr>
-</table>
+<img src="docs/images/settings-en.gif" alt="Página Settings / Página Appearance" width="300">
 
 | Opción | Qué hace |
 |---|---|

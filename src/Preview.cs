@@ -5,7 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 
 // Renders documentation images from fixed sample data, so screenshots never capture a real desktop.
-static class Preview
+static partial class Preview
 {
     public static void Render(string directory)
     {

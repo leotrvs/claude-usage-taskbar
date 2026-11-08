@@ -32,6 +32,13 @@ static class Program
             return;
         }
 
+        int gifIndex = Array.IndexOf(args, "--gif-frames");
+        if (gifIndex >= 0 && gifIndex + 1 < args.Length)
+        {
+            Preview.RenderGifFrames(args[gifIndex + 1]);
+            return;
+        }
+
         int previewIndex = Array.IndexOf(args, "--preview");
         if (previewIndex >= 0 && previewIndex + 1 < args.Length)
         {

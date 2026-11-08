@@ -484,6 +484,13 @@ class UsagePanel : Form
         Invalidate();
     }
 
+    // Moves the chart hover along the chart, for the documentation animations.
+    public void ShowChartHover(double fraction)
+    {
+        chartHoverX = ChartArea.Left + (int)(ChartArea.Width * fraction);
+        Invalidate();
+    }
+
     public void ShowMainPage()
     {
         ShowPage(mainTargets);
