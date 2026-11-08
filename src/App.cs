@@ -11,7 +11,8 @@ using System.Runtime.InteropServices;
 static class App
 {
     public const string Name = "Claude Usage Taskbar";
-    public const string Version = "1.11.2";
+    public const string Repository = "leotrvs/claude-usage-taskbar";
+    public const string Version = "1.11.3";
     public const string Id = "ClaudeUsageTaskbar";
     public const string ExeName = Id + ".exe";
 

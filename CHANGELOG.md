@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.3
+
+- The footer of Settings now shows the name and version, and a link to the GitHub repository with its icon
+
 ## 1.11.2
 
 - Santa's sleigh and the Racer's car now go at a gentler speed

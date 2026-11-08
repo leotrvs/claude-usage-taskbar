@@ -36,6 +36,7 @@ class PanelCallbacks
     public Action ToggleAutoUpdate = delegate { };
     public Action ToggleConnection = delegate { };
     public Action CheckOrInstallUpdate = delegate { };
+    public Action OpenRepository = delegate { };
     public Action CloseWidget = delegate { };
 }
 
@@ -69,7 +70,7 @@ class UsagePanel : Form
 {
     const int LogicalWidth = 300;
     const int MainHeight = 346;
-    const int SettingsHeight = 394;
+    const int SettingsHeight = 438;
     const int AppearanceHeight = 552;
     const int SessionTop = 62;
     const int WeeklyTop = 132;
@@ -141,6 +142,7 @@ class UsagePanel : Form
     int pageHeightFrom;
     int pageHeightTo;
     PanelTarget updateLink;
+    PanelTarget repoLink;
     PanelTarget updateRow;
     UpdatePhase updatePhase;
     string updateVersion;
@@ -261,6 +263,13 @@ class UsagePanel : Form
         settingsTargets.Add(NewToggle("claudeCodeConnected", 294, delegate { return ClaudeCodeConnection.IsConnected; }, callbacks.ToggleConnection));
         updateRow = NewRow(RefreshGlyph, "checkUpdates", 330, callbacks.CheckOrInstallUpdate);
         settingsTargets.Add(updateRow);
+
+        repoLink = new PanelTarget();
+        repoLink.LiteralLabel = "@" + App.Repository;
+        int linkWidth = Px(20) + TextRenderer.MeasureText(repoLink.LiteralLabel, tinyFont, Size.Empty, TextFormatFlags.NoPadding).Width;
+        repoLink.Bounds = new Rectangle(Px(18), Px(410), linkWidth, Px(18));
+        repoLink.Run = callbacks.OpenRepository;
+        settingsTargets.Add(repoLink);
     }
 
     void BuildAppearancePage(PanelCallbacks callbacks)
@@ -1014,6 +1023,7 @@ class UsagePanel : Form
             PanelTarget target = targets[i];
             bool isHovered = i == hovered;
             if (target == updateLink) DrawUpdateLink(g, isHovered);
+            else if (target == repoLink) DrawRepoLink(g, isHovered);
             else if (target.Range.HasValue) { if (chartHoverX < 0) DrawRangeChip(g, target, isHovered); }
             else if (target.Selected != null || target.Style.HasValue || target.Language.HasValue || target.Shown.HasValue) DrawChip(g, target, isHovered);
             else if (target.Toggle != null) DrawToggle(g, target, isHovered);
@@ -1181,9 +1191,63 @@ class UsagePanel : Form
         DrawDivider(g, Px(44));
         Draw(g, Localization.T("language"), tinyFont, Theme.Muted, left, Px(52), right - left, TextFormatFlags.Left);
         Draw(g, Localization.T("taskbarIcons"), tinyFont, Theme.Muted, left, Px(122), right - left, TextFormatFlags.Left);
+        string product = App.Name + " v" + App.Version;
+        Draw(g, product, tinyFont, Theme.Muted, left, Px(388), right - left, TextFormatFlags.Left);
         string status = UpdateStatus();
-        string version = Localization.T("version", App.Version) + (status != null ? " · " + status : "");
-        Draw(g, version, tinyFont, Theme.Muted, left, Px(370), right - left, TextFormatFlags.Left);
+        if (status != null) Draw(g, status, tinyFont, Theme.Muted, left, Px(366), right - left, TextFormatFlags.Left);
+    }
+
+    // The GitHub mark (Octicons, MIT license) on a 16 by 16 grid, flattened to a polygon.
+    static readonly float[] GithubMark =
+    {
+        8.00f, 0.00f, 10.13f, 0.29f, 12.04f, 1.09f, 13.66f, 2.34f, 14.91f, 3.96f, 15.71f, 5.87f,
+        16.00f, 8.00f, 15.96f, 8.83f, 15.83f, 9.65f, 15.61f, 10.45f, 15.32f, 11.23f, 14.94f, 11.97f,
+        14.50f, 12.67f, 13.98f, 13.32f, 13.39f, 13.91f, 12.75f, 14.44f, 12.06f, 14.90f, 11.32f, 15.28f,
+        10.55f, 15.59f, 10.37f, 15.60f, 10.23f, 15.57f, 10.12f, 15.51f, 10.05f, 15.42f, 10.01f, 15.32f,
+        10.00f, 15.21f, 10.00f, 15.03f, 10.00f, 14.76f, 10.01f, 14.41f, 10.01f, 14.00f, 10.01f, 13.53f,
+        10.01f, 13.01f, 9.99f, 12.66f, 9.93f, 12.35f, 9.85f, 12.08f, 9.74f, 11.86f, 9.61f, 11.67f,
+        9.47f, 11.53f, 10.36f, 11.38f, 11.21f, 11.10f, 11.96f, 10.63f, 12.57f, 9.92f, 12.97f, 8.92f,
+        13.12f, 7.58f, 13.09f, 7.15f, 13.02f, 6.76f, 12.90f, 6.38f, 12.74f, 6.04f, 12.54f, 5.72f,
+        12.30f, 5.43f, 12.35f, 5.28f, 12.41f, 5.04f, 12.45f, 4.71f, 12.45f, 4.30f, 12.38f, 3.84f,
+        12.22f, 3.31f, 12.16f, 3.30f, 11.99f, 3.29f, 11.69f, 3.33f, 11.27f, 3.46f, 10.71f, 3.71f,
+        10.02f, 4.13f, 9.70f, 4.05f, 9.37f, 3.98f, 9.03f, 3.93f, 8.70f, 3.89f, 8.36f, 3.87f,
+        8.02f, 3.86f, 7.68f, 3.87f, 7.34f, 3.89f, 7.00f, 3.93f, 6.67f, 3.98f, 6.34f, 4.05f,
+        6.02f, 4.13f, 5.33f, 3.71f, 4.77f, 3.46f, 4.35f, 3.33f, 4.05f, 3.29f, 3.88f, 3.30f,
+        3.82f, 3.31f, 3.66f, 3.84f, 3.59f, 4.30f, 3.58f, 4.71f, 3.63f, 5.04f, 3.69f, 5.28f,
+        3.74f, 5.43f, 3.50f, 5.72f, 3.30f, 6.04f, 3.14f, 6.39f, 3.02f, 6.76f, 2.95f, 7.16f,
+        2.92f, 7.58f, 3.07f, 8.92f, 3.47f, 9.92f, 4.07f, 10.63f, 4.83f, 11.10f, 5.67f, 11.38f,
+        6.56f, 11.53f, 6.45f, 11.64f, 6.34f, 11.78f, 6.24f, 11.94f, 6.16f, 12.14f, 6.10f, 12.35f,
+        6.05f, 12.60f, 5.77f, 12.71f, 5.40f, 12.79f, 4.98f, 12.80f, 4.54f, 12.70f, 4.11f, 12.42f,
+        3.72f, 11.94f, 3.62f, 11.80f, 3.47f, 11.62f, 3.28f, 11.44f, 3.06f, 11.27f, 2.79f, 11.16f,
+        2.49f, 11.12f, 2.24f, 11.15f, 2.13f, 11.23f, 2.14f, 11.33f, 2.22f, 11.45f, 2.36f, 11.56f,
+        2.50f, 11.65f, 2.67f, 11.78f, 2.84f, 11.98f, 3.00f, 12.20f, 3.14f, 12.43f, 3.25f, 12.63f,
+        3.32f, 12.78f, 3.44f, 13.03f, 3.64f, 13.31f, 3.97f, 13.56f, 4.45f, 13.74f, 5.12f, 13.81f,
+        6.01f, 13.72f, 6.01f, 14.05f, 6.01f, 14.36f, 6.01f, 14.64f, 6.02f, 14.89f, 6.02f, 15.08f,
+        6.02f, 15.21f, 6.01f, 15.32f, 5.97f, 15.42f, 5.89f, 15.50f, 5.79f, 15.57f, 5.65f, 15.60f,
+        5.47f, 15.59f, 4.69f, 15.29f, 3.96f, 14.90f, 3.26f, 14.45f, 2.62f, 13.92f, 2.03f, 13.33f,
+        1.51f, 12.68f, 1.06f, 11.98f, 0.68f, 11.24f, 0.39f, 10.46f, 0.17f, 9.65f, 0.04f, 8.83f,
+        -0.00f, 8.00f, 0.29f, 5.87f, 1.09f, 3.96f, 2.34f, 2.34f, 3.96f, 1.09f, 5.87f, 0.29f,
+        8.00f, 0.00f
+    };
+
+    void DrawRepoLink(Graphics g, bool isHovered)
+    {
+        Color color = Blend(Theme.Accent, Theme.Text, Ease(repoLink.Hover));
+        Rectangle area = repoLink.Bounds;
+        int size = Px(14);
+        float step = size / 16f;
+        float top = area.Y + (area.Height - size) / 2f;
+        PointF[] points = new PointF[GithubMark.Length / 2];
+        for (int i = 0; i < points.Length; i++)
+            points[i] = new PointF(area.X + GithubMark[i * 2] * step, top + GithubMark[i * 2 + 1] * step);
+        using (GraphicsPath path = new GraphicsPath(FillMode.Alternate))
+        using (Brush brush = new SolidBrush(color))
+        {
+            path.AddPolygon(points);
+            g.FillPath(brush, path);
+        }
+        TextRenderer.DrawText(g, repoLink.LiteralLabel, tinyFont, new Rectangle(area.X + Px(20), area.Y, area.Width - Px(20), area.Height), color,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
     }
 
     void PaintAppearancePage(Graphics g, int left, int right)

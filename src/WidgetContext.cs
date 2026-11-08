@@ -60,6 +60,7 @@ class WidgetContext : ApplicationContext
         callbacks.ChangeIconsShown = ChangeIconsShown;
         callbacks.ToggleNotifications = delegate { Settings.Notifications = !Settings.Notifications; };
         callbacks.CheckOrInstallUpdate = CheckOrInstallUpdate;
+        callbacks.OpenRepository = OpenRepository;
         callbacks.CloseWidget = ExitThread;
 
         panel = new UsagePanel(callbacks);
@@ -352,6 +353,12 @@ class WidgetContext : ApplicationContext
     void InstallWaitingUpdate()
     {
         if (!panel.Visible && availableUpdate != null && Settings.AutoUpdate) InstallUpdate();
+    }
+
+    void OpenRepository()
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/" + App.Repository) { UseShellExecute = true }).Dispose(); }
+        catch { }
     }
 
     void CheckOrInstallUpdate()
