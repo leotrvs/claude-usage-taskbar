@@ -110,7 +110,7 @@ O mascote reage ao seu uso. O Notebook usa esta animação enquanto trabalha e o
 | Tomando café | Está trabalhando há mais de 2 horas |
 | Malabarismo e musculação | Duas ou mais sessões trabalhando ao mesmo tempo. Quanto mais sessões, mais frequente |
 
-Ele também reage ao que acontece. Quando um limite renova, finca uma bandeira quadriculada que balança ao vento, com confete caindo ao redor. Quando uma atualização termina, ele salta e se achata numa chuva de confete. Acena ou pula quando você passa o mouse, dá um pulinho de vez em quando enquanto descansa e reage ao clique. Enquanto trabalha, ele também pensa, anota, lê e se espreguiça de vez em quando. Com duas ou mais sessões trabalhando, ele faz malabarismo e levanta pesos, mais vezes quanto mais sessões houver, e em 100% às vezes fica achatado e tonto.
+Ele também reage ao que acontece. Quando um limite renova, cai confete ao redor, e o mascote sem outfit e o Piloto também fincam uma bandeira quadriculada que balança ao vento. Quando uma atualização termina, ele salta e se achata numa chuva de confete. Acena ou pula quando você passa o mouse, dá um pulinho de vez em quando enquanto descansa e reage ao clique. Enquanto trabalha, ele também pensa, anota, lê e se espreguiça de vez em quando. Com duas ou mais sessões trabalhando, ele faz malabarismo e levanta pesos, mais vezes quanto mais sessões houver, e em 100% às vezes fica achatado e tonto.
 
 ![Os jeitos de trabalhar: o notebook, pensar, anotar, ler e se espreguiçar](docs/images/mascot-working.gif)
 
@@ -138,7 +138,7 @@ O Piloto sai com estilo: uma bandeira quadriculada balança, um carro de Fórmul
 
 ![O mascote andando pelo cabeçalho](docs/images/mascot-walks.gif)
 
-O mascote sem outfit anda com uma bandeira quadriculada nas costas, e a maioria dos outfits tem uma caminhada própria. O Natal anda de trenó, o Fone e o Carnaval dançam, o Chef leva uma bandeja coberta, o Cientista faz um experimento que explode no fim, o Inverno patina e o Halloween voa de vassoura:
+O mascote sem outfit anda com uma bandeira quadriculada nas costas, e a maioria dos outfits tem uma caminhada própria. O Natal anda de trenó com um saco de presentes, o Fone dança sob uma bola de espelhos, o Carnaval dança, o Chef leva uma bandeja coberta, o Cientista faz um experimento que explode no fim, o Inverno patina e o Halloween voa de vassoura:
 
 ![Natal, Fone, Chef e Cientista nas suas caminhadas](docs/images/mascot-acts-1.gif)
 

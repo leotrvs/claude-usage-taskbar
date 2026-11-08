@@ -111,7 +111,7 @@ La mascota reacciona a tu uso. Laptop usa esta animación mientras trabaja y los
 | Tomando café | Lleva más de 2 horas trabajando |
 | Malabares y pesas | Dos o más sesiones trabajando a la vez. Cuantas más sesiones, más a menudo |
 
-También reacciona a lo que ocurre. Cuando un límite se renueva, clava una bandera de cuadros que ondea con el viento, con confeti cayendo alrededor. Cuando termina una actualización, salta y se aplasta en una lluvia de confeti. Saluda o da un salto al pasar el ratón, da un saltito de vez en cuando mientras descansa y reacciona al hacer clic. Mientras trabaja, también piensa, toma notas, lee y se estira de vez en cuando. Con dos o más sesiones trabajando, hace malabares y levanta pesas, más a menudo cuantas más sesiones haya, y al 100% a veces queda aplastada y mareada.
+También reacciona a lo que ocurre. Cuando un límite se renueva, cae confeti alrededor, y la mascota sin atuendo y el Racer también clavan una bandera de cuadros que ondea con el viento. Cuando termina una actualización, salta y se aplasta en una lluvia de confeti. Saluda o da un salto al pasar el ratón, da un saltito de vez en cuando mientras descansa y reacciona al hacer clic. Mientras trabaja, también piensa, toma notas, lee y se estira de vez en cuando. Con dos o más sesiones trabajando, hace malabares y levanta pesas, más a menudo cuantas más sesiones haya, y al 100% a veces queda aplastada y mareada.
 
 ![Las formas de trabajar: el portátil, pensar, tomar notas, leer y estirarse](docs/images/mascot-working.gif)
 
@@ -139,7 +139,7 @@ El Racer sale con estilo: ondea una bandera de cuadros, llega un coche de Fórmu
 
 ![La mascota paseando por la cabecera](docs/images/mascot-walks.gif)
 
-La mascota sin atuendo pasea con una bandera de cuadros a la espalda, y la mayoría de los atuendos tienen su propio paseo. Christmas va en trineo, Headphones y Carnival bailan, el Chef lleva una bandeja cubierta, el Scientist hace un experimento que estalla al final, Winter patina y Halloween vuela en escoba:
+La mascota sin atuendo pasea con una bandera de cuadros a la espalda, y la mayoría de los atuendos tienen su propio paseo. Christmas va en trineo con un saco de regalos, Headphones baila bajo una bola de espejos, Carnival baila, el Chef lleva una bandeja cubierta, el Scientist hace un experimento que estalla al final, Winter patina y Halloween vuela en escoba:
 
 ![Christmas, Headphones, Chef y Scientist en sus paseos](docs/images/mascot-acts-1.gif)
 

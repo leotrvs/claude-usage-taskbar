@@ -38,6 +38,7 @@ class PixelMascot : IReactiveMascot
     const int SleepFrameMs = 420;
     const int LegLength = 6;
     const int GaitMs = 110;
+    const int BroomLift = 5;
     const int BodyLeft = 4;
     const int BodyTop = 6;
     const int WorkingMinutes = 10;
@@ -743,7 +744,9 @@ class PixelMascot : IReactiveMascot
                 if (walk.AtEnd) top = BodyTop + walk.Step / 2 % 2; // A little pirouette hop at the end.
                 break;
             case WalkAct.Broom:
-                canvas.Gait = (int)(walk.Ms / 160); // The legs dangle and swing.
+                canvas.Gait = -1; // Flying: the feet never touch the ground.
+                top = BodyTop - BroomLift - walk.Step / 3 % 2;
+                legShift = 2;
                 leftArm = -1;
                 rightArm = -1;
                 break;
@@ -763,7 +766,11 @@ class PixelMascot : IReactiveMascot
         {
             case WalkAct.Dance:
                 if (style == MascotStyle.Carnival) DrawConfetti(canvas, tick, walk.AtEnd ? 30 : 16);
-                else DrawNotes(canvas, tick);
+                else
+                {
+                    DrawNotes(canvas, tick);
+                    DrawDiscoBall(canvas, tick);
+                }
                 break;
             case WalkAct.Tray: DrawTray(canvas, top, walk.AtEnd, tick); break;
             case WalkAct.Skate: DrawSkates(canvas, top, walk.Step, walk.Moving); break;
@@ -776,6 +783,35 @@ class PixelMascot : IReactiveMascot
         }
         canvas.Mirror = false;
         if (walk.Sweat) canvas.Fill(BodyLeft + 23, BodyTop + walk.Step % 8, 2, 3, Sweat);
+    }
+
+    // A mirror ball hanging above the head, with beams of colored light sweeping over the dance floor.
+    static void DrawDiscoBall(Canvas canvas, int tick)
+    {
+        Color[] lights =
+        {
+            Color.FromArgb(90, 220, 255), Color.FromArgb(255, 90, 200), Color.FromArgb(255, 220, 80), Color.FromArgb(120, 255, 140)
+        };
+        int center = BodyLeft + 12;
+        for (int beam = 0; beam < 6; beam++)
+        {
+            int side = beam % 2 == 0 ? -1 : 1;
+            int spread = 1 + beam / 2 + tick / 3 % 2;
+            Color color = Color.FromArgb(210, lights[(beam + tick / 2) % lights.Length]);
+            for (int k = 3; k < 18; k += 2)
+                canvas.Fill(center + side * (k * spread / 4), 5 + k, 2, 1, color);
+        }
+        for (int spot = 0; spot < 4; spot++)
+            canvas.Fill(center - 12 + (spot * 7 + tick / 2 * 3) % 26, 22, 2, 1, Color.FromArgb(170, lights[(spot + tick / 3) % lights.Length]));
+        string[] ball = { ".###.", "#####", "#####", "#####", ".###." };
+        for (int y = 0; y < ball.Length; y++)
+            for (int x = 0; x < ball[y].Length; x++)
+            {
+                if (ball[y][x] != '#') continue;
+                bool shine = (x + y + tick / 2) % 3 == 0;
+                canvas.Fill(center - 2 + x, 1 + y, 1, 1, shine ? Color.White : ((x + y) % 2 == 0 ? Color.FromArgb(205, 210, 222) : Color.FromArgb(130, 140, 165)));
+            }
+        canvas.Fill(center, 0, 1, 1, Color.FromArgb(170, 170, 178));
     }
 
     static readonly string[] Note = { "..#", "..#", "##.", "##." };
@@ -820,7 +856,7 @@ class PixelMascot : IReactiveMascot
 
     static void DrawBroom(Canvas canvas, int top, int step)
     {
-        int bob = step / 3 % 2;
+        int bob = 0;
         Color wood = Color.FromArgb(139, 94, 52);
         Color straw = Color.FromArgb(214, 170, 70);
         canvas.Fill(BodyLeft - 2, top + 12 + bob, 26, 2, wood);
@@ -889,12 +925,18 @@ class PixelMascot : IReactiveMascot
     };
     const int CarTop = 12;
 
-    // Santa's sleigh, nose to the left, with two presents on the back.
+    // Santa's sleigh, nose to the left, with a round sack of presents on the back.
     static readonly string[] SleighArt =
     {
-        "...........................GGG..",
-        "...........................GWG..",
-        "......................UUUUUGGG..",
+        "..........................G.R...",
+        ".........................GGWRR..",
+        ".........................YYYYY..",
+        ".........................BHBBb..",
+        "........................BHBBBBb.",
+        "........................BBHBBBb.",
+        "........................BBBBBBb.",
+        "........................BBBBBbb.",
+        "......................UUUUU.....",
         "...........DDDDDDDDDDDUWWWU.....",
         "....RR.....RRRRRRRRRRRRRRRRRRR..",
         "...RRR.....RRRRRRRRRRRRRRRRRRRR.",
@@ -903,7 +945,7 @@ class PixelMascot : IReactiveMascot
         ".KKKKKKKKKKKKKKKKKKKKKKKKKKKK...",
         "KK.........................KK..."
     };
-    const int SleighTop = 12;
+    const int SleighTop = 6;
 
     static Color SleighColor(char letter)
     {
@@ -916,6 +958,9 @@ class PixelMascot : IReactiveMascot
             case 'W': return Coat;
             case 'U': return Wool;
             case 'K': return Color.FromArgb(190, 195, 205);
+            case 'B': return Color.FromArgb(178, 122, 62);
+            case 'b': return Color.FromArgb(128, 84, 40);
+            case 'H': return Color.FromArgb(208, 154, 88);
             default: return Color.Empty;
         }
     }
@@ -1241,9 +1286,12 @@ class PixelMascot : IReactiveMascot
         DrawFigure(canvas, top, wiggle ? -1 : 0, wiggle ? 0 : -1);
         DrawHappyEyes(canvas, top);
         DrawOutfit(canvas, style, top);
-        int pole = BodyLeft + 16;
-        canvas.Fill(pole, top - 6, 1, 6, FlagPole);
-        DrawFlagCloth(canvas, pole, top - 6, 4, ms, true, 1, 9);
+        if (style == MascotStyle.Racer || style == MascotStyle.Pixel)
+        {
+            int pole = BodyLeft + 16;
+            canvas.Fill(pole, top - 6, 1, 6, FlagPole);
+            DrawFlagCloth(canvas, pole, top - 6, 4, ms, true, 1, 9);
+        }
         DrawConfettiShower(canvas, ms, 22);
     }
 

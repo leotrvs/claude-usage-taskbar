@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.11.1
+
+- The checkered flag is now only for the Racer and the plain mascot, not for the other outfits
+- The Halloween witch really flies: her body rises and her legs hang under the broom
+- A mirror ball with colored lights over the Headphones mascot while it dances
+- A round sack of presents on the back of Santa's sleigh
+
 ## 1.11.0
 
 - The mascots drawn by the app now match the size of the laptop one

@@ -110,7 +110,7 @@ The mascot reacts to your usage. Laptop uses this animation while working and th
 | Drinking coffee | It has been working for over 2 hours |
 | Juggling and lifting weights | Two or more sessions are working at once. The more sessions, the more often |
 
-It also reacts to what happens. When a limit renews it plants a checkered flag that waves in the wind, with confetti falling around it. When an update finishes it pops up and squashes flat in a burst of confetti. It waves or hops when you hover over it, gives a little hop now and then while resting, and reacts when you click it. While working it also thinks, takes notes, reads and stretches now and then. With two or more sessions working it juggles and lifts weights, more often the more sessions there are, and at 100% it sometimes lies flat and dizzy.
+It also reacts to what happens. When a limit renews, confetti falls around it, and the plain mascot and the Racer also plant a checkered flag that waves in the wind. When an update finishes it pops up and squashes flat in a burst of confetti. It waves or hops when you hover over it, gives a little hop now and then while resting, and reacts when you click it. While working it also thinks, takes notes, reads and stretches now and then. With two or more sessions working it juggles and lifts weights, more often the more sessions there are, and at 100% it sometimes lies flat and dizzy.
 
 ![The ways of working: the laptop, thinking, taking notes, reading and stretching](docs/images/mascot-working.gif)
 
@@ -138,7 +138,7 @@ The Racer goes out in style: a checkered flag waves, a Formula 1 car arrives, an
 
 ![The mascot walking across the header](docs/images/mascot-walks.gif)
 
-The plain mascot walks with a checkered flag on its back, and most outfits have a walk of their own. Santa rides a sleigh, the Headphones and Carnival outfits dance, the Chef carries a covered tray, the Scientist runs an experiment that goes off at the end, Winter skates and Halloween flies on a broom:
+The plain mascot walks with a checkered flag on its back, and most outfits have a walk of their own. Santa rides a sleigh with a sack of presents, the Headphones dance under a mirror ball, Carnival dances, the Chef carries a covered tray, the Scientist runs an experiment that goes off at the end, Winter skates and Halloween flies on a broom:
 
 ![Santa, Headphones, Chef and Scientist on their walks](docs/images/mascot-acts-1.gif)
 
