@@ -7,8 +7,10 @@ using Microsoft.Win32;
 class WidgetContext : ApplicationContext
 {
     const int FileCheckIntervalMs = 5 * 1000;
-    const int WarningPercent = 80;
+    const int WarningPercent = 75;
     const int CriticalPercent = 90;
+    const int LimitPercent = 100;
+    const int SamePeriodMinutes = 60; // The reset time is an estimate that drifts by a few minutes between readings.
     const int MinuteInTicks = 12; // File checks per minute, to roll countdowns and passed resets forward.
     const int FirstUpdateCheckMs = 5 * 1000;
     const int UpdateCheckIntervalMs = 60 * 60 * 1000;
@@ -230,25 +232,41 @@ class WidgetContext : ApplicationContext
         Notify(target, Localization.T("renewedTitle", Localization.T(labelKey)), Localization.T("renewedBody"), false, MascotMood.Idle, MascotAction.Celebrate);
     }
 
-    // Alerts once per limit period at each level, on an icon that is visible.
+    // Alerts once per limit period at 75%, 90% and 100%, on an icon that is visible.
     void CheckAlert(string limit, string labelKey, UsageWindow window, TraySlot slot)
     {
         if (!window.Percent.HasValue || !window.ResetsAt.HasValue) return;
-        int level = window.Percent.Value >= CriticalPercent ? CriticalPercent
-            : window.Percent.Value >= WarningPercent ? WarningPercent : 0;
+        int percent = window.Percent.Value;
+        int level = percent >= LimitPercent ? LimitPercent : percent >= CriticalPercent ? CriticalPercent
+            : percent >= WarningPercent ? WarningPercent : 0;
         if (level == 0) return;
 
-        string period = window.ResetsAt.Value.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture);
-        string stored = Settings.AlertState(limit);
-        if (stored == period + ":" + CriticalPercent || stored == period + ":" + level) return;
-        Settings.SetAlertState(limit, period + ":" + level);
+        // The same period if the reset time is within the drift of the one stored; a level is never repeated in it.
+        DateTime resets = window.ResetsAt.Value;
+        DateTime storedResets;
+        int storedLevel;
+        if (ReadAlertState(limit, out storedResets, out storedLevel)
+            && Math.Abs((resets - storedResets).TotalMinutes) < SamePeriodMinutes && storedLevel >= level) return;
+        Settings.SetAlertState(limit, resets.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture) + ":" + level);
         if (!Settings.Notifications) return;
 
         TraySlot target = slot.IsShown ? slot : (sessionSlot.IsShown ? sessionSlot : weeklySlot);
         Notify(target,
             Localization.T("alertTitle", Localization.T(labelKey), window.Percent.Value),
             Localization.T("alertBody", window.ResetsAt.Value.ToString("ddd HH:mm", Localization.Culture)),
-            true, level >= CriticalPercent ? MascotMood.Panic : MascotMood.Tired, null);
+            true, level >= LimitPercent ? MascotMood.Down : level >= CriticalPercent ? MascotMood.Panic : MascotMood.Tired, null);
+    }
+
+    static bool ReadAlertState(string limit, out DateTime resets, out int level)
+    {
+        resets = DateTime.MinValue;
+        level = 0;
+        string stored = Settings.AlertState(limit);
+        if (stored == null) return false;
+        string[] parts = stored.Split(':');
+        return parts.Length == 2
+            && DateTime.TryParseExact(parts[0], "yyyyMMddHHmm", CultureInfo.InvariantCulture, DateTimeStyles.None, out resets)
+            && int.TryParse(parts[1], out level);
     }
 
     void Render()

@@ -19,7 +19,7 @@ Consulta de un vistazo tus límites de Claude Code en la barra de tareas de Wind
 - Tres plantillas de color y cuatro temas, incluido uno que sigue a Windows
 - Un panel con horas de reinicio, previsión de ritmo y un gráfico de 12 horas
 - Una mascota animada, con versiones pixeladas que reaccionan a tu uso
-- Alertas opcionales al 80% y al 90% de un límite, y un aviso cuando un límite se renueva
+- Alertas opcionales al 75%, al 90% y al 100% de un límite, y un aviso cuando un límite se renueva
 - Un menú con clic derecho en los iconos, con Open panel, Refresh now, Settings y Quit
 - Se inicia con Windows, con accesos directos en el Escritorio y el menú Inicio
 - Actualizaciones automáticas firmadas
@@ -155,7 +155,7 @@ Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y 
 | Icons shown | Ambos límites, solo 5 horas o solo semanal |
 | Start with Windows | Abre la aplicación al iniciar sesión en Windows |
 | Automatic updates | Instala por sí sola las actualizaciones firmadas |
-| Notifications | Alertas al 80% y al 90% de un límite, y avisos cuando un límite se renueva o se instala una actualización |
+| Notifications | Alertas al 75%, al 90% y al 100% de un límite, y avisos cuando un límite se renueva o se instala una actualización |
 | Connected to Claude Code | Activa o desactiva la conexión |
 | Check for updates | Busca una actualización ahora. El icono gira mientras comprueba y se convierte en un icono de descarga cuando hay una lista |
 

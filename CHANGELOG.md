@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.5
+
+- Alerts now come at 75%, 90% and 100% of a limit, once each per period. They no longer repeat when the reset time shifts by a few minutes
+
 ## 1.11.4
 
 - The Settings footer is now one row: the version on the left and the GitHub link on the right

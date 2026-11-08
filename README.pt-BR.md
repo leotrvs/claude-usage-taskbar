@@ -17,7 +17,7 @@ Veja seus limites do Claude Code de relance na barra de tarefas do Windows e sai
 - Três modelos de cor e quatro temas, incluindo um que segue o Windows
 - Painel com horários de reinício, previsão de ritmo e gráfico de 12 horas
 - Mascote animado, com versões em pixels que reagem ao seu uso
-- Alertas opcionais em 80% e 90% de um limite, e aviso quando um limite renova
+- Alertas opcionais em 75%, 90% e 100% de um limite, e aviso quando um limite renova
 - Menu com o botão direito nos ícones, com Abrir painel, Atualizar agora, Configurações e Encerrar
 - Inglês e português do Brasil, seguindo o idioma do Windows por padrão
 - Inicia com o Windows, com atalhos na Área de Trabalho e no menu Iniciar
@@ -154,7 +154,7 @@ Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o persona
 | Ícones exibidos | Os dois limites, só 5 horas ou só semanal |
 | Iniciar com o Windows | Abre o app quando você entra no Windows |
 | Atualizações automáticas | Instala sozinho as atualizações assinadas |
-| Notificações | Alertas em 80% e 90% de um limite, e avisos quando um limite renova ou uma atualização é instalada |
+| Notificações | Alertas em 75%, 90% e 100% de um limite, e avisos quando um limite renova ou uma atualização é instalada |
 | Conectado ao Claude Code | Liga ou desliga a conexão |
 | Verificar atualizações | Procura uma atualização agora. O ícone gira enquanto verifica e vira um símbolo de baixar quando há uma pronta |
 

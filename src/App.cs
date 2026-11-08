@@ -12,7 +12,7 @@ static class App
 {
     public const string Name = "Claude Usage Taskbar";
     public const string Repository = "leotrvs/claude-usage-taskbar";
-    public const string Version = "1.11.4";
+    public const string Version = "1.11.5";
     public const string Id = "ClaudeUsageTaskbar";
     public const string ExeName = Id + ".exe";
 
