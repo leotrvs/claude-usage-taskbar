@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.4
+
+- The Settings footer is now one row: the version on the left and the GitHub link on the right
+
 ## 1.11.3
 
 - The footer of Settings now shows the name and version, and a link to the GitHub repository with its icon

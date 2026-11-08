@@ -70,7 +70,7 @@ class UsagePanel : Form
 {
     const int LogicalWidth = 300;
     const int MainHeight = 346;
-    const int SettingsHeight = 438;
+    const int SettingsHeight = 418;
     const int AppearanceHeight = 552;
     const int SessionTop = 62;
     const int WeeklyTop = 132;
@@ -267,7 +267,7 @@ class UsagePanel : Form
         repoLink = new PanelTarget();
         repoLink.LiteralLabel = "@" + App.Repository;
         int linkWidth = Px(20) + TextRenderer.MeasureText(repoLink.LiteralLabel, tinyFont, Size.Empty, TextFormatFlags.NoPadding).Width;
-        repoLink.Bounds = new Rectangle(Px(18), Px(410), linkWidth, Px(18));
+        repoLink.Bounds = new Rectangle(ClientSize.Width - Px(18) - linkWidth, Px(390), linkWidth, Px(18));
         repoLink.Run = callbacks.OpenRepository;
         settingsTargets.Add(repoLink);
     }
@@ -1191,8 +1191,9 @@ class UsagePanel : Form
         DrawDivider(g, Px(44));
         Draw(g, Localization.T("language"), tinyFont, Theme.Muted, left, Px(52), right - left, TextFormatFlags.Left);
         Draw(g, Localization.T("taskbarIcons"), tinyFont, Theme.Muted, left, Px(122), right - left, TextFormatFlags.Left);
-        string product = App.Name + " v" + App.Version;
-        Draw(g, product, tinyFont, Theme.Muted, left, Px(388), right - left, TextFormatFlags.Left);
+        string product = "v" + App.Version;
+        TextRenderer.DrawText(g, product, tinyFont, new Rectangle(left, repoLink.Bounds.Y, Px(60), repoLink.Bounds.Height), Theme.Muted,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
         string status = UpdateStatus();
         if (status != null) Draw(g, status, tinyFont, Theme.Muted, left, Px(366), right - left, TextFormatFlags.Left);
     }
