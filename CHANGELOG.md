@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.2
+
+- Santa's sleigh and the Racer's car now go at a gentler speed
+- The Headphones' mirror ball is now fixed in the corner of the header, lighting a dance floor behind the mascot
+- The witch no longer rises out of the header, and her legs bend back in the wind while she flies
+
 ## 1.11.1
 
 - The checkered flag is now only for the Racer and the plain mascot, not for the other outfits

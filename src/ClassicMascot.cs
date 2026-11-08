@@ -23,6 +23,7 @@ class ClassicMascot : IReactiveMascot
     }
 
     public double WalkOffset { get { return other.WalkOffset; } }
+    public int DiscoPhase { get { return other.DiscoPhase; } }
 
     public int UsagePercent
     {

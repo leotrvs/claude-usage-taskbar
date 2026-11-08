@@ -842,10 +842,62 @@ class UsagePanel : Form
             reactive.WalkRoom = 0;
             return;
         }
+        reactive.WalkRoom = Math.Max(0, FreeHeaderWidth() / MascotPixel);
+    }
+
+    int FreeHeaderWidth()
+    {
         Size title = TextRenderer.MeasureText(PanelTitle, titleFont, Size.Empty, TextFormatFlags.NoPadding);
         Size status = TextRenderer.MeasureText(state.Status ?? "", tinyFont, Size.Empty, TextFormatFlags.NoPadding);
-        int free = ClientSize.Width - Px(36) - mascot.CurrentFrame.Width - Math.Max(title.Width, status.Width) - Px(10);
-        reactive.WalkRoom = Math.Max(0, free / MascotPixel);
+        return ClientSize.Width - Px(36) - mascot.CurrentFrame.Width - Math.Max(title.Width, status.Width) - Px(10);
+    }
+
+    // A mirror ball fixed in the corner of the header, with beams of light sweeping over the floor the Headphones dance on.
+    // It is drawn before the text and the mascot, so they stay in front of it.
+    void DrawDiscoFloor(Graphics g, int right)
+    {
+        IReactiveMascot reactive = mascot as IReactiveMascot;
+        if (reactive == null) return;
+        int phase = reactive.DiscoPhase;
+        int free = FreeHeaderWidth();
+        if (phase < 0 || free < Px(30)) return;
+        Bitmap frame = mascot.CurrentFrame;
+        Color[] lights =
+        {
+            Color.FromArgb(90, 220, 255), Color.FromArgb(255, 90, 200), Color.FromArgb(255, 220, 80), Color.FromArgb(120, 255, 140)
+        };
+        int floorRight = right - frame.Width;
+        int floorLeft = floorRight - free;
+        int floorY = Px(14) + frame.Height - Px(2);
+        int ballX = right - Px(6);
+        int ballY = Px(6);
+        GraphicsState saved = g.Save();
+        g.SetClip(new Rectangle(floorLeft - Px(10), 0, right - floorLeft + Px(10), floorY + Px(6)));
+        const int Beams = 5;
+        for (int beam = 0; beam < Beams; beam++)
+        {
+            double sweep = Math.Sin(phase / 4.0 + beam * 1.3) * Px(10);
+            int targetX = floorRight - (int)((beam + 0.5) / Beams * (floorRight - floorLeft)) + (int)sweep;
+            Color color = lights[(beam + phase / 6) % lights.Length];
+            int half = Px(9);
+            using (Brush brush = new SolidBrush(Color.FromArgb(48, color)))
+                g.FillPolygon(brush, new[] { new Point(ballX, ballY), new Point(targetX - half, floorY), new Point(targetX + half, floorY) });
+            using (Brush spot = new SolidBrush(Color.FromArgb(110, color)))
+                g.FillEllipse(spot, targetX - half, floorY - Px(2), half * 2, Px(5));
+        }
+        g.Restore(saved);
+        using (Pen thread = new Pen(Color.FromArgb(170, 170, 178), Math.Max(1, Px(1))))
+            g.DrawLine(thread, ballX, 0, ballX, ballY - Px(5));
+        int radius = Px(5);
+        using (Brush silver = new SolidBrush(Color.FromArgb(200, 205, 218)))
+            g.FillEllipse(silver, ballX - radius, ballY - radius, radius * 2, radius * 2);
+        for (int facet = 0; facet < 5; facet++)
+        {
+            int fx = ballX - radius + Px(1) + facet * radius * 2 / 5;
+            int fy = ballY - radius + Px(1) + (facet * 3 + phase / 2) % 7 * radius * 2 / 8;
+            using (Brush shine = new SolidBrush((facet + phase / 2) % 2 == 0 ? Color.White : Color.FromArgb(120, 130, 160)))
+                g.FillRectangle(shine, fx, fy, Math.Max(1, Px(2)), Math.Max(1, Px(2)));
+        }
     }
 
     protected override void OnDeactivate(EventArgs e)
@@ -971,6 +1023,7 @@ class UsagePanel : Form
 
     void PaintMainPage(Graphics g, int left, int right)
     {
+        if (mascot != null && targets == mainTargets) DrawDiscoFloor(g, right);
         Draw(g, PanelTitle, titleFont, Theme.Text, left, Px(14), right - left, TextFormatFlags.Left);
         int mascotSpace = mascot != null ? mascot.CurrentFrame.Width + Px(8) : 0;
         if (updateVersion == null) Draw(g, state.Status, tinyFont, state.OutOfDate ? Theme.Warning : Theme.Muted, left, Px(35), right - left - mascotSpace, TextFormatFlags.Left);

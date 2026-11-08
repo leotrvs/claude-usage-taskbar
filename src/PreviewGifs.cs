@@ -92,11 +92,11 @@ static partial class Preview
 
         WalkStack(Path.Combine(frames, "mascot-walks"), new[]
         {
-            new Walker(MascotStyle.Detective, false, false, 68), new Walker(plain, true, false, 18), new Walker(MascotStyle.Racer, false, false, 48)
+            new Walker(MascotStyle.Detective, false, false, 68), new Walker(plain, true, false, 18), new Walker(MascotStyle.Racer, false, false, 90)
         });
         WalkStack(Path.Combine(frames, "mascot-acts-1"), new[]
         {
-            new Walker(MascotStyle.Santa, false, true, 36), new Walker(plain, false, true, 72),
+            new Walker(MascotStyle.Santa, false, true, 110), new Walker(plain, false, true, 72),
             new Walker(MascotStyle.Headphones, false, true, 72), new Walker(MascotStyle.Chef, false, true, 72)
         });
         WalkStack(Path.Combine(frames, "mascot-acts-2"), new[]

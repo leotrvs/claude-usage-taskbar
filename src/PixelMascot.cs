@@ -19,6 +19,7 @@ interface IReactiveMascot : IMascot
 {
     MascotMood Mood { get; set; }
     double WalkOffset { get; } // Columns the character has moved left of its resting spot.
+    int DiscoPhase { get; } // The beat of the dance floor lit behind the mascot, or -1.
     int WalkRoom { set; } // Columns it may move left without covering the panel's text.
     int UsagePercent { set; } // The highest limit, so it can glance at the bars when close to it.
     int? WalkGoal { set; } // Where the cursor last was in the header, in columns left of the resting spot.
@@ -38,7 +39,6 @@ class PixelMascot : IReactiveMascot
     const int SleepFrameMs = 420;
     const int LegLength = 6;
     const int GaitMs = 110;
-    const int BroomLift = 5;
     const int BodyLeft = 4;
     const int BodyTop = 6;
     const int WorkingMinutes = 10;
@@ -77,7 +77,8 @@ class PixelMascot : IReactiveMascot
     const int MaxPanicWaitMs = 55000;
     const int PanicSpeed = 2;
     const int PanicTickMs = 70;
-    const int RaceSpeed = 3;
+    const int RaceSpeed = 2;
+    const int SleighSpeed = 1;
     const int FlagTicks = 14; // The checkered flag waves, then the car arrives and the driver gets in.
     const int BoardTicks = 5;
     const int ParkTicks = 6;
@@ -259,6 +260,12 @@ class PixelMascot : IReactiveMascot
     }
 
     public int WalkRoom { get; set; }
+
+    // The beat of the dance floor while the Headphones dance, or -1 when there is none.
+    public int DiscoPhase
+    {
+        get { return style == MascotStyle.Headphones && walkAct == WalkAct.Dance && walkStep != WalkStep.None ? walkTick : -1; }
+    }
     public bool AlwaysSpecial { get; set; } // For the documentation images: every walk is the outfit's special one.
     public int UsagePercent { get; set; }
     public int? WalkGoal { get; set; }
@@ -355,11 +362,11 @@ class PixelMascot : IReactiveMascot
         }
     }
 
-    int WalkPeriod { get { return walkPanic || walkRace ? PanicTickMs : WalkTickMs; } }
+    int WalkPeriod { get { return walkPanic ? PanicTickMs : WalkTickMs; } }
 
     int WalkSpeed
     {
-        get { return walkRace ? RaceSpeed : walkPanic ? PanicSpeed : (walkAct == WalkAct.Skate || walkAct == WalkAct.Broom ? 2 : 1); }
+        get { return walkRace ? (style == MascotStyle.Santa ? SleighSpeed : RaceSpeed) : walkPanic ? PanicSpeed : (walkAct == WalkAct.Skate || walkAct == WalkAct.Broom ? 2 : 1); }
     }
 
     void StepWalk()
@@ -744,9 +751,8 @@ class PixelMascot : IReactiveMascot
                 if (walk.AtEnd) top = BodyTop + walk.Step / 2 % 2; // A little pirouette hop at the end.
                 break;
             case WalkAct.Broom:
-                canvas.Gait = -1; // Flying: the feet never touch the ground.
-                top = BodyTop - BroomLift - walk.Step / 3 % 2;
-                legShift = 2;
+                canvas.Gait = -1;
+                canvas.Flying = true; // The knees bend back and the feet trail behind her.
                 leftArm = -1;
                 rightArm = -1;
                 break;
@@ -766,11 +772,7 @@ class PixelMascot : IReactiveMascot
         {
             case WalkAct.Dance:
                 if (style == MascotStyle.Carnival) DrawConfetti(canvas, tick, walk.AtEnd ? 30 : 16);
-                else
-                {
-                    DrawNotes(canvas, tick);
-                    DrawDiscoBall(canvas, tick);
-                }
+                else DrawNotes(canvas, tick);
                 break;
             case WalkAct.Tray: DrawTray(canvas, top, walk.AtEnd, tick); break;
             case WalkAct.Skate: DrawSkates(canvas, top, walk.Step, walk.Moving); break;
@@ -782,36 +784,8 @@ class PixelMascot : IReactiveMascot
                 break;
         }
         canvas.Mirror = false;
+        canvas.Flying = false;
         if (walk.Sweat) canvas.Fill(BodyLeft + 23, BodyTop + walk.Step % 8, 2, 3, Sweat);
-    }
-
-    // A mirror ball hanging above the head, with beams of colored light sweeping over the dance floor.
-    static void DrawDiscoBall(Canvas canvas, int tick)
-    {
-        Color[] lights =
-        {
-            Color.FromArgb(90, 220, 255), Color.FromArgb(255, 90, 200), Color.FromArgb(255, 220, 80), Color.FromArgb(120, 255, 140)
-        };
-        int center = BodyLeft + 12;
-        for (int beam = 0; beam < 6; beam++)
-        {
-            int side = beam % 2 == 0 ? -1 : 1;
-            int spread = 1 + beam / 2 + tick / 3 % 2;
-            Color color = Color.FromArgb(210, lights[(beam + tick / 2) % lights.Length]);
-            for (int k = 3; k < 18; k += 2)
-                canvas.Fill(center + side * (k * spread / 4), 5 + k, 2, 1, color);
-        }
-        for (int spot = 0; spot < 4; spot++)
-            canvas.Fill(center - 12 + (spot * 7 + tick / 2 * 3) % 26, 22, 2, 1, Color.FromArgb(170, lights[(spot + tick / 3) % lights.Length]));
-        string[] ball = { ".###.", "#####", "#####", "#####", ".###." };
-        for (int y = 0; y < ball.Length; y++)
-            for (int x = 0; x < ball[y].Length; x++)
-            {
-                if (ball[y][x] != '#') continue;
-                bool shine = (x + y + tick / 2) % 3 == 0;
-                canvas.Fill(center - 2 + x, 1 + y, 1, 1, shine ? Color.White : ((x + y) % 2 == 0 ? Color.FromArgb(205, 210, 222) : Color.FromArgb(130, 140, 165)));
-            }
-        canvas.Fill(center, 0, 1, 1, Color.FromArgb(170, 170, 178));
     }
 
     static readonly string[] Note = { "..#", "..#", "##.", "##." };
@@ -856,7 +830,7 @@ class PixelMascot : IReactiveMascot
 
     static void DrawBroom(Canvas canvas, int top, int step)
     {
-        int bob = 0;
+        int bob = step / 3 % 2;
         Color wood = Color.FromArgb(139, 94, 52);
         Color straw = Color.FromArgb(214, 170, 70);
         canvas.Fill(BodyLeft - 2, top + 12 + bob, 26, 2, wood);
@@ -1511,6 +1485,18 @@ class PixelMascot : IReactiveMascot
             int thigh = 2;
             int shin = Math.Max(0, LegLength - 4 - crouch);
             int y = top + 12;
+            if (canvas.Flying)
+            {
+                // Flying with the wind in her face: the shin bends back from the knee and the foot streams behind.
+                int flutter = (int)(canvas.Ms / 170) % 2 == i % 2 ? 1 : 0;
+                canvas.Fill(x, y, 2, thigh, leg);
+                canvas.Fill(x + 1, y + thigh, 2, shin, leg);
+                int streamTop = y + thigh + shin - 1 + flutter;
+                canvas.Fill(x + 2 + flutter, streamTop, 2, 2, foot);
+                canvas.FootX[i] = x + 2 + flutter;
+                canvas.FootY[i] = streamTop + 1;
+                continue;
+            }
             canvas.Fill(x, y, 2, thigh, leg);
             canvas.Fill(x + knee, y + thigh, 2, shin, leg);
             int footTop = y + thigh + shin - lift;
@@ -1841,6 +1827,7 @@ class PixelMascot : IReactiveMascot
         public bool Mirror;
         public int Tick;
         public double Ms; // Exact time in the mood or action, for motion that should not step.
+        public bool Flying; // Legs trailing behind, for the witch on her broom.
         public int Gait = -1; // Phase of the walking cycle, or -1 while the legs are planted.
         public int GaitDir = -1;
         public int[] FootX = new int[4];
