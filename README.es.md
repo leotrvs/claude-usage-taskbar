@@ -141,15 +141,13 @@ El Racer sale con estilo: ondea una bandera de cuadros, llega un coche de Fórmu
 
 La mascota sin atuendo pasea con una bandera de cuadros a la espalda, y la mayoría de los atuendos tienen su propio paseo. Christmas va en trineo con un saco de regalos, Headphones baila bajo una bola de espejos, Carnival baila, el Chef lleva una bandeja cubierta, el Scientist hace un experimento que estalla al final, Winter patina y Halloween vuela en escoba:
 
-![Christmas, Headphones, Chef y Scientist en sus paseos](docs/images/mascot-acts-1.gif)
-
-![Winter, Halloween y Carnival en sus paseos](docs/images/mascot-acts-2.gif)
+![Christmas, Headphones, Chef y Scientist en sus paseos / Winter, Halloween y Carnival en sus paseos](docs/images/mascot-acts.gif)
 
 Este es un proyecto de fans, sin relación con Anthropic ni aprobación suya, y el personaje pertenece a sus dueños. La licencia MIT no lo cubre.
 
 ### Configuración
 
-<img src="docs/images/settings-en.gif" alt="Página Settings / Página Appearance" width="300">
+<img src="docs/images/settings-en.gif" alt="Página Settings / Página Appearance">
 
 | Opción | Qué hace |
 |---|---|

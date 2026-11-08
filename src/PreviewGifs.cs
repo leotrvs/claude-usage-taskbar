@@ -93,17 +93,14 @@ static partial class Preview
         WalkStack(Path.Combine(frames, "mascot-walks"), new[]
         {
             new Walker(MascotStyle.Detective, false, false, 68), new Walker(plain, true, false, 18), new Walker(MascotStyle.Racer, false, false, 90)
-        });
-        WalkStack(Path.Combine(frames, "mascot-acts-1"), new[]
+        }, 1);
+        WalkStack(Path.Combine(frames, "mascot-acts"), new[]
         {
             new Walker(MascotStyle.Santa, false, true, 110), new Walker(plain, false, true, 72),
-            new Walker(MascotStyle.Headphones, false, true, 72), new Walker(MascotStyle.Chef, false, true, 72)
-        });
-        WalkStack(Path.Combine(frames, "mascot-acts-2"), new[]
-        {
+            new Walker(MascotStyle.Headphones, false, true, 72), new Walker(MascotStyle.Chef, false, true, 72),
             new Walker(MascotStyle.Scientist, false, true, 72), new Walker(MascotStyle.Winter, false, true, 47),
             new Walker(MascotStyle.Halloween, false, true, 47), new Walker(MascotStyle.Carnival, false, true, 72)
-        });
+        }, 2);
 
         RenderIconFrames(Path.Combine(frames, "icon-styles"));
         RenderLanguageFrames(frames, Language.English, "en");
@@ -155,7 +152,7 @@ static partial class Preview
     }
 
     // The panel headers of several outfits stacked, each doing its own walk.
-    static void WalkStack(string folder, Walker[] walkers)
+    static void WalkStack(string folder, Walker[] walkers, int columns)
     {
         const int HeaderHeight = 64;
         const int Gap = 8;
@@ -169,9 +166,10 @@ static partial class Preview
                 frames = Math.Max(frames, walkers[i].Steps);
             }
             int width = panels[0].Width;
+            int rows = (walkers.Length + columns - 1) / columns;
             for (int f = 0; f < frames; f++)
             {
-                using (Bitmap sheet = new Bitmap(width + Gap * 2, HeaderHeight * walkers.Length + Gap * (walkers.Length + 1)))
+                using (Bitmap sheet = new Bitmap(columns * (width + Gap) + Gap, HeaderHeight * rows + Gap * (rows + 1)))
                 using (Graphics g = Graphics.FromImage(sheet))
                 {
                     g.Clear(Color.FromArgb(10, 10, 10));
@@ -181,7 +179,7 @@ static partial class Preview
                         using (Bitmap shot = new Bitmap(width, panels[i].Height))
                         {
                             panels[i].DrawToBitmap(shot, new Rectangle(Point.Empty, panels[i].Size));
-                            g.DrawImage(shot, new Rectangle(Gap, Gap + i * (HeaderHeight + Gap), width, HeaderHeight),
+                            g.DrawImage(shot, new Rectangle(Gap + i / rows * (width + Gap), Gap + i % rows * (HeaderHeight + Gap), width, HeaderHeight),
                                 new Rectangle(0, 0, width, HeaderHeight), GraphicsUnit.Pixel);
                         }
                     }
@@ -199,7 +197,7 @@ static partial class Preview
     {
         const int Size = 64;
         const int Gap = 12;
-        const int Frames = 24;
+        const int Frames = 37;
         ColorTemplate[] colors = { ColorTemplate.Blue, ColorTemplate.Green, ColorTemplate.Purple };
         IconStyle[] styles = { IconStyle.Gauge, IconStyle.Ring, IconStyle.Needle };
         for (int f = 0; f < Frames; f++)
@@ -207,7 +205,7 @@ static partial class Preview
             using (Graphics g = Graphics.FromImage(sheet))
             {
                 g.Clear(Color.FromArgb(10, 10, 10));
-                int percent = Math.Min(65, f * 3);
+                int percent = Math.Min(100, f * 3);
                 for (int c = 0; c < colors.Length; c++)
                 {
                     Theme.Colors = colors[c];
@@ -297,12 +295,33 @@ static partial class Preview
             panel.ApplyTheme();
 
             string pages = Path.Combine(Path.Combine(directory, "settings"), suffix);
-            panel.ShowMainPage();
-            using (Bitmap bitmap = Shot(panel)) SaveFrame(bitmap, pages, 0);
-            panel.ShowSettingsPage();
-            using (Bitmap bitmap = Shot(panel)) SaveFrame(bitmap, pages, 1);
-            panel.ShowAppearancePage();
-            using (Bitmap bitmap = Shot(panel)) SaveFrame(bitmap, pages, 2);
+            Bitmap[,] shots = new Bitmap[looks.Length, 3];
+            int pageHeight = 0;
+            for (int look = 0; look < looks.Length; look++)
+            {
+                Theme.Panel = looks[look];
+                panel.ApplyTheme();
+                panel.ShowMainPage();
+                shots[look, 0] = Shot(panel);
+                panel.ShowSettingsPage();
+                shots[look, 1] = Shot(panel);
+                panel.ShowAppearancePage();
+                shots[look, 2] = Shot(panel);
+                for (int page = 0; page < 3; page++) pageHeight = Math.Max(pageHeight, shots[look, page].Height);
+            }
+            const int PageGap = 16;
+            for (int page = 0; page < 3; page++)
+                using (Bitmap sheet = new Bitmap(looks.Length * (panel.Width + PageGap) + PageGap, pageHeight + PageGap * 2))
+                using (Graphics g = Graphics.FromImage(sheet))
+                {
+                    g.Clear(Color.FromArgb(16, 16, 16));
+                    for (int look = 0; look < looks.Length; look++)
+                        g.DrawImageUnscaled(shots[look, page], PageGap + look * (panel.Width + PageGap), PageGap);
+                    SaveFrame(sheet, pages, page);
+                }
+            foreach (Bitmap shot in shots) shot.Dispose();
+            Theme.Panel = PanelTheme.Black;
+            panel.ApplyTheme();
             panel.ShowMainPage();
         }
     }

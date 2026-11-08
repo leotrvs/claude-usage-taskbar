@@ -140,15 +140,13 @@ O Piloto sai com estilo: uma bandeira quadriculada balança, um carro de Fórmul
 
 O mascote sem outfit anda com uma bandeira quadriculada nas costas, e a maioria dos outfits tem uma caminhada própria. O Natal anda de trenó com um saco de presentes, o Fone dança sob uma bola de espelhos, o Carnaval dança, o Chef leva uma bandeja coberta, o Cientista faz um experimento que explode no fim, o Inverno patina e o Halloween voa de vassoura:
 
-![Natal, Fone, Chef e Cientista nas suas caminhadas](docs/images/mascot-acts-1.gif)
-
-![Inverno, Halloween e Carnaval nas suas caminhadas](docs/images/mascot-acts-2.gif)
+![Natal, Fone, Chef e Cientista nas suas caminhadas / Inverno, Halloween e Carnaval nas suas caminhadas](docs/images/mascot-acts.gif)
 
 Este é um projeto de fã, sem vínculo ou aprovação da Anthropic, e o personagem pertence aos seus donos. A licença MIT não cobre o personagem.
 
 ### Configurações
 
-<img src="docs/images/settings-pt-BR.gif" alt="Página de Configurações / Página de Aparência" width="300">
+<img src="docs/images/settings-pt-BR.gif" alt="Página de Configurações / Página de Aparência">
 
 | Opção | O que faz |
 |---|---|

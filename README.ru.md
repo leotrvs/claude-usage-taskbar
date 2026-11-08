@@ -141,15 +141,13 @@ Racer выезжает со стилем: машет клетчатый флаг
 
 Простой маскот гуляет с клетчатым флагом за спиной, а у большинства образов своя прогулка. Christmas едет на санях с мешком подарков, Headphones танцует под зеркальным шаром, Carnival танцует, Chef несёт накрытый поднос, Scientist ставит опыт, который в конце взрывается, Winter катается на коньках, а Halloween летает на метле:
 
-![Christmas, Headphones, Chef и Scientist на прогулках](docs/images/mascot-acts-1.gif)
-
-![Winter, Halloween и Carnival на прогулках](docs/images/mascot-acts-2.gif)
+![Christmas, Headphones, Chef и Scientist на прогулках / Winter, Halloween и Carnival на прогулках](docs/images/mascot-acts.gif)
 
 Это фан-проект, не связанный с Anthropic и не одобренный ею. Персонаж принадлежит его владельцам, и лицензия MIT на него не распространяется.
 
 ### Настройки
 
-<img src="docs/images/settings-en.gif" alt="Страница Settings / Страница Appearance" width="300">
+<img src="docs/images/settings-en.gif" alt="Страница Settings / Страница Appearance">
 
 | Параметр | Что делает |
 |---|---|

@@ -140,15 +140,13 @@ The Racer goes out in style: a checkered flag waves, a Formula 1 car arrives, an
 
 The plain mascot walks with a checkered flag on its back, and most outfits have a walk of their own. Santa rides a sleigh with a sack of presents, the Headphones dance under a mirror ball, Carnival dances, the Chef carries a covered tray, the Scientist runs an experiment that goes off at the end, Winter skates and Halloween flies on a broom:
 
-![Santa, Headphones, Chef and Scientist on their walks](docs/images/mascot-acts-1.gif)
-
-![Winter, Halloween and Carnival on their walks](docs/images/mascot-acts-2.gif)
+![Santa, Headphones, Chef and Scientist on their walks / Winter, Halloween and Carnival on their walks](docs/images/mascot-acts.gif)
 
 This is a fan project, not affiliated with or endorsed by Anthropic, and the character belongs to its owners. The MIT license does not cover it.
 
 ### Settings
 
-<img src="docs/images/settings-en.gif" alt="Settings page / Appearance page" width="300">
+<img src="docs/images/settings-en.gif" alt="Settings page / Appearance page">
 
 | Option | What it does |
 |---|---|
